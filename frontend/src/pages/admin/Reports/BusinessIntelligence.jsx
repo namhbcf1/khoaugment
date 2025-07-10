@@ -50,6 +50,7 @@ import {
   Cell
 } from 'recharts';
 import dayjs from 'dayjs';
+import { MetricCard, PageHeader, LoadingSkeleton } from '../../../components/ui/DesignSystem';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -315,49 +316,47 @@ const BusinessIntelligence = () => {
   ];
   
   return (
-    <div style={{ padding: '24px' }}>
-      <Card bordered={false} style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div>
-            <Title level={2} style={{ margin: 0 }}>
-              <LineChartOutlined /> Business Intelligence
-            </Title>
-            <Text type="secondary">
-              Advanced analytics and business performance insights
-            </Text>
-          </div>
-          <Space>
-            <Select 
-              defaultValue="vnd" 
-              style={{ width: 100 }}
-            >
-              <Option value="vnd">VND (₫)</Option>
-              <Option value="usd">USD ($)</Option>
-            </Select>
-            
-            <RangePicker 
-              value={dateRange}
-              onChange={setDateRange}
-              allowClear={false}
-            />
-            
-            <Button 
-              type="primary" 
-              icon={<DownloadOutlined />}
-              onClick={() => handleExport('dashboard')}
-            >
-              Export
-            </Button>
-            
-            <Button
-              icon={<SyncOutlined />}
-              onClick={handleRefreshData}
-              loading={loading}
-            >
-              Refresh
-            </Button>
-          </Space>
-        </div>
+    <div>
+      <PageHeader
+        title="Business Intelligence"
+        subtitle="Advanced analytics and business performance insights"
+        icon="chart"
+        actions={[
+          <Select
+            key="currency"
+            defaultValue="vnd"
+            style={{ width: 100 }}
+          >
+            <Option value="vnd">VND (₫)</Option>
+            <Option value="usd">USD ($)</Option>
+          </Select>,
+          <RangePicker
+            key="daterange"
+            value={dateRange}
+            onChange={setDateRange}
+            allowClear={false}
+          />,
+          <Button
+            key="export"
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={() => handleExport('dashboard')}
+          >
+            Export
+          </Button>,
+          <Button
+            key="refresh"
+            icon={<SyncOutlined />}
+            onClick={handleRefreshData}
+            loading={loading}
+          >
+            Refresh
+          </Button>
+        ]}
+      />
+
+      <div style={{ padding: '0 24px 24px' }}>
+        <Card bordered={false} style={{ marginBottom: '24px' }}>
         
         <Alert 
           message="Premium Analytics" 
@@ -889,6 +888,7 @@ const BusinessIntelligence = () => {
           </TabPane>
         </Tabs>
       </Card>
+      </div>
     </div>
   );
 };
