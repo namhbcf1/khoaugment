@@ -10,6 +10,7 @@ import {
   DollarOutlined,
   BarChartOutlined
 } from '@ant-design/icons';
+import { generateAriaLabel, handleKeyboardNavigation, announceToScreenReader } from '../../utils/accessibility';
 import './DesignSystem.css';
 
 const { Title, Text, Paragraph } = Typography;
@@ -67,15 +68,16 @@ export const StatusBadge = ({ status, children, ...props }) => {
 };
 
 // Standardized Metric Card
-export const MetricCard = ({ 
-  title, 
-  value, 
-  icon, 
-  trend, 
-  trendValue, 
+export const MetricCard = ({
+  title,
+  value,
+  icon,
+  trend,
+  trendValue,
   color = 'primary',
   loading = false,
-  ...props 
+  onClick,
+  ...props
 }) => {
   const getTrendIcon = () => {
     if (trend === 'up') return <Icon name="success" size="sm" />;
@@ -89,25 +91,60 @@ export const MetricCard = ({
     return 'secondary';
   };
 
+  const getTrendDescription = () => {
+    if (trend === 'up') return `tăng ${trendValue}`;
+    if (trend === 'down') return `giảm ${trendValue}`;
+    return '';
+  };
+
+  const ariaLabel = `${title}: ${value}${trend ? `, ${getTrendDescription()}` : ''}`;
+
+  const handleKeyDown = (event) => {
+    handleKeyboardNavigation(event, {
+      onEnter: () => onClick && onClick()
+    });
+  };
+
   return (
-    <Card 
+    <Card
       className="metric-card"
       loading={loading}
+      tabIndex={onClick ? 0 : -1}
+      role={onClick ? 'button' : 'region'}
+      aria-label={ariaLabel}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
       {...props}
     >
       <div className="metric-card-content">
         <div className="metric-header">
-          <Text className="metric-title text-secondary">{title}</Text>
-          {icon && <Icon name={icon} size="lg" color={color} />}
+          <Text className="metric-title text-secondary" id={`metric-title-${title.replace(/\s+/g, '-').toLowerCase()}`}>
+            {title}
+          </Text>
+          {icon && (
+            <Icon
+              name={icon}
+              size="lg"
+              color={color}
+              aria-hidden="true"
+            />
+          )}
         </div>
-        
+
         <div className="metric-value">
-          <Title level={2} className="metric-number">
+          <Title
+            level={2}
+            className="metric-number"
+            aria-describedby={`metric-title-${title.replace(/\s+/g, '-').toLowerCase()}`}
+          >
             {value}
           </Title>
-          
+
           {trend && trendValue && (
-            <div className={`metric-trend text-${getTrendColor()}`}>
+            <div
+              className={`metric-trend text-${getTrendColor()}`}
+              aria-label={`Xu hướng: ${getTrendDescription()}`}
+            >
               {getTrendIcon()}
               <Text className={`text-${getTrendColor()}`}>
                 {trendValue}
@@ -121,48 +158,58 @@ export const MetricCard = ({
 };
 
 // Standardized Page Header
-export const PageHeader = ({ 
-  title, 
-  subtitle, 
-  icon, 
-  actions, 
+export const PageHeader = ({
+  title,
+  subtitle,
+  icon,
+  actions,
   breadcrumb,
-  ...props 
+  ...props
 }) => {
   return (
-    <div className="page-header" {...props}>
+    <header className="page-header" role="banner" {...props}>
       {breadcrumb && (
-        <div className="page-breadcrumb">
+        <nav className="page-breadcrumb" aria-label="Breadcrumb navigation">
           {breadcrumb}
-        </div>
+        </nav>
       )}
-      
+
       <div className="page-header-content">
         <div className="page-header-main">
           <div className="page-title-wrapper">
-            {icon && <Icon name={icon} size="xl" className="page-icon" />}
+            {icon && (
+              <Icon
+                name={icon}
+                size="xl"
+                className="page-icon"
+                aria-hidden="true"
+              />
+            )}
             <div className="page-title-content">
-              <Title level={2} className="page-title">
+              <Title level={1} className="page-title" id="page-title">
                 {title}
               </Title>
               {subtitle && (
-                <Text className="page-subtitle text-secondary">
+                <Text
+                  className="page-subtitle text-secondary"
+                  aria-describedby="page-title"
+                >
                   {subtitle}
                 </Text>
               )}
             </div>
           </div>
         </div>
-        
+
         {actions && (
-          <div className="page-actions">
+          <div className="page-actions" role="toolbar" aria-label="Page actions">
             <Space size="middle">
               {actions}
             </Space>
           </div>
         )}
       </div>
-    </div>
+    </header>
   );
 };
 
