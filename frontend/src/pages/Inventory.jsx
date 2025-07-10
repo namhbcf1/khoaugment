@@ -16,6 +16,7 @@ import {
 import { Line, Column, Gauge } from '@ant-design/plots';
 import { api } from '../services/api';
 import dayjs from 'dayjs';
+import { MetricCard, PageHeader, ResponsiveTable, LoadingSkeleton } from '../components/ui/DesignSystem';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -526,74 +527,67 @@ const Inventory = () => {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div>
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-        <Col>
-          <Title level={2} style={{ margin: 0 }}>
-            <InboxOutlined /> Quản lý kho hàng
-          </Title>
-          <Text type="secondary">Quản lý tồn kho, nhập xuất hàng và cảnh báo</Text>
-        </Col>
-        <Col>
-          <Space>
-            <Button icon={<ImportOutlined />} onClick={() => setShowImportModal(true)}>
-              Import
-            </Button>
-            <Button icon={<ExportOutlined />}>
-              Export
-            </Button>
-            <Button icon={<PrinterOutlined />}>
-              In báo cáo
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateProduct}>
-              Thêm sản phẩm
-            </Button>
-          </Space>
-        </Col>
-      </Row>
+      <PageHeader
+        title="Quản lý kho hàng"
+        subtitle="Quản lý tồn kho, nhập xuất hàng và cảnh báo"
+        icon="cart"
+        actions={[
+          <Button key="import" icon={<ImportOutlined />} onClick={() => setShowImportModal(true)}>
+            Import
+          </Button>,
+          <Button key="export" icon={<ExportOutlined />}>
+            Export
+          </Button>,
+          <Button key="print" icon={<PrinterOutlined />}>
+            In báo cáo
+          </Button>,
+          <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleCreateProduct}>
+            Thêm sản phẩm
+          </Button>
+        ]}
+      />
+
+      <div style={{ padding: '0 24px 24px' }}>
 
       {/* Inventory Stats */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Tổng sản phẩm"
-              value={inventoryStats.totalProducts}
-              prefix={<ShoppingCartOutlined />}
-            />
-          </Card>
+          <MetricCard
+            title="Tổng sản phẩm"
+            value={inventoryStats.totalProducts}
+            icon="cart"
+            color="primary"
+            loading={loading}
+          />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Giá trị tồn kho"
-              value={inventoryStats.totalValue}
-              formatter={(value) => formatCurrency(value)}
-              prefix={<InboxOutlined />}
-            />
-          </Card>
+          <MetricCard
+            title="Giá trị tồn kho"
+            value={formatCurrency(inventoryStats.totalValue)}
+            icon="dollar"
+            color="success"
+            loading={loading}
+          />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Cảnh báo tồn kho"
-              value={inventoryStats.reorderAlerts}
-              prefix={<AlertOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: '#ff4d4f' }}
-            />
-          </Card>
+          <MetricCard
+            title="Cảnh báo tồn kho"
+            value={inventoryStats.reorderAlerts}
+            icon="chart"
+            color="warning"
+            loading={loading}
+          />
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Độ chính xác"
-              value={inventoryStats.stockAccuracy}
-              suffix="%"
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
+          <MetricCard
+            title="Độ chính xác"
+            value={`${inventoryStats.stockAccuracy}%`}
+            icon="chart"
+            color="success"
+            loading={loading}
+          />
         </Col>
       </Row>
 
@@ -1265,6 +1259,7 @@ const Inventory = () => {
           background-color: #fffbe6 !important;
         }
       `}</style>
+      </div>
     </div>
   );
 };

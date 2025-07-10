@@ -9,7 +9,7 @@ import {
   MonitorOutlined, CalculatorOutlined, SafetyOutlined,
   CheckCircleOutlined, ExclamationCircleOutlined,
   DisconnectOutlined, ReloadOutlined, SettingOutlined,
-  UsbOutlined, WifiOutlined, BluetoothOutlined
+  UsbOutlined, WifiOutlined
 } from '@ant-design/icons';
 import HardwareIntegrationService from '../../../services/hardware/hardwareIntegration';
 

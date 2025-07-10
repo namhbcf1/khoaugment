@@ -33,7 +33,7 @@ import {
   BulbOutlined,
   ThunderboltOutlined,
   TrophyOutlined,
-  TargetOutlined,
+  AimOutlined,
   ExperimentOutlined,
   DownloadOutlined,
   ReloadOutlined,

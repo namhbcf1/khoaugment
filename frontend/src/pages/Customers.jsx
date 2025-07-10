@@ -16,6 +16,7 @@ import {
 import { Pie, Column } from '@ant-design/plots';
 import { api } from '../services/api';
 import dayjs from 'dayjs';
+import { MetricCard, PageHeader, ResponsiveTable, LoadingSkeleton } from '../components/ui/DesignSystem';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -403,29 +404,26 @@ const Customers = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div>
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-        <Col>
-          <Title level={2} style={{ margin: 0 }}>
-            <TeamOutlined /> Quản lý khách hàng
-          </Title>
-          <Text type="secondary">Quản lý thông tin và chương trình khách hàng thân thiết</Text>
-        </Col>
-        <Col>
-          <Space>
-            <Button icon={<ImportOutlined />}>
-              Import
-            </Button>
-            <Button icon={<ExportOutlined />}>
-              Export
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateCustomer}>
-              Thêm khách hàng
-            </Button>
-          </Space>
-        </Col>
-      </Row>
+      <PageHeader
+        title="Quản lý khách hàng"
+        subtitle="Quản lý thông tin và chương trình khách hàng thân thiết"
+        icon="user"
+        actions={[
+          <Button key="import" icon={<ImportOutlined />}>
+            Import
+          </Button>,
+          <Button key="export" icon={<ExportOutlined />}>
+            Export
+          </Button>,
+          <Button key="add" type="primary" icon={<PlusOutlined />} onClick={handleCreateCustomer}>
+            Thêm khách hàng
+          </Button>
+        ]}
+      />
+
+      <div style={{ padding: '0 24px 24px' }}>
 
       {/* Customer Stats */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -777,6 +775,7 @@ const Customers = () => {
           </div>
         )}
       </Drawer>
+      </div>
     </div>
   );
 };

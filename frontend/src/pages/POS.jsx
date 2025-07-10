@@ -15,6 +15,7 @@ import {
   CheckCircleOutlined, CloseCircleOutlined, ShopOutlined
 } from '@ant-design/icons';
 import { api } from '../services/api';
+import { MetricCard, PageHeader, LoadingSkeleton } from '../components/ui/DesignSystem';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -367,22 +368,15 @@ const POS = () => {
   ];
 
   return (
-    <div style={{ padding: '24px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
-          <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
-            <ShopOutlined /> KhoChuan POS Terminal
-          </Title>
-        </Col>
-        <Col>
-          <Space>
-            <Text>Cashier: {user?.name}</Text>
-            <Text type="secondary">|</Text>
-            <Text>{new Date().toLocaleString('vi-VN')}</Text>
-          </Space>
-        </Col>
-      </Row>
+      <PageHeader
+        title="KhoChuan POS Terminal"
+        subtitle={`Cashier: ${user?.name} | ${new Date().toLocaleString('vi-VN')}`}
+        icon="cart"
+      />
+
+      <div style={{ padding: '0 24px 24px', flex: 1 }}>
 
       <Row gutter={16} style={{ flex: 1 }}>
         {/* Products Section */}
@@ -747,6 +741,7 @@ const POS = () => {
         onPrintReceipt={printReceipt}
         onNewOrder={handleNewOrder}
       />
+      </div>
     </div>
   );
 };
