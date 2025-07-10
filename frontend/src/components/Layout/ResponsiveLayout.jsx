@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Drawer, Button, Grid } from 'antd';
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons';
+import EnhancedMobileNavigation from '../mobile/EnhancedMobileNavigation';
+import MobileHeader from '../mobile/MobileHeader';
+import { useMobileNavigation, useMobileDetection } from '../../hooks/useMobileGestures';
 import './ResponsiveLayout.css';
 
 
@@ -14,14 +17,23 @@ const ResponsiveLayout = ({
   className = '',
   siderWidth = 256,
   collapsedWidth = 80,
+  title = 'KhoAugment POS',
+  showBack = false,
+  showSearch = false,
+  quickActions = [],
+  notifications = [],
   ...props
 }) => {
   const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const screens = useBreakpoint();
+  const { isMobile } = useMobileDetection();
 
   // Determine if we're on mobile
-  const isMobile = !screens.md;
+  const isScreenMobile = !screens.md;
+
+  // Enable mobile gestures
+  useMobileNavigation();
 
   useEffect(() => {
     // Auto-collapse sidebar on tablet
@@ -34,10 +46,10 @@ const ResponsiveLayout = ({
 
   // Close mobile drawer when screen size changes
   useEffect(() => {
-    if (!isMobile) {
+    if (!isScreenMobile) {
       setMobileDrawerVisible(false);
     }
-  }, [isMobile]);
+  }, [isScreenMobile]);
 
   const toggleMobileDrawer = () => {
     setMobileDrawerVisible(!mobileDrawerVisible);
@@ -52,24 +64,18 @@ const ResponsiveLayout = ({
   };
 
   // Mobile Layout
-  if (isMobile) {
+  if (isScreenMobile || isMobile) {
     return (
       <Layout className={`responsive-layout mobile-layout ${className}`} {...props}>
-        {/* Mobile Header */}
-        <Header className="mobile-header">
-          <div className="mobile-header-content">
-            <Button
-              type="text"
-              icon={<MenuOutlined />}
-              onClick={toggleMobileDrawer}
-              className="mobile-menu-trigger"
-              size="large"
-            />
-            <div className="mobile-header-main">
-              {header}
-            </div>
-          </div>
-        </Header>
+        {/* Enhanced Mobile Header */}
+        <MobileHeader
+          title={title}
+          showBack={showBack}
+          showSearch={showSearch}
+          onMenuClick={toggleMobileDrawer}
+          actions={quickActions}
+          notifications={notifications}
+        />
 
         {/* Mobile Content */}
         <Content className="mobile-content">
@@ -78,30 +84,15 @@ const ResponsiveLayout = ({
           </div>
         </Content>
 
-        {/* Mobile Sidebar Drawer */}
-        <Drawer
-          title={null}
-          placement="left"
-          closable={false}
+        {/* Enhanced Mobile Navigation */}
+        <EnhancedMobileNavigation
+          visible={mobileDrawerVisible}
           onClose={closeMobileDrawer}
-          open={mobileDrawerVisible}
-          bodyStyle={{ padding: 0 }}
-          className="mobile-sidebar-drawer"
-          width={280}
-        >
-          <div className="mobile-drawer-header">
-            <Button
-              type="text"
-              icon={<CloseOutlined />}
-              onClick={closeMobileDrawer}
-              className="mobile-drawer-close"
-              size="large"
-            />
-          </div>
-          <div className="mobile-drawer-content">
-            {sidebar}
-          </div>
-        </Drawer>
+          menuItems={sidebar?.props?.menuItems || []}
+          notifications={notifications}
+          quickActions={quickActions}
+          showSearch={showSearch}
+        />
       </Layout>
     );
   }
