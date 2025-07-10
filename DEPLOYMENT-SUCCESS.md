@@ -15,9 +15,8 @@
 - **❤️ Health Check**: https://khochuan-pos-api.bangachieu2.workers.dev/health
 
 ### GitHub Repository
-- **📂 Source Code**: https://github.com/namhbcf1/khochuan
-- **🌿 Main Branch**: https://github.com/namhbcf1/khochuan/tree/main
-- **🔧 Master Branch**: https://github.com/namhbcf1/khochuan/tree/master
+- **📂 Source Code**: https://github.com/namhbcf1/khoaugment
+- **🌿 Main Branch**: https://github.com/namhbcf1/khoaugment/tree/main (Production)
 
 ## ✅ Deployment Status: 100% THÀNH CÔNG
 
