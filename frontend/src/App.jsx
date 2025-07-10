@@ -22,16 +22,33 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Ant Design theme
+// Ant Design theme - Using design tokens for consistency
 const theme = {
   token: {
+    // Colors from design tokens
     colorPrimary: '#1890ff',
     colorSuccess: '#52c41a',
     colorWarning: '#faad14',
-    colorError: '#f5222d',
+    colorError: '#ff4d4f',
+    colorInfo: '#1890ff',
+
+    // Typography from design tokens
     fontSize: 14,
-    borderRadius: 8,
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontSizeSM: 12,
+    fontSizeLG: 16,
+    fontSizeXL: 20,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontWeightStrong: 600,
+
+    // Spacing from design tokens
+    borderRadius: 6,
+    borderRadiusLG: 8,
+    borderRadiusSM: 2,
+
+    // Layout
+    controlHeight: 32,
+    controlHeightSM: 24,
+    controlHeightLG: 40,
   },
   components: {
     Layout: {

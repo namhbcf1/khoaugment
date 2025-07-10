@@ -18,6 +18,7 @@ import {
 } from '@ant-design/plots';
 import { api } from '../services/api';
 import dayjs from 'dayjs';
+import { MetricCard, PageHeader, LoadingSkeleton } from '../components/ui/DesignSystem';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -445,47 +446,47 @@ const Analytics = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div>
       {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-        <Col>
-          <Title level={2} style={{ margin: 0 }}>
-            <BarChartOutlined /> Analytics & Business Intelligence
-          </Title>
-          <Text type="secondary">Phân tích dữ liệu và báo cáo thông minh</Text>
-        </Col>
-        <Col>
-          <Space>
-            <Select
-              value={selectedLocation}
-              onChange={setSelectedLocation}
-              style={{ width: 150 }}
-            >
-              <Option value="all">Tất cả cửa hàng</Option>
-              <Option value="loc-001">Cửa hàng chính</Option>
-            </Select>
-            <RangePicker
-              value={dateRange}
-              onChange={setDateRange}
-              format="DD/MM/YYYY"
-            />
-            <Button
-              icon={<FilterOutlined />}
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            >
-              Bộ lọc
-            </Button>
-            <Button
-              type="primary"
-              icon={<ReloadOutlined />}
-              onClick={loadAnalyticsData}
-              loading={loading}
-            >
-              Cập nhật
-            </Button>
-          </Space>
-        </Col>
-      </Row>
+      <PageHeader
+        title="Analytics & Business Intelligence"
+        subtitle="Phân tích dữ liệu và báo cáo thông minh"
+        icon="chart"
+        actions={[
+          <Select
+            key="location"
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+            style={{ width: 150 }}
+          >
+            <Option value="all">Tất cả cửa hàng</Option>
+            <Option value="loc-001">Cửa hàng chính</Option>
+          </Select>,
+          <RangePicker
+            key="daterange"
+            value={dateRange}
+            format="DD/MM/YYYY"
+          />,
+          <Button
+            key="filter"
+            icon={<FilterOutlined />}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          >
+            Bộ lọc
+          </Button>,
+          <Button
+            key="refresh"
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={loadAnalyticsData}
+            loading={loading}
+          >
+            Cập nhật
+          </Button>
+        ]}
+      />
+
+      <div style={{ padding: '0 24px 24px' }}>
 
       {/* Real-time Metrics */}
       <Alert
@@ -526,58 +527,46 @@ const Analytics = () => {
           {/* Key Metrics */}
           <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Tổng doanh thu"
-                  value={dashboardMetrics.totalRevenue}
-                  formatter={(value) => formatCurrency(value)}
-                  prefix={<DollarOutlined />}
-                  suffix={
-                    <span style={{ fontSize: '14px', color: getGrowthColor(dashboardMetrics.revenueGrowth) }}>
-                      {getGrowthIcon(dashboardMetrics.revenueGrowth)} {Math.abs(dashboardMetrics.revenueGrowth)}%
-                    </span>
-                  }
-                />
-              </Card>
+              <MetricCard
+                title="Tổng doanh thu"
+                value={formatCurrency(dashboardMetrics.totalRevenue)}
+                icon="dollar"
+                trend={dashboardMetrics.revenueGrowth >= 0 ? 'up' : 'down'}
+                trendValue={`${Math.abs(dashboardMetrics.revenueGrowth)}%`}
+                color="success"
+                loading={loading}
+              />
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Tổng đơn hàng"
-                  value={dashboardMetrics.totalOrders}
-                  prefix={<ShoppingCartOutlined />}
-                  suffix={
-                    <span style={{ fontSize: '14px', color: getGrowthColor(dashboardMetrics.ordersGrowth) }}>
-                      {getGrowthIcon(dashboardMetrics.ordersGrowth)} {Math.abs(dashboardMetrics.ordersGrowth)}%
-                    </span>
-                  }
-                />
-              </Card>
+              <MetricCard
+                title="Tổng đơn hàng"
+                value={dashboardMetrics.totalOrders?.toLocaleString()}
+                icon="cart"
+                trend={dashboardMetrics.ordersGrowth >= 0 ? 'up' : 'down'}
+                trendValue={`${Math.abs(dashboardMetrics.ordersGrowth)}%`}
+                color="primary"
+                loading={loading}
+              />
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Giá trị đơn hàng TB"
-                  value={dashboardMetrics.avgOrderValue}
-                  formatter={(value) => formatCurrency(value)}
-                  prefix={<AimOutlined />}
-                  suffix={
-                    <span style={{ fontSize: '14px', color: getGrowthColor(dashboardMetrics.avgOrderGrowth) }}>
-                      {getGrowthIcon(dashboardMetrics.avgOrderGrowth)} {Math.abs(dashboardMetrics.avgOrderGrowth)}%
-                    </span>
-                  }
-                />
-              </Card>
+              <MetricCard
+                title="Giá trị đơn hàng TB"
+                value={formatCurrency(dashboardMetrics.avgOrderValue)}
+                icon="chart"
+                trend={dashboardMetrics.avgOrderGrowth >= 0 ? 'up' : 'down'}
+                trendValue={`${Math.abs(dashboardMetrics.avgOrderGrowth)}%`}
+                color="info"
+                loading={loading}
+              />
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Tỷ lệ chuyển đổi"
-                  value={dashboardMetrics.conversionRate}
-                  suffix="%"
-                  prefix={<RocketOutlined />}
-                />
-              </Card>
+              <MetricCard
+                title="Tỷ lệ chuyển đổi"
+                value={`${dashboardMetrics.conversionRate}%`}
+                icon="chart"
+                color="warning"
+                loading={loading}
+              />
             </Col>
           </Row>
 
@@ -841,6 +830,7 @@ const Analytics = () => {
           </Card>
         </TabPane>
       </Tabs>
+      </div>
     </div>
   );
 };
