@@ -15,6 +15,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { MetricCard, PageHeader, LoadingSkeleton } from '../../components/ui/DesignSystem';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -119,39 +120,37 @@ const AdminDashboard = () => {
 
   const renderKPICard = (kpi) => (
     <Col xs={24} sm={12} lg={6} key={kpi.title}>
-      <Card hoverable>
-        <Statistic
-          title={kpi.title}
-          value={kpi.value}
-          prefix={kpi.prefix}
-          valueStyle={{ color: kpi.color }}
-          suffix={
-            <Space>
-              {kpi.trend > 0 ? (
-                <RiseOutlined style={{ color: '#52c41a' }} />
-              ) : (
-                <FallOutlined style={{ color: '#ff4d4f' }} />
-              )}
-              <Text style={{ color: kpi.trend > 0 ? '#52c41a' : '#ff4d4f', fontSize: 12 }}>
-                {Math.abs(kpi.trend)}%
-              </Text>
-            </Space>
-          }
-        />
-        <div style={{ marginTop: 8 }}>
-          <Progress 
-            percent={75} 
-            size="small" 
-            strokeColor={kpi.color}
-            showInfo={false}
-          />
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            So với hôm qua
-          </Text>
-        </div>
-      </Card>
+      <MetricCard
+        title={kpi.title}
+        value={kpi.prefix ? `${kpi.prefix}${kpi.value.toLocaleString()}` : kpi.value.toLocaleString()}
+        icon={getIconName(kpi.icon)}
+        trend={kpi.trend > 0 ? 'up' : 'down'}
+        trendValue={`${Math.abs(kpi.trend)}%`}
+        color={getColorName(kpi.color)}
+        loading={loading}
+      />
     </Col>
   );
+
+  const getIconName = (icon) => {
+    if (!icon) return 'chart';
+    const iconName = icon.type?.name || '';
+    if (iconName.includes('Dollar')) return 'dollar';
+    if (iconName.includes('Shopping')) return 'cart';
+    if (iconName.includes('User')) return 'user';
+    if (iconName.includes('Inbox')) return 'cart';
+    return 'chart';
+  };
+
+  const getColorName = (color) => {
+    switch (color) {
+      case '#52c41a': return 'success';
+      case '#1890ff': return 'primary';
+      case '#faad14': return 'warning';
+      case '#ff4d4f': return 'error';
+      default: return 'info';
+    }
+  };
 
   const getOrderStatusColor = (status) => {
     switch (status) {
@@ -181,15 +180,16 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Dashboard Quản trị
-        </Title>
-        <Space>
-          <Select 
-            defaultValue="7d" 
+      <PageHeader
+        title="Dashboard Quản trị"
+        subtitle="Tổng quan hoạt động kinh doanh và hiệu suất hệ thống"
+        icon="chart"
+        actions={[
+          <Select
+            key="daterange"
+            defaultValue="7d"
             value={dateRange}
             onChange={setDateRange}
             style={{ width: 120 }}
@@ -198,12 +198,14 @@ const AdminDashboard = () => {
             <Select.Option value="7d">7 ngày</Select.Option>
             <Select.Option value="30d">30 ngày</Select.Option>
             <Select.Option value="90d">90 ngày</Select.Option>
-          </Select>
-          <Button icon={<ReloadOutlined />} onClick={loadDashboardData} loading={loading}>
+          </Select>,
+          <Button key="refresh" icon={<ReloadOutlined />} onClick={loadDashboardData} loading={loading}>
             Làm mới
           </Button>
-        </Space>
-      </div>
+        ]}
+      />
+
+      <div style={{ padding: '0 24px 24px' }}>
 
       {/* KPI Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
@@ -373,6 +375,7 @@ const AdminDashboard = () => {
           </Col>
         </Row>
       </Card>
+      </div>
     </div>
   );
 };
