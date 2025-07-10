@@ -174,6 +174,7 @@
 **Liên hệ**: Trường Phát Computer Hòa Bình  
 **Phiên bản**: 1.0.0  
 **Cập nhật lần cuối**: 2025-07-10
-**Thời gian deploy**: 18:45 GMT+7
+**Thời gian deploy**: 18:50 GMT+7
 **Git Branch**: main (production ready)
-**Deployment URL**: https://1c0c4ca2.khoaugment.pages.dev
+**Latest Deployment**: https://9078f330.khoaugment.pages.dev
+**Repository**: https://github.com/namhbcf1/khoaugment/tree/main
