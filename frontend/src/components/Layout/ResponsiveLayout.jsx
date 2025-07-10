@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Drawer, Button, Grid } from 'antd';
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons';
+import './ResponsiveLayout.css';
 
 
 const { Header, Sider, Content } = Layout;

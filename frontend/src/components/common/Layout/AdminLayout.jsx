@@ -4,6 +4,7 @@ import { Layout, Grid, message, Spin } from 'antd';
 import AppHeader from '../Header';
 import AppFooter from '../Footer';
 import Sidebar from '../Sidebar';
+import ResponsiveLayout from '../../layout/ResponsiveLayout';
 import { useAuth } from '../../../auth/AuthContext';
 import './styles.css';
 
@@ -59,54 +60,36 @@ const AdminLayout = ({
   }
 
   return (
-    <Layout className="site-layout">
-      {/* Sidebar: chỉ hiển thị nếu showSidebar=true */}
-      {showSidebar && (
-        <>
-          {isMobile ? (
-            <Sidebar 
-              collapsed={collapsed}
-              onCollapse={setCollapsed}
-              isMobile={true}
-              visible={sidebarVisible}
-              onClose={() => setSidebarVisible(false)}
-            />
-          ) : (
-            <Sidebar 
-              collapsed={collapsed}
-              onCollapse={setCollapsed}
-            />
-          )}
-        </>
-      )}
-
-      <Layout className={`site-layout-content ${showSidebar ? (collapsed ? 'content-collapsed' : 'content-expanded') : 'content-no-sidebar'}`}>
-        {/* Header: chỉ hiển thị nếu showHeader=true */}
-        {showHeader && (
-          <AppHeader 
-            collapsed={collapsed} 
-            onCollapse={(c) => {
-              if (isMobile) {
-                setSidebarVisible(!sidebarVisible);
-              } else {
-                setCollapsed(c);
-              }
-            }}
-            title="Trường Phát POS - Quản trị"
-          />
-        )}
-
-        {/* Content area */}
-        <Content className="site-content admin-content" style={getContentPadding()}>
-          <Outlet />
-        </Content>
-
-        {/* Footer: chỉ hiển thị nếu showFooter=true */}
-        {showFooter && (
-          <AppFooter minimal />
-        )}
-      </Layout>
-    </Layout>
+    <ResponsiveLayout
+      sidebar={showSidebar ? (
+        <Sidebar
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          isMobile={isMobile}
+          visible={sidebarVisible}
+          onClose={() => setSidebarVisible(false)}
+        />
+      ) : null}
+      header={showHeader ? (
+        <AppHeader
+          collapsed={collapsed}
+          onCollapse={(c) => {
+            if (isMobile) {
+              setSidebarVisible(!sidebarVisible);
+            } else {
+              setCollapsed(c);
+            }
+          }}
+          title="KhoAugment POS - Quản trị"
+        />
+      ) : null}
+      className="admin-layout"
+    >
+      <div className={`admin-content ${fullWidth ? 'full-width' : ''}`} style={getContentPadding()}>
+        <Outlet />
+        {showFooter && <AppFooter minimal />}
+      </div>
+    </ResponsiveLayout>
   );
 };
 
