@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://khoaugment-api.namhbcf1.workers.dev';
+const API_URL = (import.meta.env && import.meta.env.VITE_API_URL) || 'https://khoaugment-api.namhbcf1.workers.dev';
 
 const apiClient = axios.create({
   baseURL: API_URL,

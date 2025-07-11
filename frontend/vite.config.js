@@ -132,7 +132,7 @@ export default defineConfig({
           }
         },
         chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          const facadeModuleId = (chunkInfo && chunkInfo.facadeModuleId) ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
           return `assets/[name]-[hash].js`;
         },
         assetFileNames: 'assets/[name]-[hash].[ext]'

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Website Performance Tests', () => {
-  const baseURL = 'https://ec619ccb.khoaugment.pages.dev';
+  const baseURL = 'https://5f42a648.khoaugment.pages.dev';
 
   test('Simple React App Test', async ({ page }) => {
     console.log('🚀 Testing simple React app...');
