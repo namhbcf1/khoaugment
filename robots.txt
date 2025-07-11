@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://khoaugment.pages.dev/sitemap.xml
+Sitemap: https://khochuan.pages.dev/sitemap.xml 

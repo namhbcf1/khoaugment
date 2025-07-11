@@ -1,1 +1,0 @@
-const e=(r,t={})=>{const{currency:n="VND",locale:c="vi-VN",maximumFractionDigits:i=0,minimumFractionDigits:m=0}=t;return new Intl.NumberFormat(c,{style:"currency",currency:n,maximumFractionDigits:i,minimumFractionDigits:m}).format(r||0)};export{e as f};
