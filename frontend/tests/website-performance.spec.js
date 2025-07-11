@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Website Performance Tests', () => {
-  const baseURL = 'https://5f42a648.khoaugment.pages.dev';
+  const baseURL = 'https://b7adf0ea.khoaugment.pages.dev';
 
   test('Simple React App Test', async ({ page }) => {
     console.log('🚀 Testing simple React app...');
@@ -25,7 +25,7 @@ test.describe('Website Performance Tests', () => {
     const startTime = Date.now();
 
     // Navigate to homepage
-    await page.goto('https://80af592c.khoaugment.pages.dev');
+    await page.goto('https://50e60759.khoaugment.pages.dev');
 
     // Wait for React app to render
     try {

@@ -236,10 +236,14 @@ export const useSwipeActions = (onSwipeLeft, onSwipeRight) => {
  * Hook for detecting mobile device and touch capabilities
  */
 export const useMobileDetection = () => {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
+  const isMobile = (typeof navigator !== 'undefined' && navigator.userAgent) ?
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) : false;
+  const isTouchDevice = ('ontouchstart' in window) ||
+    (typeof navigator !== 'undefined' && navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  const isIOS = (typeof navigator !== 'undefined' && navigator.userAgent) ?
+    /iPad|iPhone|iPod/.test(navigator.userAgent) : false;
+  const isAndroid = (typeof navigator !== 'undefined' && navigator.userAgent) ?
+    /Android/.test(navigator.userAgent) : false;
 
   return {
     isMobile,

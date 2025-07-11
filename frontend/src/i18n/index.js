@@ -30,7 +30,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'vi', // Default to Vietnamese
-    debug: import.meta.env.DEV,
+    debug: (import.meta.env && import.meta.env.DEV) || false,
     
     interpolation: {
       escapeValue: false, // React already escapes values

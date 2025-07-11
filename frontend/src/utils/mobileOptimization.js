@@ -142,23 +142,28 @@ export class TouchGestureHandler {
  */
 export class MobileDetector {
   static isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return (typeof navigator !== 'undefined' && navigator.userAgent) ?
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) : false;
   }
 
   static isTablet() {
-    return /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent);
+    return (typeof navigator !== 'undefined' && navigator.userAgent) ?
+      /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent) : false;
   }
 
   static isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+    return (typeof navigator !== 'undefined' && navigator.userAgent) ?
+      /iPad|iPhone|iPod/.test(navigator.userAgent) : false;
   }
 
   static isAndroid() {
-    return /Android/.test(navigator.userAgent);
+    return (typeof navigator !== 'undefined' && navigator.userAgent) ?
+      /Android/.test(navigator.userAgent) : false;
   }
 
   static hasTouch() {
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    return ('ontouchstart' in window) ||
+           (typeof navigator !== 'undefined' && navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
   }
 
   static getScreenSize() {

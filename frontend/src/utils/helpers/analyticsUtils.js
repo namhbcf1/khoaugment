@@ -80,10 +80,10 @@ export const logEvent = (eventName, eventData = {}, immediate = false) => {
     eventData,
     timestamp: Date.now(),
     sessionId,
-    url: window.location.href,
-    referrer: document.referrer || '',
-    userAgent: navigator.userAgent,
-    screenSize: `${window.innerWidth}x${window.innerHeight}`,
+    url: (typeof window !== 'undefined' && window.location) ? window.location.href : '',
+    referrer: (typeof document !== 'undefined' && document.referrer) ? document.referrer : '',
+    userAgent: (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : '',
+    screenSize: (typeof window !== 'undefined') ? `${window.innerWidth}x${window.innerHeight}` : '0x0',
     appVersion: config.appVersion
   };
   

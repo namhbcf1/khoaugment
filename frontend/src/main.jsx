@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import { HelmetProvider } from 'react-helmet-async'
 
-// Import global styles
+// Import global styles - step by step
 import 'antd/dist/reset.css'
 import './styles/global.css'
+
+
 
 // Simple error reporting
 window.addEventListener('error', (event) => {
