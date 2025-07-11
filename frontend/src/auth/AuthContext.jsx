@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { message } from 'antd';
-import authService from '../services/api/auth';
+import { api } from '../services/api';
 
 // Initial state
 const initialState = {
@@ -113,14 +113,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem(SESSION_CONFIG.USER_KEY);
     localStorage.removeItem(SESSION_CONFIG.EXPIRES_KEY);
     localStorage.removeItem(SESSION_CONFIG.ACTIVITY_KEY);
-    authService.setAuthToken(null);
+    // Clear auth token from axios headers
+    delete api.defaults.headers.common['Authorization'];
   }, []);
 
   // Handle logout
   const handleLogout = useCallback(async (expired = false) => {
     if (!expired) {
       try {
-        await authService.logout();
+        await api.post('/auth/logout');
       } catch (error) {
         console.error('Logout error:', error);
       }
@@ -226,7 +227,7 @@ export const AuthProvider = ({ children }) => {
             } else {
               console.log('🔐 AuthContext: Valid session found, logging in');
               // Set auth token in axios headers
-              authService.setAuthToken(token);
+              api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
               dispatch({
                 type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -278,16 +279,16 @@ export const AuthProvider = ({ children }) => {
 
     try {
       // Call API login
-      console.log('🔐 AuthContext: Calling authService.login');
-      const response = await authService.login(credentials);
+      console.log('🔐 AuthContext: Calling api.post login');
+      const response = await api.post('/auth/login', credentials);
       console.log('🔐 AuthContext: Login response received', response);
 
-      if (response.success) {
-        const { user, token } = response.data || response;
+      if (response.data.success) {
+        const { user, token } = response.data.data || response.data;
         console.log('🔐 AuthContext: Login successful', { user: user.email, role: user.role });
 
         // Set auth token in axios headers
-        authService.setAuthToken(token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         // Set session expiration (24 hours from now)
         const expiresAt = Date.now() + (24 * 60 * 60 * 1000);

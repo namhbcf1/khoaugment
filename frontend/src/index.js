@@ -13,7 +13,7 @@ root.render(
 );
 
 // Service Worker registration (simple)
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+if ('serviceWorker' in navigator && (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {

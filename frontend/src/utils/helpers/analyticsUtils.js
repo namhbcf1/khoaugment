@@ -7,15 +7,15 @@
 // Default configuration
 const DEFAULT_CONFIG = {
   enabled: true,
-  consoleLog: process.env.NODE_ENV === 'development', // Log to console in development
-  endpointUrl: import.meta.env.VITE_ANALYTICS_ENDPOINT || '/api/analytics',
+  consoleLog: (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development'), // Log to console in development
+  endpointUrl: (import.meta.env && import.meta.env.VITE_ANALYTICS_ENDPOINT) || '/api/analytics',
   bufferSize: 10, // Number of events to buffer before sending
   flushInterval: 30000, // 30 seconds
   samplingRate: 1.0, // Track 100% of events by default
   includePerformance: true, // Include performance data
   anonymizeIp: true, // Anonymize IP addresses
   offlineStorage: true, // Store events offline when disconnected
-  appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',
+  appVersion: (import.meta.env && import.meta.env.VITE_APP_VERSION) || '1.0.0',
 };
 
 // Analytics state

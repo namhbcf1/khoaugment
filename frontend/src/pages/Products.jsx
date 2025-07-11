@@ -41,7 +41,7 @@ import {
 } from '@ant-design/icons';
 import { formatCurrency, showSuccessNotification, showErrorNotification, formatDate } from '../utils/helpers';
 import { PRODUCT_CATEGORIES, UPLOAD_CONFIG } from '../utils/constants';
-import api from '../services/api';
+import { api } from '../services/api';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
 
 const { Title, Text } = Typography;
@@ -499,50 +499,14 @@ const Products = () => {
   }
 
   return (
-    <div>
-      {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Total Products"
-              value={products.length}
-              prefix={<ProductOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Low Stock Items"
-              value={products.filter(p => p.stock <= p.min_stock).length}
-              prefix={<WarningOutlined />}
-              valueStyle={{ color: '#fa541c' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Total Value"
-              value={products.reduce((sum, p) => sum + (p.price * p.stock), 0)}
-              prefix={<DollarOutlined />}
-              formatter={(value) => formatCurrency(value)}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Avg Margin"
-              value={products.reduce((sum, p) => sum + parseFloat(getMarginPercentage(p.price, p.cost)), 0) / products.length || 0}
-              suffix="%"
-              prefix={<BarChartOutlined />}
-              precision={1}
-            />
-          </Card>
-        </Col>
-      </Row>
+    <div style={{ padding: '16px', background: '#f0f2f5', minHeight: '100vh' }}>
+      {/* Simple Header */}
+      <div style={{ marginBottom: '16px' }}>
+        <Title level={2} style={{ margin: 0, color: '#1677ff' }}>
+          <ProductOutlined /> Quản lý sản phẩm
+        </Title>
+        <Text type="secondary">Tổng: {products.length} sản phẩm</Text>
+      </div>
 
       {/* Main Table */}
       <Card

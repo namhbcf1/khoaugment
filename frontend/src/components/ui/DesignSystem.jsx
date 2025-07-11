@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Card, Typography, Space, Row, Col, Tag, Avatar, Badge } from 'antd';
+import { Button, Card, Typography, Space, Row, Col, Tag, Avatar, Badge, Table } from 'antd';
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
@@ -284,6 +284,30 @@ export const EmptyState = ({
   );
 };
 
+// Responsive Table Component
+export const ResponsiveTable = ({
+  columns,
+  dataSource,
+  loading = false,
+  pagination = true,
+  size = 'middle',
+  scroll = { x: 'max-content' },
+  ...props
+}) => {
+  return (
+    <Table
+      columns={columns}
+      dataSource={dataSource}
+      loading={loading}
+      pagination={pagination}
+      size={size}
+      scroll={scroll}
+      className="responsive-table"
+      {...props}
+    />
+  );
+};
+
 // Design System Demo Component (for testing)
 export const DesignSystemDemo = () => {
   return (
@@ -389,5 +413,6 @@ export default {
   PageHeader,
   LoadingSkeleton,
   EmptyState,
+  ResponsiveTable,
   DesignSystemDemo
 };

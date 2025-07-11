@@ -1,6 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
+// Import pages
+import POSSimple from './pages/POS-simple';
+import ProductsSimple from './pages/Products-simple';
+import CustomersSimple from './pages/Customers-simple';
+
 // API Configuration
 const API_URL = 'https://khoaugment-api.bangachieu2.workers.dev';
 
@@ -167,6 +172,10 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = React.useState(true);
 
+  const handleNavigation = (path) => {
+    window.location.href = path;
+  };
+
   React.useEffect(() => {
     // Load user data from localStorage
     const storedUser = localStorage.getItem('user_data');
@@ -244,25 +253,39 @@ const Dashboard = () => {
             gap: '20px',
             marginTop: '30px'
           }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              padding: '25px',
-              borderRadius: '12px',
-              textAlign: 'center'
-            }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                padding: '25px',
+                borderRadius: '12px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}
+              onClick={() => handleNavigation('/pos')}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
               <div style={{ fontSize: '36px', marginBottom: '10px' }}>🛒</div>
               <h3 style={{ margin: '0 0 5px 0' }}>POS Bán hàng</h3>
               <p style={{ margin: 0, opacity: 0.9 }}>Giao diện bán hàng</p>
             </div>
             
-            <div style={{
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              color: 'white',
-              padding: '25px',
-              borderRadius: '12px',
-              textAlign: 'center'
-            }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                color: 'white',
+                padding: '25px',
+                borderRadius: '12px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}
+              onClick={() => handleNavigation('/products')}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
               <div style={{ fontSize: '36px', marginBottom: '10px' }}>📦</div>
               <h3 style={{ margin: '0 0 5px 0' }}>Sản phẩm</h3>
               <p style={{ margin: 0, opacity: 0.9 }}>
@@ -270,13 +293,20 @@ const Dashboard = () => {
               </p>
             </div>
             
-            <div style={{
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              color: 'white',
-              padding: '25px',
-              borderRadius: '12px',
-              textAlign: 'center'
-            }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                color: 'white',
+                padding: '25px',
+                borderRadius: '12px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}
+              onClick={() => handleNavigation('/customers')}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
               <div style={{ fontSize: '36px', marginBottom: '10px' }}>👥</div>
               <h3 style={{ margin: '0 0 5px 0' }}>Khách hàng</h3>
               <p style={{ margin: 0, opacity: 0.9 }}>
@@ -350,6 +380,9 @@ function SimpleApp() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/pos" element={<POSSimple />} />
+        <Route path="/products" element={<ProductsSimple />} />
+        <Route path="/customers" element={<CustomersSimple />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

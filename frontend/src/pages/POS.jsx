@@ -369,14 +369,39 @@ const POS = () => {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <PageHeader
-        title="KhoChuan POS Terminal"
-        subtitle={`Cashier: ${user?.name} | ${new Date().toLocaleString('vi-VN')}`}
-        icon="cart"
-      />
+      {/* Simple Header */}
+      <div style={{
+        padding: '16px 24px',
+        background: '#fff',
+        borderBottom: '1px solid #f0f0f0',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div>
+          <Title level={3} style={{ margin: 0, color: '#1677ff' }}>
+            <ShoppingCartOutlined /> KhoChuan POS
+          </Title>
+          <Text type="secondary">Cashier: {user?.name}</Text>
+        </div>
+        <Space>
+          <Button
+            icon={<QrcodeOutlined />}
+            onClick={() => setShowBarcodeScanner(true)}
+            type="primary"
+          >
+            Quét mã
+          </Button>
+          <Button
+            icon={<UserAddOutlined />}
+            onClick={() => setShowCustomerModal(true)}
+          >
+            Khách hàng
+          </Button>
+        </Space>
+      </div>
 
-      <div style={{ padding: '0 24px 24px', flex: 1 }}>
+      <div style={{ padding: '16px', flex: 1 }}>
 
       <Row gutter={16} style={{ flex: 1 }}>
         {/* Products Section */}
