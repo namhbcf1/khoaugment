@@ -16,7 +16,7 @@ watch_dir = "src"
 [env.production.vars]
 NODE_VERSION = "18"
 NPM_VERSION = "9"
-VITE_API_URL = "https://khochuan-pos-api.bangachieu2.workers.dev"
+VITE_API_URL = "https://khoaugment-api.bangachieu2.workers.dev"
 VITE_APP_NAME = "KhoChuan POS"
 VITE_APP_VERSION = "1.0.0"
 VITE_NODE_ENV = "production"
