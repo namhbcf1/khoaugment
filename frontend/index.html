@@ -191,93 +191,62 @@
   </head>
   <body>
     <div id="root">
-      <!-- Beautiful functional homepage -->
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #1890ff 0%, #0958d9 100%);
-        color: white;
-        text-align: center;
-        padding: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      ">
-        <div style="margin-bottom: 30px; font-size: 80px;">💻</div>
-        <h1 style="font-size: 48px; margin: 0 0 10px 0; font-weight: 600;">Trường Phát Computer</h1>
-        <p style="font-size: 24px; margin: 0 0 40px 0; opacity: 0.9;">Hệ thống quản lý bán hàng Hòa Bình</p>
-
-        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px;">
-          <a href="/login" style="
-            padding: 15px 30px;
-            background: white;
-            color: #1890ff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-            🔐 Đăng nhập
-          </a>
-          <a href="/admin/dashboard" style="
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
-          " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-            📊 Dashboard
-          </a>
-          <a href="/pos" style="
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
-          " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-            🛒 POS
-          </a>
+      <!-- Initial loading screen - will be replaced by React app -->
+      <div class="app-loading">
+        <div class="loading-logo">💻</div>
+        <div class="loading-text">Trường Phát Computer</div>
+        <div class="loading-subtitle">Hệ thống quản lý bán hàng</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-progress">
+          <div class="loading-progress-bar"></div>
         </div>
-
-        <div style="max-width: 800px; margin-bottom: 40px;">
-          <h2 style="font-size: 28px; margin-bottom: 20px;">🚀 Tính năng nổi bật</h2>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
-              <h3 style="margin: 0 0 10px 0; font-size: 20px;">📱 POS Thông minh</h3>
-              <p style="margin: 0; opacity: 0.9; line-height: 1.5;">Giao diện hiện đại, thanh toán nhanh chóng, hỗ trợ đa phương thức</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
-              <h3 style="margin: 0 0 10px 0; font-size: 20px;">📊 Quản lý kho</h3>
-              <p style="margin: 0; opacity: 0.9; line-height: 1.5;">Theo dõi tồn kho real-time, cảnh báo hết hàng, dự báo AI</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
-              <h3 style="margin: 0 0 10px 0; font-size: 20px;">👥 CRM & Analytics</h3>
-              <p style="margin: 0; opacity: 0.9; line-height: 1.5;">Quản lý khách hàng, phân tích hành vi, báo cáo chi tiết</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
-              <h3 style="margin: 0 0 10px 0; font-size: 20px;">🤖 AI Features</h3>
-              <p style="margin: 0; opacity: 0.9; line-height: 1.5;">Gợi ý sản phẩm, tối ưu giá, dự báo doanh thu thông minh</p>
-            </div>
-          </div>
-        </div>
-
-        <div style="opacity: 0.8; font-size: 16px;">
-          <p>⚡ Powered by React 18 + Vite + Ant Design</p>
-          <p>🌐 Deployed on Cloudflare Edge Network</p>
-        </div>
+        <div class="loading-tips">Đang khởi tạo ứng dụng...</div>
       </div>
     </div>
+
+    <script>
+      // Hide loading screen when React app is ready
+      function hideLoadingScreen() {
+        const loadingDiv = document.querySelector('.app-loading');
+        if (loadingDiv) {
+          loadingDiv.style.opacity = '0';
+          loadingDiv.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => {
+            loadingDiv.style.display = 'none';
+          }, 500);
+        }
+      }
+
+      // Check if React app has mounted
+      function checkReactApp() {
+        const rootElement = document.getElementById('root');
+        if (rootElement && rootElement.children.length > 1) {
+          hideLoadingScreen();
+          return true;
+        }
+        return false;
+      }
+
+      // Polling to check React app status
+      let checkCount = 0;
+      const maxChecks = 50; // 5 seconds max
+      const checkInterval = setInterval(() => {
+        checkCount++;
+        if (checkReactApp() || checkCount >= maxChecks) {
+          clearInterval(checkInterval);
+          if (checkCount >= maxChecks) {
+            // Fallback: hide loading after timeout
+            hideLoadingScreen();
+          }
+        }
+      }, 100);
+
+      // Emergency fallback - hide loading after 3 seconds no matter what
+      setTimeout(() => {
+        hideLoadingScreen();
+      }, 3000);
+    </script>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
-</html> 
+</html>
