@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Row, Col, Card, Statistic, Progress, Table, Tag, Space, Button,
-  Typography, Alert, Divider, Timeline, List, Avatar, Badge,
-  Tabs, Select, DatePicker, notification, Tooltip, Empty
+  Row, Col, Card, Table, Tag, Space, Button,
+  Typography, List, Badge, Select, notification
 } from 'antd';
 import {
   DollarOutlined, ShoppingCartOutlined, UserOutlined, InboxOutlined,
   RiseOutlined, FallOutlined, WarningOutlined, TrophyOutlined,
   CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined,
   ReloadOutlined, EyeOutlined, SettingOutlined, FireOutlined,
-  TeamOutlined, BankOutlined, GiftOutlined, ThunderboltOutlined,
-  StarOutlined, CrownOutlined, HeartOutlined, BulbOutlined
+  TeamOutlined, ThunderboltOutlined, DashboardOutlined, LineChartOutlined
 } from '@ant-design/icons';
-import { Line, Column, Pie, Area } from '@ant-design/plots';
-import { useTranslation } from 'react-i18next';
-import { MetricCard, PageHeader, LoadingSkeleton } from '../../components/ui/DesignSystem';
+import { Area } from '@ant-design/plots';
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
-const { RangePicker } = DatePicker;
 
 const AdminDashboard = () => {
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState('7d');
-  const [dashboardData, setDashboardData] = useState({});
 
   // Enhanced mock data for demonstration
   const kpiData = [
@@ -128,12 +120,6 @@ const AdminDashboard = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setDashboardData({
-        totalRevenue: 125000000,
-        totalOrders: 1250,
-        totalCustomers: 450,
-        conversionRate: 3.2
-      });
     } catch (error) {
       notification.error({
         message: 'Lỗi tải dữ liệu',
@@ -141,130 +127,6 @@ const AdminDashboard = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const renderKPICard = (kpi, index) => (
-    <Col xs={24} sm={12} lg={6} key={kpi.title}>
-      <Card
-        style={{
-          background: kpi.bgGradient || `linear-gradient(135deg, ${kpi.color}15 0%, ${kpi.color}25 100%)`,
-          border: `1px solid ${kpi.color}30`,
-          borderRadius: '12px',
-          overflow: 'hidden',
-          position: 'relative',
-          transition: 'all 0.3s ease',
-          cursor: 'pointer'
-        }}
-        bodyStyle={{ padding: '20px' }}
-        hoverable
-        className="kpi-card"
-      >
-        <div style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-            <div style={{
-              width: 48,
-              height: 48,
-              borderRadius: '12px',
-              background: `${kpi.color}20`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '20px',
-              color: kpi.color
-            }}>
-              {kpi.icon}
-            </div>
-            {kpi.trend !== 0 && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                background: kpi.trend > 0 ? '#f6ffed' : '#fff2f0',
-                border: `1px solid ${kpi.trend > 0 ? '#b7eb8f' : '#ffb3b3'}`
-              }}>
-                {kpi.trend > 0 ?
-                  <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} /> :
-                  <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
-                }
-                <span style={{
-                  color: kpi.trend > 0 ? '#52c41a' : '#ff4d4f',
-                  fontSize: '12px',
-                  fontWeight: 500
-                }}>
-                  {Math.abs(kpi.trend)}%
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div style={{ marginBottom: 8 }}>
-            <Typography.Title level={2} style={{
-              margin: 0,
-              color: '#262626',
-              fontSize: '28px',
-              fontWeight: 700,
-              lineHeight: 1
-            }}>
-              {kpi.prefix && <span style={{ fontSize: '20px', opacity: 0.8 }}>{kpi.prefix}</span>}
-              {kpi.value.toLocaleString()}
-              {kpi.suffix && <span style={{ fontSize: '16px', opacity: 0.8 }}>{kpi.suffix}</span>}
-            </Typography.Title>
-          </div>
-
-          <div>
-            <Typography.Text style={{
-              color: '#8c8c8c',
-              fontSize: '14px',
-              fontWeight: 500,
-              display: 'block',
-              marginBottom: 4
-            }}>
-              {kpi.title}
-            </Typography.Text>
-            <Typography.Text style={{
-              color: '#595959',
-              fontSize: '12px'
-            }}>
-              {kpi.description}
-            </Typography.Text>
-          </div>
-        </div>
-
-        {/* Decorative background element */}
-        <div style={{
-          position: 'absolute',
-          top: -20,
-          right: -20,
-          width: 80,
-          height: 80,
-          borderRadius: '50%',
-          background: `${kpi.color}10`,
-          zIndex: 1
-        }} />
-      </Card>
-    </Col>
-  );
-
-  const getIconName = (icon) => {
-    if (!icon) return 'chart';
-    const iconName = icon.type?.name || '';
-    if (iconName.includes('Dollar')) return 'dollar';
-    if (iconName.includes('Shopping')) return 'cart';
-    if (iconName.includes('User')) return 'user';
-    if (iconName.includes('Inbox')) return 'cart';
-    return 'chart';
-  };
-
-  const getColorName = (color) => {
-    switch (color) {
-      case '#52c41a': return 'success';
-      case '#1890ff': return 'primary';
-      case '#faad14': return 'warning';
-      case '#ff4d4f': return 'error';
-      default: return 'info';
     }
   };
 
@@ -296,110 +158,306 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <PageHeader
-        title="Dashboard Quản trị"
-        subtitle="Tổng quan hoạt động kinh doanh và hiệu suất hệ thống"
-        icon="chart"
-        actions={[
-          <Select
-            key="daterange"
-            defaultValue="7d"
-            value={dateRange}
-            onChange={setDateRange}
-            style={{ width: 120 }}
-          >
-            <Select.Option value="1d">Hôm nay</Select.Option>
-            <Select.Option value="7d">7 ngày</Select.Option>
-            <Select.Option value="30d">30 ngày</Select.Option>
-            <Select.Option value="90d">90 ngày</Select.Option>
-          </Select>,
-          <Button key="refresh" icon={<ReloadOutlined />} onClick={loadDashboardData} loading={loading}>
-            Làm mới
-          </Button>
-        ]}
-      />
+    <div style={{ background: '#f5f5f5', minHeight: '100vh' }}>
+      {/* Enhanced Header */}
+      <Card
+        bordered={false}
+        style={{
+          borderRadius: 0,
+          marginBottom: 24,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white'
+        }}
+      >
+        <Row justify="space-between" align="middle">
+          <Col>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: '12px',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                <DashboardOutlined />
+              </div>
+              <div>
+                <Title level={1} style={{ margin: 0, color: 'white', fontSize: '28px' }}>
+                  Dashboard Quản trị
+                </Title>
+                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px' }}>
+                  Tổng quan hoạt động kinh doanh và hiệu suất hệ thống
+                </Text>
+              </div>
+            </div>
+          </Col>
+          <Col>
+            <Space size={16}>
+              <Select
+                defaultValue="7d"
+                value={dateRange}
+                onChange={setDateRange}
+                style={{ width: 140 }}
+                size="large"
+              >
+                <Select.Option value="1d">Hôm nay</Select.Option>
+                <Select.Option value="7d">7 ngày</Select.Option>
+                <Select.Option value="30d">30 ngày</Select.Option>
+                <Select.Option value="90d">90 ngày</Select.Option>
+              </Select>
+              <Button
+                size="large"
+                icon={<ReloadOutlined />}
+                onClick={loadDashboardData}
+                loading={loading}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  color: 'white'
+                }}
+              >
+                Làm mới
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+      </Card>
 
       <div style={{ padding: '0 24px 24px' }}>
 
       {/* KPI Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {kpiData.map(renderKPICard)}
+      <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
+        {kpiData.slice(0, 4).map((kpi, index) => (
+          <Col xs={24} sm={12} lg={6} key={kpi.title}>
+            <Card
+              style={{
+                borderRadius: '16px',
+                border: 'none',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                overflow: 'hidden',
+                position: 'relative',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              bodyStyle={{ padding: '24px' }}
+              hoverable
+            >
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '16px',
+                    background: `${kpi.color}15`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    color: kpi.color
+                  }}>
+                    {kpi.icon}
+                  </div>
+                  {kpi.trend !== 0 && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      background: kpi.trend > 0 ? '#f6ffed' : '#fff2f0',
+                      border: `1px solid ${kpi.trend > 0 ? '#b7eb8f' : '#ffb3b3'}`
+                    }}>
+                      {kpi.trend > 0 ?
+                        <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '14px' }} /> :
+                        <ExclamationCircleOutlined style={{ color: '#ff4d4f', fontSize: '14px' }} />
+                      }
+                      <span style={{
+                        color: kpi.trend > 0 ? '#52c41a' : '#ff4d4f',
+                        fontSize: '13px',
+                        fontWeight: 600
+                      }}>
+                        {Math.abs(kpi.trend)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginBottom: 12 }}>
+                  <Typography.Title level={2} style={{
+                    margin: 0,
+                    color: '#262626',
+                    fontSize: '32px',
+                    fontWeight: 700,
+                    lineHeight: 1
+                  }}>
+                    {kpi.prefix && <span style={{ fontSize: '22px', opacity: 0.8 }}>{kpi.prefix}</span>}
+                    {kpi.value.toLocaleString()}
+                    {kpi.suffix && <span style={{ fontSize: '18px', opacity: 0.8 }}>{kpi.suffix}</span>}
+                  </Typography.Title>
+                </div>
+
+                <div>
+                  <Typography.Text style={{
+                    color: '#8c8c8c',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    display: 'block',
+                    marginBottom: 6
+                  }}>
+                    {kpi.title}
+                  </Typography.Text>
+                  <Typography.Text style={{
+                    color: kpi.trend > 0 ? '#52c41a' : '#595959',
+                    fontSize: '13px',
+                    fontWeight: 500
+                  }}>
+                    {kpi.description}
+                  </Typography.Text>
+                </div>
+              </div>
+
+              {/* Decorative background element */}
+              <div style={{
+                position: 'absolute',
+                top: -30,
+                right: -30,
+                width: 100,
+                height: 100,
+                borderRadius: '50%',
+                background: `${kpi.color}08`,
+                zIndex: 1
+              }} />
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       {/* Main Content */}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
         {/* Revenue Chart */}
         <Col xs={24} lg={16}>
           <Card
             title={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <DollarOutlined style={{ color: '#1890ff' }} />
-                <span>Biểu đồ doanh thu 7 ngày</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <LineChartOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                <span style={{ fontSize: '16px', fontWeight: 600 }}>Biểu đồ doanh thu 7 ngày</span>
               </div>
             }
-            extra={<Button size="small" icon={<EyeOutlined />} type="link">Chi tiết</Button>}
-            style={{ borderRadius: '12px' }}
+            extra={
+              <Button
+                size="small"
+                icon={<EyeOutlined />}
+                type="link"
+                style={{ color: '#1890ff', fontWeight: 500 }}
+              >
+                Chi tiết
+              </Button>
+            }
+            style={{
+              borderRadius: '16px',
+              border: 'none',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}
           >
-            <Area
-              data={revenueData}
-              xField="name"
-              yField="revenue"
-              height={300}
-              smooth={true}
-              areaStyle={{
-                fill: 'l(270) 0:#ffffff 0.5:#1890ff 1:#1890ff',
-                fillOpacity: 0.3,
-              }}
-              line={{
-                color: '#1890ff',
-                size: 3,
-              }}
-              point={{
-                size: 5,
-                shape: 'circle',
-                style: {
-                  fill: '#1890ff',
-                  stroke: '#ffffff',
-                  lineWidth: 2,
-                },
-              }}
-              tooltip={{
-                formatter: (datum) => ({
-                  name: 'Doanh thu',
-                  value: `${datum.revenue.toLocaleString()} ₫`,
-                }),
-              }}
-              annotations={[
-                {
-                  type: 'text',
-                  position: ['max', 'max'],
-                  content: `Cao nhất: ${Math.max(...revenueData.map(d => d.revenue)).toLocaleString()} ₫`,
+            <div style={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Area
+                data={revenueData}
+                xField="name"
+                yField="revenue"
+                height={280}
+                smooth={true}
+                areaStyle={{
+                  fill: 'l(270) 0:#ffffff 0.5:#1890ff 1:#1890ff',
+                  fillOpacity: 0.3,
+                }}
+                line={{
+                  color: '#1890ff',
+                  size: 3,
+                }}
+                point={{
+                  size: 6,
+                  shape: 'circle',
                   style: {
-                    textAlign: 'end',
-                    fontSize: 12,
-                    fill: '#8c8c8c',
+                    fill: '#1890ff',
+                    stroke: '#ffffff',
+                    lineWidth: 3,
                   },
-                  offsetY: -10,
-                },
-              ]}
-            />
+                }}
+                tooltip={{
+                  formatter: (datum) => ({
+                    name: 'Doanh thu',
+                    value: `${datum.revenue.toLocaleString()} ₫`,
+                  }),
+                }}
+                xAxis={{
+                  grid: {
+                    line: {
+                      style: {
+                        stroke: '#f0f0f0',
+                        lineWidth: 1,
+                      },
+                    },
+                  },
+                }}
+                yAxis={{
+                  grid: {
+                    line: {
+                      style: {
+                        stroke: '#f0f0f0',
+                        lineWidth: 1,
+                      },
+                    },
+                  },
+                  label: {
+                    formatter: (value) => `${(value / 1000000).toFixed(0)}M`,
+                  },
+                }}
+              />
+            </div>
           </Card>
         </Col>
 
         {/* System Alerts */}
         <Col xs={24} lg={8}>
-          <Card title="Cảnh báo hệ thống" extra={<Badge count={systemAlerts.length} />}>
+          <Card
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <WarningOutlined style={{ color: '#faad14', fontSize: '18px' }} />
+                <span style={{ fontSize: '16px', fontWeight: 600 }}>Cảnh báo hệ thống</span>
+              </div>
+            }
+            extra={<Badge count={systemAlerts.length} style={{ backgroundColor: '#faad14' }} />}
+            style={{
+              borderRadius: '16px',
+              border: 'none',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}
+          >
             <List
               size="small"
               dataSource={systemAlerts}
               renderItem={alert => (
-                <List.Item>
+                <List.Item style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
                   <List.Item.Meta
                     avatar={getAlertIcon(alert.type)}
-                    title={<Text style={{ fontSize: 12 }}>{alert.message}</Text>}
-                    description={<Text type="secondary" style={{ fontSize: 11 }}>{alert.time}</Text>}
+                    title={
+                      <Text style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: '#262626',
+                        lineHeight: 1.4
+                      }}>
+                        {alert.message}
+                      </Text>
+                    }
+                    description={
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {alert.time}
+                      </Text>
+                    }
                   />
                 </List.Item>
               )}
@@ -408,28 +466,47 @@ const AdminDashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
         {/* Top Products */}
         <Col xs={24} lg={12}>
           <Card
             title={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <FireOutlined style={{ color: '#faad14' }} />
-                <span>Sản phẩm bán chạy</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <FireOutlined style={{ color: '#faad14', fontSize: '18px' }} />
+                <span style={{ fontSize: '16px', fontWeight: 600 }}>Sản phẩm bán chạy</span>
               </div>
             }
-            extra={<Button size="small" icon={<EyeOutlined />} type="link">Xem tất cả</Button>}
-            style={{ borderRadius: '12px' }}
+            extra={
+              <Button
+                size="small"
+                icon={<EyeOutlined />}
+                type="link"
+                style={{ color: '#1890ff', fontWeight: 500 }}
+              >
+                Xem tất cả
+              </Button>
+            }
+            style={{
+              borderRadius: '16px',
+              border: 'none',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}
           >
-            <List
+            <Table
               dataSource={topProducts}
-              renderItem={(product, index) => (
-                <List.Item style={{ padding: '12px 0', borderBottom: index === topProducts.length - 1 ? 'none' : '1px solid #f0f0f0' }}>
-                  <List.Item.Meta
-                    avatar={
+              pagination={false}
+              size="middle"
+              showHeader={true}
+              columns={[
+                {
+                  title: 'Sản phẩm',
+                  dataIndex: 'name',
+                  key: 'name',
+                  render: (text, record, index) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{
-                        width: 40,
-                        height: 40,
+                        width: 32,
+                        height: 32,
                         borderRadius: '8px',
                         background: index === 0 ? '#faad14' : index === 1 ? '#1890ff' : '#52c41a',
                         display: 'flex',
@@ -437,76 +514,131 @@ const AdminDashboard = () => {
                         justifyContent: 'center',
                         color: 'white',
                         fontWeight: 'bold',
-                        fontSize: '14px'
+                        fontSize: '12px'
                       }}>
-                        #{index + 1}
+                        {index + 1}
                       </div>
-                    }
-                    title={
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text strong style={{ fontSize: '14px', color: '#262626' }}>
-                          {product.name}
-                        </Text>
-                        {product.trend === 'up' ?
-                          <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} /> :
-                          <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
-                        }
-                      </div>
-                    }
-                    description={
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                        <Space size={16}>
-                          <span style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                            Đã bán: <Text strong style={{ color: '#1890ff' }}>{product.sold}</Text>
-                          </span>
-                          <span style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                            Doanh thu: <Text strong style={{ color: '#52c41a' }}>{(product.revenue / 1000000).toFixed(1)}M ₫</Text>
-                          </span>
-                        </Space>
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
+                      <Text strong style={{ fontSize: '14px' }}>{text}</Text>
+                    </div>
+                  )
+                },
+                {
+                  title: 'Đã bán',
+                  dataIndex: 'sold',
+                  key: 'sold',
+                  width: 80,
+                  render: (value) => <Text style={{ fontSize: '13px', fontWeight: 500 }}>{value}</Text>
+                },
+                {
+                  title: 'Doanh thu',
+                  dataIndex: 'revenue',
+                  key: 'revenue',
+                  width: 100,
+                  render: (value) => (
+                    <Text style={{ fontSize: '13px', fontWeight: 500, color: '#52c41a' }}>
+                      {(value / 1000000).toFixed(1)}M
+                    </Text>
+                  )
+                },
+                {
+                  title: 'Xu hướng',
+                  dataIndex: 'trend',
+                  key: 'trend',
+                  width: 80,
+                  render: (trend) => (
+                    trend === 'up' ?
+                      <RiseOutlined style={{ color: '#52c41a', fontSize: '16px' }} /> :
+                      <FallOutlined style={{ color: '#ff4d4f', fontSize: '16px' }} />
+                  )
+                }
+              ]}
             />
           </Card>
         </Col>
 
         {/* Recent Orders */}
         <Col xs={24} lg={12}>
-          <Card title="Đơn hàng gần đây" extra={<Button size="small" icon={<EyeOutlined />}>Xem tất cả</Button>}>
+          <Card
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <ShoppingCartOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                <span style={{ fontSize: '16px', fontWeight: 600 }}>Đơn hàng gần đây</span>
+              </div>
+            }
+            extra={
+              <Button
+                size="small"
+                icon={<EyeOutlined />}
+                type="link"
+                style={{ color: '#1890ff', fontWeight: 500 }}
+              >
+                Xem tất cả
+              </Button>
+            }
+            style={{
+              borderRadius: '16px',
+              border: 'none',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}
+          >
             <Table
               dataSource={recentOrders}
               pagination={false}
-              size="small"
+              size="middle"
+              showHeader={true}
               columns={[
                 {
                   title: 'Mã đơn',
                   dataIndex: 'id',
                   key: 'id',
-                  width: 80,
-                  render: (text) => <Text code style={{ fontSize: 11 }}>{text}</Text>
+                  width: 90,
+                  render: (text) => (
+                    <Text
+                      code
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: '#f0f0f0',
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      {text}
+                    </Text>
+                  )
                 },
                 {
                   title: 'Khách hàng',
                   dataIndex: 'customer',
                   key: 'customer',
-                  render: (text) => <Text style={{ fontSize: 12 }}>{text}</Text>
+                  render: (text) => <Text style={{ fontSize: 13, fontWeight: 500 }}>{text}</Text>
                 },
                 {
                   title: 'Số tiền',
                   dataIndex: 'amount',
                   key: 'amount',
-                  width: 100,
-                  render: (value) => <Text style={{ fontSize: 11 }}>{(value / 1000).toFixed(0)}K</Text>
+                  width: 90,
+                  render: (value) => (
+                    <Text style={{ fontSize: 13, fontWeight: 600, color: '#52c41a' }}>
+                      {(value / 1000).toFixed(0)}K
+                    </Text>
+                  )
                 },
                 {
                   title: 'Trạng thái',
                   dataIndex: 'status',
                   key: 'status',
-                  width: 100,
+                  width: 110,
                   render: (status) => (
-                    <Tag color={getOrderStatusColor(status)} style={{ fontSize: 10 }}>
+                    <Tag
+                      color={getOrderStatusColor(status)}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        borderRadius: '12px',
+                        padding: '2px 8px'
+                      }}
+                    >
                       {getOrderStatusText(status)}
                     </Tag>
                   )
@@ -518,25 +650,93 @@ const AdminDashboard = () => {
       </Row>
 
       {/* Quick Actions */}
-      <Card title="Thao tác nhanh" style={{ marginTop: 16 }}>
+      <Card
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ThunderboltOutlined style={{ color: '#722ed1', fontSize: '18px' }} />
+            <span style={{ fontSize: '16px', fontWeight: 600 }}>Thao tác nhanh</span>
+          </div>
+        }
+        style={{
+          borderRadius: '16px',
+          border: 'none',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        }}
+      >
         <Row gutter={[16, 16]}>
-          <Col xs={12} sm={8} md={6} lg={4}>
-            <Button type="primary" block icon={<ShoppingCartOutlined />}>
+          <Col xs={12} sm={6} md={6} lg={3}>
+            <Button
+              type="primary"
+              block
+              size="large"
+              icon={<ShoppingCartOutlined />}
+              style={{
+                height: '60px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)',
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(24, 144, 255, 0.3)'
+              }}
+            >
               Tạo đơn hàng
             </Button>
           </Col>
-          <Col xs={12} sm={8} md={6} lg={4}>
-            <Button block icon={<InboxOutlined />}>
+          <Col xs={12} sm={6} md={6} lg={3}>
+            <Button
+              block
+              size="large"
+              icon={<InboxOutlined />}
+              style={{
+                height: '60px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
+                border: 'none',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
+              }}
+            >
               Thêm sản phẩm
             </Button>
           </Col>
-          <Col xs={12} sm={8} md={6} lg={4}>
-            <Button block icon={<UserOutlined />}>
+          <Col xs={12} sm={6} md={6} lg={3}>
+            <Button
+              block
+              size="large"
+              icon={<UserOutlined />}
+              style={{
+                height: '60px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #722ed1 0%, #9254de 100%)',
+                border: 'none',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(114, 46, 209, 0.3)'
+              }}
+            >
               Thêm khách hàng
             </Button>
           </Col>
-          <Col xs={12} sm={8} md={6} lg={4}>
-            <Button block icon={<SettingOutlined />}>
+          <Col xs={12} sm={6} md={6} lg={3}>
+            <Button
+              block
+              size="large"
+              icon={<SettingOutlined />}
+              style={{
+                height: '60px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #faad14 0%, #ffc53d 100%)',
+                border: 'none',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(250, 173, 20, 0.3)'
+              }}
+            >
               Cài đặt
             </Button>
           </Col>

@@ -198,7 +198,7 @@ const Login = () => {
                   type="primary"
                   onClick={() => {
                     form.setFieldsValue({
-                      email: 'admin@khochuan.com',
+                      email: 'admin@truongphat.com',
                       password: 'admin123'
                     });
                     form.submit();
@@ -212,7 +212,7 @@ const Login = () => {
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      email: 'cashier@khochuan.com',
+                      email: 'cashier@truongphat.com',
                       password: 'cashier123'
                     });
                     form.submit();
@@ -226,7 +226,7 @@ const Login = () => {
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      email: 'staff@khochuan.com',
+                      email: 'staff@truongphat.com',
                       password: 'staff123'
                     });
                     form.submit();
