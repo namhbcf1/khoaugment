@@ -36,6 +36,46 @@ const theme = {
 };
 
 function App() {
+  console.log('🚀 App component rendering...');
+
+  // Test mode - bypass AuthContext temporarily
+  const isTestMode = window.location.search.includes('test=true');
+
+  if (isTestMode) {
+    console.log('🧪 Test mode enabled - bypassing AuthContext');
+    return (
+      <ConfigProvider locale={viVN} theme={theme}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          background: 'linear-gradient(135deg, #1890ff 0%, #0958d9 100%)',
+          color: 'white'
+        }}>
+          <h1>🖥️ Trường Phát Computer Hòa Bình</h1>
+          <p>Test mode - App is working!</p>
+          <p>React app initialized successfully</p>
+          <button
+            onClick={() => window.location.href = '/login'}
+            style={{
+              padding: '12px 24px',
+              background: 'white',
+              color: '#1890ff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              marginTop: '20px'
+            }}
+          >
+            Go to Login
+          </button>
+        </div>
+      </ConfigProvider>
+    );
+  }
+
   return (
     <ConfigProvider locale={viVN} theme={theme}>
       <BrowserRouter>
