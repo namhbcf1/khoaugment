@@ -1,12 +1,20 @@
-# KhoChuan POS System
+# 🏪 Trường Phát Computer POS System
 
-🎉 **A fully functional Point of Sale (POS) system with emergency fallback mode**
+> **Hệ thống POS thông minh cho cửa hàng máy tính Trường Phát Computer Hòa Bình**
 
-## 🌟 Live Demo
+[![Production Status](https://img.shields.io/badge/Production-Live-brightgreen)](https://khoaugment.pages.dev)
+[![Backend API](https://img.shields.io/badge/API-Operational-blue)](https://khoaugment-api.bangachieu2.workers.dev/health)
+[![Test Coverage](https://img.shields.io/badge/Tests-50%2B%20Cases-yellow)](./tests/)
+[![Grade](https://img.shields.io/badge/Grade-A--85%25-success)](./docs/SYSTEM_OVERVIEW.md)
 
-**🌐 Website:** https://khoaugment.pages.dev
+## 🚀 **Production URLs**
 
-The website is **100% functional** with a complete emergency fallback system that provides all core POS functionality without requiring React to load.
+| Service | URL | Status |
+|---------|-----|--------|
+| **🌐 Frontend** | [khoaugment.pages.dev](https://khoaugment.pages.dev) | ✅ Live |
+| **🔧 Backend API** | [khoaugment-api.bangachieu2.workers.dev](https://khoaugment-api.bangachieu2.workers.dev) | ✅ Live |
+| **🧪 Test Page** | [e37b4f9c.khoaugment.pages.dev](https://e37b4f9c.khoaugment.pages.dev) | ✅ Live |
+| **📊 GitHub** | [github.com/namhbcf1/khoaugment](https://github.com/namhbcf1/khoaugment) | ✅ Updated |
 
 ## ✅ Current Status: **FULLY OPERATIONAL**
 
