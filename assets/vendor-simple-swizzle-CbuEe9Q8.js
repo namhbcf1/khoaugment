@@ -1,1 +1,0 @@
-import{i as r}from"./vendor-is-arrayish-CLsR9Wfx.js";var t={exports:{}},o=r,a=Array.prototype.concat,e=Array.prototype.slice,n=t.exports=function(r){for(var t=[],n=0,p=r.length;n<p;n++){var s=r[n];o(s)?t=a.call(t,e.call(s)):t.push(s)}return t};n.wrap=function(r){return function(){return r(n(arguments))}};var p=t.exports;export{p as s};
