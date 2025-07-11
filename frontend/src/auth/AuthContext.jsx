@@ -107,6 +107,35 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  // Clear authentication storage
+  const clearAuthStorage = useCallback(() => {
+    localStorage.removeItem(SESSION_CONFIG.TOKEN_KEY);
+    localStorage.removeItem(SESSION_CONFIG.USER_KEY);
+    localStorage.removeItem(SESSION_CONFIG.EXPIRES_KEY);
+    localStorage.removeItem(SESSION_CONFIG.ACTIVITY_KEY);
+    authService.setAuthToken(null);
+  }, []);
+
+  // Handle logout
+  const handleLogout = useCallback(async (expired = false) => {
+    if (!expired) {
+      try {
+        await authService.logout();
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+
+    clearAuthStorage();
+    dispatch({
+      type: expired ? AUTH_ACTIONS.SESSION_EXPIRED : AUTH_ACTIONS.LOGOUT
+    });
+
+    if (!expired) {
+      message.success('Đăng xuất thành công!');
+    }
+  }, [clearAuthStorage]);
+
   // Check for session expiration
   const checkSessionExpiration = useCallback(() => {
     if (state.expiresAt && Date.now() > state.expiresAt) {
@@ -115,7 +144,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     }
     return false;
-  }, [state.expiresAt]);
+  }, [state.expiresAt, handleLogout]);
 
   // Check for inactivity timeout
   const checkInactivityTimeout = useCallback(() => {
@@ -125,7 +154,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     }
     return false;
-  }, [state.lastActivity]);
+  }, [state.lastActivity, handleLogout]);
 
   // Update last activity
   const updateLastActivity = useCallback(() => {
@@ -162,68 +191,65 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing token on mount
   useEffect(() => {
-    const token = localStorage.getItem(SESSION_CONFIG.TOKEN_KEY);
-    const user = localStorage.getItem(SESSION_CONFIG.USER_KEY);
-    const expiresAt = localStorage.getItem(SESSION_CONFIG.EXPIRES_KEY);
-    const lastActivity = localStorage.getItem(SESSION_CONFIG.ACTIVITY_KEY);
-    
-    if (token && user) {
+    const checkInitialAuth = async () => {
       try {
-        const parsedUser = JSON.parse(user);
-        const parsedExpiresAt = expiresAt ? parseInt(expiresAt, 10) : null;
-        const parsedLastActivity = lastActivity ? parseInt(lastActivity, 10) : Date.now();
+        const token = localStorage.getItem(SESSION_CONFIG.TOKEN_KEY);
+        const user = localStorage.getItem(SESSION_CONFIG.USER_KEY);
+        const expiresAt = localStorage.getItem(SESSION_CONFIG.EXPIRES_KEY);
+        const lastActivity = localStorage.getItem(SESSION_CONFIG.ACTIVITY_KEY);
 
-        // Check if session has expired
-        if (parsedExpiresAt && Date.now() > parsedExpiresAt) {
-          handleLogout(true);
-        } else {
-          // Set auth token in axios headers
-          authService.setAuthToken(token);
-          
-          dispatch({
-            type: AUTH_ACTIONS.LOGIN_SUCCESS,
-            payload: {
-              user: parsedUser,
-              token,
-              permissions: parsedUser.permissions || [],
-              expiresAt: parsedExpiresAt,
-              lastActivity: parsedLastActivity,
-            },
-          });
+        if (token && user) {
+          try {
+            const parsedUser = JSON.parse(user);
+            const parsedExpiresAt = expiresAt ? parseInt(expiresAt, 10) : null;
+            const parsedLastActivity = lastActivity ? parseInt(lastActivity, 10) : Date.now();
+
+            // Check if session has expired
+            if (parsedExpiresAt && Date.now() > parsedExpiresAt) {
+              await handleLogout(true);
+            } else {
+              // Set auth token in axios headers
+              authService.setAuthToken(token);
+
+              dispatch({
+                type: AUTH_ACTIONS.LOGIN_SUCCESS,
+                payload: {
+                  user: parsedUser,
+                  token,
+                  permissions: parsedUser.permissions || [],
+                  expiresAt: parsedExpiresAt,
+                  lastActivity: parsedLastActivity,
+                },
+              });
+            }
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+            clearAuthStorage();
+          }
         }
       } catch (error) {
-        console.error('Error parsing user data:', error);
-        clearAuthStorage();
+        console.error('Error checking initial auth:', error);
+      } finally {
+        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
       }
-    }
-    
-    dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
-  }, []);
+    };
 
-  // Clear authentication storage
-  const clearAuthStorage = () => {
-    localStorage.removeItem(SESSION_CONFIG.TOKEN_KEY);
-    localStorage.removeItem(SESSION_CONFIG.USER_KEY);
-    localStorage.removeItem(SESSION_CONFIG.EXPIRES_KEY);
-    localStorage.removeItem(SESSION_CONFIG.ACTIVITY_KEY);
-    authService.setAuthToken(null);
-  };
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn('Auth check timeout, setting loading to false');
+      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+    }, 5000); // 5 second timeout
 
-  // Handle logout
-  const handleLogout = async (expired = false) => {
-    if (!expired) {
-      await authService.logout();
-    }
-    
-    clearAuthStorage();
-    dispatch({ 
-      type: expired ? AUTH_ACTIONS.SESSION_EXPIRED : AUTH_ACTIONS.LOGOUT 
+    checkInitialAuth().finally(() => {
+      clearTimeout(timeoutId);
     });
-    
-    if (!expired) {
-      message.success('Đăng xuất thành công!');
-    }
-  };
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [handleLogout, clearAuthStorage]);
+
+
 
   // Login function
   const login = async (credentials) => {
