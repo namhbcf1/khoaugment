@@ -1,0 +1,119 @@
+.site-layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+.site-layout-content {
+  transition: all 0.2s;
+}
+
+.content-expanded {
+  margin-left: 256px;
+  width: calc(100% - 256px);
+}
+
+.content-collapsed {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}
+
+.content-no-sidebar {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Header có chiều cao 64px, nên content phải padding top */
+.site-content {
+  margin-top: 64px;
+  min-height: calc(100vh - 64px);
+  background: #f0f2f5;
+}
+
+/* Màn hình mobile */
+@media (max-width: 992px) {
+  .content-expanded,
+  .content-collapsed {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Loading container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 16px;
+}
+
+/* Thông tin ca làm việc */
+.shift-info {
+  position: fixed;
+  top: 64px; /* Ngay dưới header */
+  left: 0;
+  width: 100%;
+  background-color: #e6f7ff;
+  border-bottom: 1px solid #91d5ff;
+  z-index: 999;
+  padding: 8px 24px;
+}
+
+.shift-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.shift-status span {
+  margin-right: 24px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.shift-status strong {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Khi có shift-info, content cần thêm padding-top */
+.shift-info + .site-content {
+  margin-top: 102px; /* 64px (header) + 38px (shift-info) */
+}
+
+/* Admin layout styles */
+.admin-header {
+  background-color: #fff;
+}
+
+.admin-content {
+  padding: 24px;
+}
+
+/* Cashier layout styles */
+.cashier-controls {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  padding: 12px 24px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 90;
+}
+
+/* Staff layout styles */
+.staff-content {
+  padding: 16px;
+}
+
+/* Full width content cho màn hình bán hàng */
+.full-width-content {
+  padding: 0 !important;
+  background: #fff !important;
+} 

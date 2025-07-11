@@ -1,0 +1,66 @@
+/* Global Styles */
+@import './styles/design-tokens.css';
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+  
+  #root {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Ant Design customizations */
+  .ant-result {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    margin: 20px;
+  }
+  
+  .ant-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .ant-btn {
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  
+  .ant-btn-primary {
+    background: linear-gradient(45deg, #1890ff, #36cfc9);
+    border: none;
+    box-shadow: 0 4px 15px rgba(24, 144, 255, 0.3);
+  }
+  
+  .ant-btn-primary:hover {
+    background: linear-gradient(45deg, #40a9ff, #5cdbd3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .ant-result {
+      margin: 10px;
+      padding: 20px;
+    }
+    
+    .ant-result-title h1 {
+      font-size: 24px !important;
+    }
+  }

@@ -1,0 +1,42 @@
+{
+  "name": "truong-phat-computer-pos-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive E2E tests for Truong Phat Computer POS System",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:comprehensive": "playwright test tests/e2e-comprehensive.spec.js",
+    "test:api": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Backend API\"",
+    "test:frontend": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Frontend UI\"",
+    "test:security": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Security\"",
+    "test:performance": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Performance\"",
+    "test:accessibility": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Accessibility\"",
+    "test:integration": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Integration\"",
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:safari": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=\"Mobile Chrome\"",
+    "install:browsers": "playwright install",
+    "install:deps": "playwright install-deps"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "pos",
+    "truong-phat-computer",
+    "automation"
+  ],
+  "author": "Truong Phat Computer Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

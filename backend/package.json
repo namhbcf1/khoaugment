@@ -1,0 +1,44 @@
+{
+  "name": "khoaugment-pos-api",
+  "version": "1.0.0",
+  "description": "Khochuan POS API - Real backend with Cloudflare Workers + D1 Database - NO MOCK DATA",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "echo 'Backend build complete - Workers deploy separately'",
+    "deploy": "wrangler deploy",
+    "setup": "echo 'Backend setup complete'",
+    "migrate": "wrangler d1 migrations apply smart-pos-db --remote",
+    "migrate:local": "wrangler d1 migrations apply smart-pos-db --local",
+    "seed": "wrangler d1 execute smart-pos-db --remote --file=./database/seed.sql",
+    "seed:local": "wrangler d1 execute smart-pos-db --local --file=./database/seed.sql",
+    "db:reset": "wrangler d1 migrations apply smart-pos-db --local && npm run seed:local",
+    "test": "echo 'No tests specified yet'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241106.0",
+    "bcryptjs": "^3.0.2",
+    "crypto-js": "^4.2.0",
+    "hono": "^4.8.4",
+    "itty-router": "^5.0.18",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "wrangler": "^3.88.0"
+  },
+  "keywords": [
+    "pos",
+    "cloudflare",
+    "workers",
+    "enterprise"
+  ],
+  "author": "Enterprise POS Team",
+  "license": "MIT"
+}

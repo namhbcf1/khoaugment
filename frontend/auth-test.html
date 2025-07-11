@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0958d9;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #389e0d;
+        }
+        .error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #cf1322;
+        }
+        .info {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #0958d9;
+        }
+        .debug {
+            background: #f9f9f9;
+            border: 1px solid #d9d9d9;
+            color: #333;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Authentication Debug Test</h1>
+        <p>Test authentication với production API để debug vấn đề React frontend</p>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="admin@truongphat.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="admin123">
+        </div>
+        
+        <button onclick="testLogin()" id="loginBtn">Test Login</button>
+        <button onclick="debugHash()" id="debugBtn">Debug Hash</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div id="result" class="result debug" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://khoaugment-api.bangachieu2.workers.dev';
+        
+        function log(message) {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            resultDiv.textContent += `[${timestamp}] ${message}\n`;
+            resultDiv.style.display = 'block';
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = '';
+            resultDiv.style.display = 'none';
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Testing...';
+            
+            clearResults();
+            
+            log('🔐 Starting authentication test...');
+            log(`📧 Email: ${email}`);
+            log(`🌐 API URL: ${API_URL}`);
+            log(`🌍 Current domain: ${window.location.origin}`);
+            log(`🕐 Timestamp: ${new Date().toISOString()}`);
+            
+            try {
+                const requestBody = { email, password };
+                log(`📤 Request body: ${JSON.stringify(requestBody, null, 2)}`);
+                
+                const requestOptions = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                };
+                
+                log(`📤 Request options: ${JSON.stringify(requestOptions, null, 2)}`);
+                log('🚀 Sending request...');
+                
+                const response = await fetch(`${API_URL}/auth/login`, requestOptions);
+                
+                log(`📥 Response status: ${response.status} ${response.statusText}`);
+                log(`📥 Response headers:`);
+                
+                for (const [key, value] of response.headers.entries()) {
+                    log(`   ${key}: ${value}`);
+                }
+                
+                const responseText = await response.text();
+                log(`📥 Raw response: ${responseText}`);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    log(`📥 Parsed JSON: ${JSON.stringify(data, null, 2)}`);
+                } catch (parseError) {
+                    log(`❌ JSON parse error: ${parseError.message}`);
+                    return;
+                }
+                
+                if (response.ok && data.success) {
+                    log('✅ LOGIN SUCCESSFUL!');
+                    log(`👤 User: ${data.data.user.name}`);
+                    log(`🎭 Role: ${data.data.user.role}`);
+                    log(`🎫 Token: ${data.data.token.substring(0, 50)}...`);
+                    
+                    // Store in localStorage
+                    localStorage.setItem('auth_token', data.data.token);
+                    localStorage.setItem('user_data', JSON.stringify(data.data.user));
+                    log('💾 Stored in localStorage');
+                    
+                } else {
+                    log(`❌ LOGIN FAILED: ${data.message || 'Unknown error'}`);
+                    log(`❌ Error details: ${JSON.stringify(data, null, 2)}`);
+                }
+                
+            } catch (error) {
+                log(`❌ NETWORK ERROR: ${error.message}`);
+                log(`❌ Error stack: ${error.stack}`);
+            }
+            
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Test Login';
+        }
+
+        async function debugHash() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const debugBtn = document.getElementById('debugBtn');
+
+            debugBtn.disabled = true;
+            debugBtn.textContent = 'Debugging...';
+
+            clearResults();
+
+            log('🔍 Starting password hash debug...');
+            log(`📧 Email: ${email}`);
+            log(`🔑 Password: ${password}`);
+
+            try {
+                const requestBody = { email, password };
+                log(`📤 Debug request: ${JSON.stringify(requestBody, null, 2)}`);
+
+                const response = await fetch(`${API_URL}/auth/debug-hash`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                log(`📥 Debug response status: ${response.status}`);
+
+                const data = await response.json();
+                log(`📥 Debug response: ${JSON.stringify(data, null, 2)}`);
+
+                if (data.success && data.debug) {
+                    const debug = data.debug;
+                    log('🔍 PASSWORD HASH ANALYSIS:');
+                    log(`   📧 Email: ${debug.email}`);
+                    log(`   🔑 Password: ${debug.password_provided}`);
+                    log(`   🧂 Salt: ${debug.salt_used}`);
+                    log(`   🔐 Generated Hash: ${debug.generated_hash}`);
+                    log(`   👤 User Found: ${debug.user_found}`);
+                    log(`   💾 Stored Hash: ${debug.stored_hash}`);
+                    log(`   ✅ Hashes Match: ${debug.hashes_match}`);
+
+                    if (debug.user_data) {
+                        log(`   👤 User Data: ${JSON.stringify(debug.user_data, null, 2)}`);
+                    }
+
+                    if (debug.hashes_match) {
+                        log('✅ PASSWORD HASH IS CORRECT - Authentication should work!');
+                    } else {
+                        log('❌ PASSWORD HASH MISMATCH - This is the problem!');
+                        if (debug.user_found) {
+                            log('💡 User exists but password hash doesn\'t match');
+                            log('💡 Need to run setup-users again or check salt');
+                        } else {
+                            log('💡 User not found in database');
+                        }
+                    }
+                } else {
+                    log(`❌ Debug failed: ${data.message}`);
+                }
+
+            } catch (error) {
+                log(`❌ Debug error: ${error.message}`);
+            }
+
+            debugBtn.disabled = false;
+            debugBtn.textContent = 'Debug Hash';
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            log('🌐 Page loaded, ready for testing');
+        });
+    </script>
+</body>
+</html>
