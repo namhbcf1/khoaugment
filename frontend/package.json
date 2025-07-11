@@ -16,7 +16,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:all": "npm run test && npm run test:e2e"
+    "test:all": "npm run test && npm run test:e2e",
+    "analyze": "npm run build && node scripts/analyze-bundle.cjs",
+    "analyze:dev": "vite build --mode development && node scripts/analyze-bundle.cjs",
+    "perf": "npm run analyze"
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.0",

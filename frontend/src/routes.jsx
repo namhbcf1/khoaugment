@@ -3,17 +3,18 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import ProtectedRoute from './auth/ProtectedRoute';
 import RoleBasedAccess from './auth/RoleBasedAccess';
+import { lazyLoadWithRetry, PageLoader } from './utils/performance';
 
-// Layouts
-const AdminLayout = lazy(() => import('./components/common/Layout/AdminLayout'));
-const CashierLayout = lazy(() => import('./components/common/Layout/CashierLayout'));
-const StaffLayout = lazy(() => import('./components/common/Layout/StaffLayout'));
-const CustomerLayout = lazy(() => import('./components/common/Layout/CustomerLayout'));
+// Layouts - Critical, load with retry
+const AdminLayout = lazyLoadWithRetry(() => import('./components/common/Layout/AdminLayout'));
+const CashierLayout = lazyLoadWithRetry(() => import('./components/common/Layout/CashierLayout'));
+const StaffLayout = lazyLoadWithRetry(() => import('./components/common/Layout/StaffLayout'));
+const CustomerLayout = lazyLoadWithRetry(() => import('./components/common/Layout/CustomerLayout'));
 
-// Auth Pages
-const Login = lazy(() => import('./pages/Login'));
-const HomePage = lazy(() => import('./pages/HomePage'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+// Auth Pages - Critical, load with retry
+const Login = lazyLoadWithRetry(() => import('./pages/Login'));
+const HomePage = lazyLoadWithRetry(() => import('./pages/HomePage'));
+const Dashboard = lazyLoadWithRetry(() => import('./pages/Dashboard'));
 
 // Customer Pages
 const CustomerProductLookup = lazy(() => import('./pages/customer/CustomerLookup'));
@@ -25,12 +26,14 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const RevenueOverview = lazy(() => import('./pages/admin/Dashboard/RevenueOverview'));
 const PerformanceMetrics = lazy(() => import('./pages/admin/Dashboard/PerformanceMetrics'));
 
-// New Pages
-const POS = lazy(() => import('./pages/POS'));
+// Main Pages - High priority
+const POS = lazyLoadWithRetry(() => import('./pages/POS'));
+const Customers = lazyLoadWithRetry(() => import('./pages/Customers'));
+const Inventory = lazyLoadWithRetry(() => import('./pages/Inventory'));
+const Analytics = lazyLoadWithRetry(() => import('./pages/Analytics'));
+
+// Secondary Pages - Standard lazy loading
 const Gamification = lazy(() => import('./pages/Gamification'));
-const Customers = lazy(() => import('./pages/Customers'));
-const Inventory = lazy(() => import('./pages/Inventory'));
-const Analytics = lazy(() => import('./pages/Analytics'));
 const AIFeatures = lazy(() => import('./pages/AIFeatures'));
 
 // Products
