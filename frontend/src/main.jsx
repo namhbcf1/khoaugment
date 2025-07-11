@@ -247,6 +247,20 @@ Build: ${import.meta.env.DEV ? 'development' : 'production'}
 const container = document.getElementById('root')
 const root = ReactDOM.createRoot(container)
 
+// Hide loading screen when React app is ready
+const hideLoadingScreen = () => {
+  console.log('🎯 Hiding loading screen - React app ready');
+  document.body.classList.add('app-ready');
+
+  // Also remove the loading div after a short delay
+  setTimeout(() => {
+    const loadingDiv = document.querySelector('.app-loading');
+    if (loadingDiv) {
+      loadingDiv.remove();
+    }
+  }, 500);
+};
+
 // Development vs Production rendering
 if (import.meta.env.DEV) {
   // Development mode with React DevTools
@@ -257,6 +271,7 @@ if (import.meta.env.DEV) {
       </HelmetProvider>
     </React.StrictMode>
   )
+  hideLoadingScreen();
 } else {
   // Production mode
   root.render(
@@ -264,6 +279,7 @@ if (import.meta.env.DEV) {
       <App />
     </HelmetProvider>
   )
+  hideLoadingScreen();
 }
 
 // Hot Module Replacement for Development
