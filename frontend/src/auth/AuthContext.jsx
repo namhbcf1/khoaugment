@@ -191,6 +191,8 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing token on mount
   useEffect(() => {
+    console.log('🔐 AuthContext: Starting initial auth check');
+
     const checkInitialAuth = async () => {
       try {
         const token = localStorage.getItem(SESSION_CONFIG.TOKEN_KEY);
@@ -198,16 +200,31 @@ export const AuthProvider = ({ children }) => {
         const expiresAt = localStorage.getItem(SESSION_CONFIG.EXPIRES_KEY);
         const lastActivity = localStorage.getItem(SESSION_CONFIG.ACTIVITY_KEY);
 
+        console.log('🔐 AuthContext: Storage check', {
+          hasToken: !!token,
+          hasUser: !!user,
+          expiresAt,
+          lastActivity
+        });
+
         if (token && user) {
           try {
             const parsedUser = JSON.parse(user);
             const parsedExpiresAt = expiresAt ? parseInt(expiresAt, 10) : null;
             const parsedLastActivity = lastActivity ? parseInt(lastActivity, 10) : Date.now();
 
+            console.log('🔐 AuthContext: Parsed data', {
+              user: parsedUser.email,
+              role: parsedUser.role,
+              expired: parsedExpiresAt && Date.now() > parsedExpiresAt
+            });
+
             // Check if session has expired
             if (parsedExpiresAt && Date.now() > parsedExpiresAt) {
+              console.log('🔐 AuthContext: Session expired, logging out');
               await handleLogout(true);
             } else {
+              console.log('🔐 AuthContext: Valid session found, logging in');
               // Set auth token in axios headers
               authService.setAuthToken(token);
 
@@ -223,20 +240,23 @@ export const AuthProvider = ({ children }) => {
               });
             }
           } catch (error) {
-            console.error('Error parsing user data:', error);
+            console.error('🔐 AuthContext: Error parsing user data:', error);
             clearAuthStorage();
           }
+        } else {
+          console.log('🔐 AuthContext: No stored auth data found');
         }
       } catch (error) {
-        console.error('Error checking initial auth:', error);
+        console.error('🔐 AuthContext: Error checking initial auth:', error);
       } finally {
+        console.log('🔐 AuthContext: Setting loading to false');
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
       }
     };
 
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      console.warn('Auth check timeout, setting loading to false');
+      console.warn('🔐 AuthContext: Auth check timeout, setting loading to false');
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
     }, 5000); // 5 second timeout
 

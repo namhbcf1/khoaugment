@@ -23,19 +23,26 @@ const { Title, Paragraph, Text } = Typography;
 const HomePage = () => {
   const { isAuthenticated, user, loading } = useAuth();
 
+  // Debug logging
+  console.log('HomePage render:', { loading, isAuthenticated, user: user?.email });
+
   // Show loading while checking authentication
   if (loading) {
+    console.log('HomePage: Still loading...');
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         height: '100vh',
         flexDirection: 'column'
       }}>
         <Spin size="large" />
         <div style={{ marginTop: '16px', color: '#666' }}>
           Đang kiểm tra đăng nhập...
+        </div>
+        <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
+          Debug: loading={loading.toString()}, auth={isAuthenticated.toString()}
         </div>
       </div>
     );
