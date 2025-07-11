@@ -4,6 +4,16 @@ import { Spin } from 'antd';
 import ProtectedRoute from './auth/ProtectedRoute';
 import RoleBasedAccess from './auth/RoleBasedAccess';
 import { lazyLoadWithRetry, PageLoader } from './utils/performance';
+import {
+  RouteGuard,
+  AdminRouteGuard,
+  CashierRouteGuard,
+  StaffRouteGuard,
+  PublicRouteGuard,
+  RoleBasedRedirect,
+  PermissionRouteGuard
+} from './components/auth/RouteGuard';
+import { PERMISSIONS } from './auth/permissions';
 
 // Layouts - Critical, load with retry
 const AdminLayout = lazyLoadWithRetry(() => import('./components/common/Layout/AdminLayout'));
@@ -164,11 +174,9 @@ const AppRoutes = () => {
         
         {/* Admin Routes */}
         <Route path="/admin" element={
-          <ProtectedRoute>
-            <RoleBasedAccess allowedRoles={['admin']}>
-              <AdminLayout />
-            </RoleBasedAccess>
-          </ProtectedRoute>
+          <AdminRouteGuard>
+            <AdminLayout />
+          </AdminRouteGuard>
         }>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           {/* Dashboard */}
@@ -181,7 +189,11 @@ const AppRoutes = () => {
           <Route path="gamification" element={<Gamification />} />
           <Route path="customers" element={<Customers />} />
           <Route path="inventory-management" element={<Inventory />} />
-          <Route path="analytics" element={<Analytics />} />
+          <Route path="analytics" element={
+            <PermissionRouteGuard permission={PERMISSIONS.ANALYTICS_VIEW}>
+              <Analytics />
+            </PermissionRouteGuard>
+          } />
           <Route path="ai-features" element={<AIFeatures />} />
           
           {/* Products */}
@@ -203,10 +215,26 @@ const AppRoutes = () => {
           <Route path="orders/returns" element={<ReturnProcessing />} />
           
           {/* Reports */}
-          <Route path="reports" element={<ReportCenter />} />
-          <Route path="reports/custom" element={<CustomReports />} />
-          <Route path="reports/omnichannel" element={<OmnichannelAnalytics />} />
-          <Route path="reports/business-intelligence" element={<BusinessIntelligence />} />
+          <Route path="reports" element={
+            <PermissionRouteGuard permission={PERMISSIONS.REPORTS_VIEW}>
+              <ReportCenter />
+            </PermissionRouteGuard>
+          } />
+          <Route path="reports/custom" element={
+            <PermissionRouteGuard permission={PERMISSIONS.REPORTS_CREATE}>
+              <CustomReports />
+            </PermissionRouteGuard>
+          } />
+          <Route path="reports/omnichannel" element={
+            <PermissionRouteGuard permission={PERMISSIONS.ANALYTICS_VIEW}>
+              <OmnichannelAnalytics />
+            </PermissionRouteGuard>
+          } />
+          <Route path="reports/business-intelligence" element={
+            <PermissionRouteGuard permission={PERMISSIONS.FINANCIAL_REPORTS}>
+              <BusinessIntelligence />
+            </PermissionRouteGuard>
+          } />
           
           {/* Staff */}
           <Route path="staff" element={<StaffManagement />} />
@@ -238,11 +266,9 @@ const AppRoutes = () => {
 
         {/* Cashier Routes */}
         <Route path="/cashier" element={
-          <ProtectedRoute>
-            <RoleBasedAccess allowedRoles={['admin', 'cashier']}>
-              <CashierLayout />
-            </RoleBasedAccess>
-          </ProtectedRoute>
+          <CashierRouteGuard>
+            <CashierLayout />
+          </CashierRouteGuard>
         }>
           <Route index element={<Navigate to="/cashier/pos" replace />} />
           {/* POS */}
@@ -272,11 +298,9 @@ const AppRoutes = () => {
 
         {/* Staff Routes */}
         <Route path="/staff" element={
-          <ProtectedRoute>
-            <RoleBasedAccess allowedRoles={['admin', 'staff']}>
-              <StaffLayout />
-            </RoleBasedAccess>
-          </ProtectedRoute>
+          <StaffRouteGuard>
+            <StaffLayout />
+          </StaffRouteGuard>
         }>
           <Route index element={<Navigate to="/staff/dashboard" replace />} />
           {/* Dashboard */}
