@@ -2,18 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   Row, Col, Card, Statistic, Progress, Table, Tag, Space, Button,
   Typography, Alert, Divider, Timeline, List, Avatar, Badge,
-  Tabs, Select, DatePicker, notification
+  Tabs, Select, DatePicker, notification, Tooltip, Empty
 } from 'antd';
 import {
   DollarOutlined, ShoppingCartOutlined, UserOutlined, InboxOutlined,
-  RiseOutlined, FallOutlined, WarningOutlined,
+  RiseOutlined, FallOutlined, WarningOutlined, TrophyOutlined,
   CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined,
-  ReloadOutlined, EyeOutlined, SettingOutlined
+  ReloadOutlined, EyeOutlined, SettingOutlined, FireOutlined,
+  TeamOutlined, BankOutlined, GiftOutlined, ThunderboltOutlined,
+  StarOutlined, CrownOutlined, HeartOutlined, BulbOutlined
 } from '@ant-design/icons';
-import {
-  LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+import { Line, Column, Pie, Area } from '@ant-design/plots';
 import { useTranslation } from 'react-i18next';
 import { MetricCard, PageHeader, LoadingSkeleton } from '../../components/ui/DesignSystem';
 
@@ -27,36 +26,63 @@ const AdminDashboard = () => {
   const [dateRange, setDateRange] = useState('7d');
   const [dashboardData, setDashboardData] = useState({});
 
-  // Mock data for demonstration
+  // Enhanced mock data for demonstration
   const kpiData = [
     {
       title: 'Doanh thu hôm nay',
-      value: 15750000,
+      value: 25750000,
       prefix: '₫',
-      trend: 12.5,
+      trend: 15.8,
       icon: <DollarOutlined />,
-      color: '#52c41a'
+      color: '#52c41a',
+      bgGradient: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
+      description: 'Tăng 15.8% so với hôm qua'
     },
     {
       title: 'Đơn hàng hôm nay',
-      value: 156,
-      trend: 8.2,
+      value: 234,
+      trend: 12.3,
       icon: <ShoppingCartOutlined />,
-      color: '#1890ff'
+      color: '#1890ff',
+      bgGradient: 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)',
+      description: 'Tăng 12.3% so với hôm qua'
     },
     {
       title: 'Khách hàng mới',
-      value: 23,
-      trend: -2.1,
+      value: 47,
+      trend: 8.5,
       icon: <UserOutlined />,
-      color: '#722ed1'
+      color: '#722ed1',
+      bgGradient: 'linear-gradient(135deg, #722ed1 0%, #9254de 100%)',
+      description: 'Tăng 8.5% so với hôm qua'
     },
     {
       title: 'Sản phẩm bán chạy',
       value: 89,
       trend: 15.3,
-      icon: <InboxOutlined />,
-      color: '#faad14'
+      icon: <FireOutlined />,
+      color: '#faad14',
+      bgGradient: 'linear-gradient(135deg, #faad14 0%, #ffc53d 100%)',
+      description: 'Tăng 15.3% so với hôm qua'
+    },
+    {
+      title: 'Nhân viên hoạt động',
+      value: 12,
+      trend: 0,
+      icon: <TeamOutlined />,
+      color: '#13c2c2',
+      bgGradient: 'linear-gradient(135deg, #13c2c2 0%, #36cfc9 100%)',
+      description: 'Đang làm việc'
+    },
+    {
+      title: 'Tỷ lệ hoàn thành',
+      value: 94.5,
+      suffix: '%',
+      trend: 2.1,
+      icon: <TrophyOutlined />,
+      color: '#eb2f96',
+      bgGradient: 'linear-gradient(135deg, #eb2f96 0%, #f759ab 100%)',
+      description: 'Tăng 2.1% so với tuần trước'
     }
   ];
 
@@ -118,17 +144,107 @@ const AdminDashboard = () => {
     }
   };
 
-  const renderKPICard = (kpi) => (
+  const renderKPICard = (kpi, index) => (
     <Col xs={24} sm={12} lg={6} key={kpi.title}>
-      <MetricCard
-        title={kpi.title}
-        value={kpi.prefix ? `${kpi.prefix}${kpi.value.toLocaleString()}` : kpi.value.toLocaleString()}
-        icon={getIconName(kpi.icon)}
-        trend={kpi.trend > 0 ? 'up' : 'down'}
-        trendValue={`${Math.abs(kpi.trend)}%`}
-        color={getColorName(kpi.color)}
-        loading={loading}
-      />
+      <Card
+        style={{
+          background: kpi.bgGradient || `linear-gradient(135deg, ${kpi.color}15 0%, ${kpi.color}25 100%)`,
+          border: `1px solid ${kpi.color}30`,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          position: 'relative',
+          transition: 'all 0.3s ease',
+          cursor: 'pointer'
+        }}
+        bodyStyle={{ padding: '20px' }}
+        hoverable
+        className="kpi-card"
+      >
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: '12px',
+              background: `${kpi.color}20`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              color: kpi.color
+            }}>
+              {kpi.icon}
+            </div>
+            {kpi.trend !== 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                background: kpi.trend > 0 ? '#f6ffed' : '#fff2f0',
+                border: `1px solid ${kpi.trend > 0 ? '#b7eb8f' : '#ffb3b3'}`
+              }}>
+                {kpi.trend > 0 ?
+                  <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} /> :
+                  <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
+                }
+                <span style={{
+                  color: kpi.trend > 0 ? '#52c41a' : '#ff4d4f',
+                  fontSize: '12px',
+                  fontWeight: 500
+                }}>
+                  {Math.abs(kpi.trend)}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginBottom: 8 }}>
+            <Typography.Title level={2} style={{
+              margin: 0,
+              color: '#262626',
+              fontSize: '28px',
+              fontWeight: 700,
+              lineHeight: 1
+            }}>
+              {kpi.prefix && <span style={{ fontSize: '20px', opacity: 0.8 }}>{kpi.prefix}</span>}
+              {kpi.value.toLocaleString()}
+              {kpi.suffix && <span style={{ fontSize: '16px', opacity: 0.8 }}>{kpi.suffix}</span>}
+            </Typography.Title>
+          </div>
+
+          <div>
+            <Typography.Text style={{
+              color: '#8c8c8c',
+              fontSize: '14px',
+              fontWeight: 500,
+              display: 'block',
+              marginBottom: 4
+            }}>
+              {kpi.title}
+            </Typography.Text>
+            <Typography.Text style={{
+              color: '#595959',
+              fontSize: '12px'
+            }}>
+              {kpi.description}
+            </Typography.Text>
+          </div>
+        </div>
+
+        {/* Decorative background element */}
+        <div style={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 80,
+          height: 80,
+          borderRadius: '50%',
+          background: `${kpi.color}10`,
+          zIndex: 1
+        }} />
+      </Card>
     </Col>
   );
 
@@ -216,29 +332,59 @@ const AdminDashboard = () => {
       <Row gutter={[16, 16]}>
         {/* Revenue Chart */}
         <Col xs={24} lg={16}>
-          <Card title="Biểu đồ doanh thu 7 ngày" extra={<Button size="small" icon={<EyeOutlined />}>Chi tiết</Button>}>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    name === 'revenue' ? `${value.toLocaleString()} ₫` : value,
-                    name === 'revenue' ? 'Doanh thu' : name === 'orders' ? 'Đơn hàng' : 'Khách hàng'
-                  ]}
-                />
-                <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#1890ff" 
-                  fill="#1890ff" 
-                  fillOpacity={0.3}
-                  name="Doanh thu"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <Card
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <DollarOutlined style={{ color: '#1890ff' }} />
+                <span>Biểu đồ doanh thu 7 ngày</span>
+              </div>
+            }
+            extra={<Button size="small" icon={<EyeOutlined />} type="link">Chi tiết</Button>}
+            style={{ borderRadius: '12px' }}
+          >
+            <Area
+              data={revenueData}
+              xField="name"
+              yField="revenue"
+              height={300}
+              smooth={true}
+              areaStyle={{
+                fill: 'l(270) 0:#ffffff 0.5:#1890ff 1:#1890ff',
+                fillOpacity: 0.3,
+              }}
+              line={{
+                color: '#1890ff',
+                size: 3,
+              }}
+              point={{
+                size: 5,
+                shape: 'circle',
+                style: {
+                  fill: '#1890ff',
+                  stroke: '#ffffff',
+                  lineWidth: 2,
+                },
+              }}
+              tooltip={{
+                formatter: (datum) => ({
+                  name: 'Doanh thu',
+                  value: `${datum.revenue.toLocaleString()} ₫`,
+                }),
+              }}
+              annotations={[
+                {
+                  type: 'text',
+                  position: ['max', 'max'],
+                  content: `Cao nhất: ${Math.max(...revenueData.map(d => d.revenue)).toLocaleString()} ₫`,
+                  style: {
+                    textAlign: 'end',
+                    fontSize: 12,
+                    fill: '#8c8c8c',
+                  },
+                  offsetY: -10,
+                },
+              ]}
+            />
           </Card>
         </Col>
 
@@ -265,42 +411,63 @@ const AdminDashboard = () => {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         {/* Top Products */}
         <Col xs={24} lg={12}>
-          <Card title="Sản phẩm bán chạy" extra={<Button size="small" icon={<EyeOutlined />}>Xem tất cả</Button>}>
-            <Table
+          <Card
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <FireOutlined style={{ color: '#faad14' }} />
+                <span>Sản phẩm bán chạy</span>
+              </div>
+            }
+            extra={<Button size="small" icon={<EyeOutlined />} type="link">Xem tất cả</Button>}
+            style={{ borderRadius: '12px' }}
+          >
+            <List
               dataSource={topProducts}
-              pagination={false}
-              size="small"
-              columns={[
-                {
-                  title: 'Sản phẩm',
-                  dataIndex: 'name',
-                  key: 'name',
-                  render: (text) => <Text strong style={{ fontSize: 12 }}>{text}</Text>
-                },
-                {
-                  title: 'Đã bán',
-                  dataIndex: 'sold',
-                  key: 'sold',
-                  width: 80,
-                  render: (value) => <Tag color="blue">{value}</Tag>
-                },
-                {
-                  title: 'Doanh thu',
-                  dataIndex: 'revenue',
-                  key: 'revenue',
-                  width: 100,
-                  render: (value) => <Text style={{ fontSize: 11 }}>{(value / 1000000).toFixed(1)}M</Text>
-                },
-                {
-                  title: 'Xu hướng',
-                  dataIndex: 'trend',
-                  key: 'trend',
-                  width: 60,
-                  render: (trend) => trend === 'up' ?
-                    <RiseOutlined style={{ color: '#52c41a' }} /> :
-                    <FallOutlined style={{ color: '#ff4d4f' }} />
-                }
-              ]}
+              renderItem={(product, index) => (
+                <List.Item style={{ padding: '12px 0', borderBottom: index === topProducts.length - 1 ? 'none' : '1px solid #f0f0f0' }}>
+                  <List.Item.Meta
+                    avatar={
+                      <div style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '8px',
+                        background: index === 0 ? '#faad14' : index === 1 ? '#1890ff' : '#52c41a',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '14px'
+                      }}>
+                        #{index + 1}
+                      </div>
+                    }
+                    title={
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text strong style={{ fontSize: '14px', color: '#262626' }}>
+                          {product.name}
+                        </Text>
+                        {product.trend === 'up' ?
+                          <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} /> :
+                          <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
+                        }
+                      </div>
+                    }
+                    description={
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                        <Space size={16}>
+                          <span style={{ fontSize: '12px', color: '#8c8c8c' }}>
+                            Đã bán: <Text strong style={{ color: '#1890ff' }}>{product.sold}</Text>
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#8c8c8c' }}>
+                            Doanh thu: <Text strong style={{ color: '#52c41a' }}>{(product.revenue / 1000000).toFixed(1)}M ₫</Text>
+                          </span>
+                        </Space>
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
             />
           </Card>
         </Col>
