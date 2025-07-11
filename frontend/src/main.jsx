@@ -246,9 +246,12 @@ Build: ${import.meta.env.DEV ? 'development' : 'production'}
 // React 18 Root Creation and Error Boundaries
 const container = document.getElementById('root')
 
+// Global root variable for HMR
+let root
+
 // Add error handling for React root creation
 try {
-  const root = ReactDOM.createRoot(container)
+  root = ReactDOM.createRoot(container)
 
   console.log('🚀 Creating React root and rendering app...');
 
@@ -286,8 +289,10 @@ try {
     )
   }
 
-  // Hide loading screen after render
-  hideLoadingScreen();
+  // Hide loading screen after React has had time to mount
+  setTimeout(() => {
+    hideLoadingScreen();
+  }, 100);
 
 } catch (error) {
   console.error('❌ Error creating React root:', error);
