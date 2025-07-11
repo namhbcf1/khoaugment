@@ -16,12 +16,12 @@ const RETRY_DELAY = 1000; // 1 second
 
 // Real API client instance - NO MOCK
 const apiClient = axios.create({
-  baseURL: (import.meta.env && import.meta.env.VITE_API_URL) || 'https://khoaugment-api.bangachieu2.workers.dev',
+  baseURL: import.meta.env?.VITE_API_URL || 'https://khoaugment-api.bangachieu2.workers.dev',
   timeout: DEFAULT_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
     'X-Client': 'Khochuan-POS-Frontend',
-    'X-Client-Version': (import.meta.env && import.meta.env.VITE_APP_VERSION) || '1.0.0',
+    'X-Client-Version': import.meta.env?.VITE_APP_VERSION || '1.0.0',
     'X-Company': 'Truong-Phat-Computer'
   }
 });

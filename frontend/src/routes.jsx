@@ -23,6 +23,7 @@ const CustomerLayout = lazyLoadWithRetry(() => import('./components/common/Layou
 
 // Auth Pages - Critical, load with retry
 const Login = lazyLoadWithRetry(() => import('./pages/Login'));
+const AdminLogin = lazyLoadWithRetry(() => import('./pages/admin/AdminLogin'));
 const HomePage = lazyLoadWithRetry(() => import('./pages/HomePage'));
 const Dashboard = lazyLoadWithRetry(() => import('./pages/Dashboard'));
 
@@ -163,6 +164,7 @@ const AppRoutes = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/" element={<HomePage />} />
         
         {/* Customer Routes */}

@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [
     react()
   ],
+  define: {
+    'process.env': {},
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    global: 'globalThis',
+    '__DEV__': JSON.stringify(process.env.NODE_ENV === 'development')
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -161,9 +167,5 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: true
-  },
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-    '__DEV__': JSON.stringify(process.env.NODE_ENV === 'development')
   }
 });

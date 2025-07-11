@@ -1,0 +1,255 @@
+/* AdminLayout.css - Styles cho Admin Layout */
+
+.admin-layout {
+  min-height: 100vh;
+  background: #f0f2f5;
+}
+
+.admin-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.admin-sidebar {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-icon {
+  font-size: 24px;
+  color: #ffd700;
+}
+
+.logo-text {
+  margin-left: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+.admin-menu {
+  border-right: none;
+}
+
+.admin-menu .ant-menu-item {
+  margin: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.admin-menu .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.admin-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, #1890ff, #36cfc9);
+  color: white;
+}
+
+.admin-main-layout {
+  background: #f0f2f5;
+}
+
+.admin-header {
+  background: white;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 99;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sidebar-trigger {
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-trigger:hover {
+  background: #f0f0f0;
+  color: #1890ff;
+}
+
+.admin-breadcrumb h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notification-btn {
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.notification-btn:hover {
+  background: #f0f0f0;
+  color: #1890ff;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-info:hover {
+  background: #f0f0f0;
+}
+
+.user-avatar {
+  border: 2px solid #1890ff;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #262626;
+}
+
+.admin-content {
+  margin: 24px;
+  padding: 0;
+  min-height: calc(100vh - 112px);
+}
+
+.admin-content-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 100%;
+  padding: 24px;
+}
+
+/* Mobile Styles */
+.admin-mobile-drawer .ant-drawer-body {
+  padding: 0;
+  background: #001529;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-header {
+    padding: 0 16px;
+  }
+  
+  .admin-content {
+    margin: 16px;
+  }
+  
+  .admin-content-wrapper {
+    padding: 16px;
+  }
+  
+  .admin-breadcrumb h2 {
+    font-size: 18px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-header {
+    padding: 0 12px;
+  }
+  
+  .admin-content {
+    margin: 12px;
+  }
+  
+  .admin-content-wrapper {
+    padding: 12px;
+  }
+  
+  .admin-breadcrumb h2 {
+    font-size: 16px;
+  }
+}
+
+/* Animation */
+.admin-layout .ant-layout-sider-trigger {
+  background: #1890ff;
+  color: white;
+  border-radius: 0 6px 6px 0;
+  transition: all 0.3s ease;
+}
+
+.admin-layout .ant-layout-sider-trigger:hover {
+  background: #40a9ff;
+}
+
+/* Loading States */
+.admin-content-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+/* Success States */
+.admin-success-message {
+  background: linear-gradient(135deg, #52c41a, #73d13d);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* Error States */
+.admin-error-message {
+  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* Custom Scrollbar */
+.admin-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

@@ -120,13 +120,25 @@
     </div>
 
     <script>
-      // Simple loading screen removal
+      // Polyfills for production environment
+      if (typeof global === 'undefined') {
+        var global = globalThis;
+      }
+      if (typeof process === 'undefined') {
+        var process = { env: { NODE_ENV: 'production' } };
+      }
+
+      // Debug: Remove loading screen after 2 seconds regardless
       setTimeout(() => {
+        console.log('Removing loading screen...');
         const loadingDiv = document.querySelector('.app-loading');
         if (loadingDiv) {
           loadingDiv.style.display = 'none';
+          console.log('Loading screen removed');
+        } else {
+          console.log('Loading screen not found');
         }
-      }, 1000);
+      }, 2000);
     </script>
 
     <script type="module" src="/src/main.jsx"></script>

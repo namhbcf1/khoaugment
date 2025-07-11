@@ -8,7 +8,7 @@ import CryptoJS from 'crypto-js';
 // Security configuration
 const SECURITY_CONFIG = {
   // Encryption settings
-  ENCRYPTION_KEY: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_ENCRYPTION_KEY) || 'khoaugment-default-key-32-chars!!',
+  ENCRYPTION_KEY: import.meta.env?.VITE_ENCRYPTION_KEY || 'khoaugment-default-key-32-chars!!',
   IV_LENGTH: 16,
   
   // Session settings

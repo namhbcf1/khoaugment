@@ -10,10 +10,10 @@ const PAYMENT_GATEWAYS = {
   VNPAY: {
     name: 'VNPay',
     endpoint: 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
-    merchantId: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_VNPAY_MERCHANT_ID) || 'VNPAY_MERCHANT',
-    secretKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_VNPAY_SECRET_KEY) || 'VNPAY_SECRET',
-    returnUrl: `${window.location.origin}/payment/return`,
-    ipnUrl: `${window.location.origin}/api/payment/ipn`
+    merchantId: import.meta.env?.VITE_VNPAY_MERCHANT_ID || 'VNPAY_MERCHANT',
+    secretKey: import.meta.env?.VITE_VNPAY_SECRET_KEY || 'VNPAY_SECRET',
+    returnUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/payment/return`,
+    ipnUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/api/payment/ipn`
   },
   MOMO: {
     name: 'MoMo',

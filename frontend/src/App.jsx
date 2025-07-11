@@ -1,46 +1,56 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import { AuthProvider } from './auth/AuthContext';
-import AppRoutes from './routes.jsx';
+import Login from './pages/Login';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ProtectedRoute from './auth/ProtectedRoute';
+import { USER_ROLES } from './utils/constants/USER_ROLES.js';
 import './styles/globals.css';
 
 // Optimized theme - minimal effects for better performance
 const theme = {
   token: {
     colorPrimary: '#1890ff',
-    borderRadius: 6,
-    motionDurationSlow: '0.1s',
-    motionDurationMid: '0.1s',
-    motionDurationFast: '0.05s',
+    borderRadius: 8,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
   components: {
-    Card: {
-      boxShadow: 'none',
+    Layout: {
+      headerBg: '#001529',
+      siderBg: '#001529',
     },
-    Button: {
-      boxShadow: 'none',
+    Menu: {
+      darkItemBg: '#001529',
+      darkSubMenuItemBg: '#000c17',
     },
   },
 };
 
-function App() {
-  console.log('🚀 App component rendering...');
+const App = () => {
+  console.log('🚀 KhoChuan POS App initializing...');
 
-  // Simple and fast app initialization
+  // Production-ready app with comprehensive routing and authentication
   try {
     return (
       <ConfigProvider locale={viVN} theme={theme}>
         <BrowserRouter>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/admin/login" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+
+            {/* Default Redirects */}
+            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+            <Route path="/" element={<Navigate to="/admin/login" replace />} />
+            <Route path="*" element={<Navigate to="/admin/login" replace />} />
+          </Routes>
         </BrowserRouter>
       </ConfigProvider>
     );
   } catch (error) {
-    console.error('❌ Error in App component:', error);
+    console.error('❌ Error in KhoChuan POS App:', error);
     return (
       <div style={{
         display: 'flex',
@@ -75,6 +85,6 @@ function App() {
       </div>
     );
   }
-}
+};
 
 export default App;

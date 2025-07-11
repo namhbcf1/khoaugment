@@ -1,0 +1,93 @@
+/* DataTable.css - Styles cho Enhanced DataTable */
+
+.data-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.data-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.enhanced-table {
+  margin: 0;
+}
+
+.enhanced-table .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #262626;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.enhanced-table .ant-table-tbody > tr:hover > td {
+  background: #f5f5f5;
+}
+
+.enhanced-table .ant-table-tbody > tr.ant-table-row-selected > td {
+  background: #e6f7ff;
+}
+
+.enhanced-table .ant-table-pagination {
+  margin: 16px 24px;
+  text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .data-table-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .toolbar-left,
+  .toolbar-right {
+    justify-content: center;
+  }
+  
+  .toolbar-left .ant-input {
+    width: 100% !important;
+  }
+}
+
+/* Custom filter dropdown */
+.ant-table-filter-dropdown {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading state */
+.enhanced-table .ant-spin-container {
+  min-height: 200px;
+}
+
+/* Empty state */
+.enhanced-table .ant-empty {
+  padding: 40px 20px;
+}
+
+/* Selection info */
+.toolbar-left .ant-tag {
+  margin-left: 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}

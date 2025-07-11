@@ -16,7 +16,11 @@ import {
  * useAuthRedirect Hook - Auto redirect dựa trên role
  */
 export const useAuthRedirect = () => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuthRedirect must be used within an AuthProvider');
+  }
+  const { user, isAuthenticated, loading } = context;
   
   const getDefaultRoute = () => {
     if (!user) return '/login';
@@ -131,7 +135,11 @@ export const useAuthStorage = () => {
  * useRoleBasedNavigation Hook - Navigation dựa trên role
  */
 export const useRoleBasedNavigation = () => {
-  const { user, hasRole, hasAnyRole } = useAuth();
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useRoleBasedNavigation must be used within an AuthProvider');
+  }
+  const { user } = context;
   
   const getAvailableRoutes = () => {
     if (!user) return [];
@@ -139,7 +147,7 @@ export const useRoleBasedNavigation = () => {
     const routes = [];
     
     // Admin routes
-    if (hasAnyRole(['admin', 'manager'])) {
+    if (hasAnyRole(user, ['admin', 'manager'])) {
       routes.push(
         { path: '/admin/dashboard', name: 'Admin Dashboard', icon: 'HomeIcon' },
         { path: '/admin/products', name: 'Quản lý sản phẩm', icon: 'CubeIcon' },
@@ -150,7 +158,7 @@ export const useRoleBasedNavigation = () => {
     }
     
     // Staff management (Admin only)
-    if (hasRole('admin')) {
+    if (hasRole(user, 'admin')) {
       routes.push(
         { path: '/admin/staff', name: 'Quản lý nhân viên', icon: 'UserGroupIcon' },
         { path: '/admin/settings', name: 'Cài đặt hệ thống', icon: 'CogIcon' }
@@ -193,7 +201,7 @@ export const useRoleBasedNavigation = () => {
     
     for (const [pattern, roles] of Object.entries(routePermissions)) {
       if (routePath.startsWith(pattern)) {
-        return hasAnyRole(roles);
+        return hasAnyRole(user, roles);
       }
     }
     
@@ -210,7 +218,12 @@ export const useRoleBasedNavigation = () => {
  * useSessionTimeout Hook - Quản lý timeout session
  */
 export const useSessionTimeout = (timeoutMinutes = 30) => {
-  const { logout, isAuthenticated } = useAuth();
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useSessionTimeout must be used within an AuthProvider');
+  }
+  const { logout, user } = context;
+  const isAuthenticated = !!user;
   const [isIdle, setIsIdle] = useState(false);
   const [timeLeft, setTimeLeft] = useState(timeoutMinutes * 60);
   
@@ -279,23 +292,31 @@ export const useSessionTimeout = (timeoutMinutes = 30) => {
  * useAuthGuard Hook - Bảo vệ component/route
  */
 export const useAuthGuard = (requiredRole = null, requiredPermissions = []) => {
-  const { user, hasRole, hasAllPermissions, isAuthenticated, loading } = useAuth();
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuthGuard must be used within an AuthProvider');
+  }
+  const { user, isAuthenticated, loading } = context;
+
+  // Use permission functions
+  const userHasRole = (role) => hasRole(user, role);
+  const userHasAllPermissions = (permissions) => hasAllPermissions(user, permissions);
   
   const canAccess = () => {
     if (!isAuthenticated) return false;
-    
-    if (requiredRole && !hasRole(requiredRole)) return false;
-    
-    if (requiredPermissions.length > 0 && !hasAllPermissions(requiredPermissions)) {
+
+    if (requiredRole && !userHasRole(requiredRole)) return false;
+
+    if (requiredPermissions.length > 0 && !userHasAllPermissions(requiredPermissions)) {
       return false;
     }
-    
+
     return true;
   };
-  
+
   const getAccessDeniedReason = () => {
     if (!isAuthenticated) return 'Chưa đăng nhập';
-    if (requiredRole && !hasRole(requiredRole)) return `Cần quyền ${requiredRole}`;
+    if (requiredRole && !userHasRole(requiredRole)) return `Cần quyền ${requiredRole}`;
     if (requiredPermissions.length > 0) return 'Không đủ quyền truy cập';
     return null;
   };
@@ -382,7 +403,11 @@ export const useAuth = () => {
  * usePermissions Hook - Chỉ cho permissions
  */
 export const usePermissions = () => {
-  const { user } = useAuth();
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('usePermissions must be used within an AuthProvider');
+  }
+  const { user } = context;
   
   return {
     hasRole: (role) => hasRole(user, role),

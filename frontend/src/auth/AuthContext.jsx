@@ -1,6 +1,16 @@
+/**
+ * Authentication Context
+ * Global auth state management for KhoChuan POS System
+ *
+ * @author Trường Phát Computer
+ * @version 1.0.0
+ */
+
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { message } from 'antd';
-import { api } from '../services/api';
+import authService from '../services/api/authService.js';
+import { USER_ROLES } from '../utils/constants/USER_ROLES.js';
+import errorHandler from '../utils/helpers/errorHandler.js';
 
 // Initial state
 const initialState = {
@@ -98,6 +108,39 @@ const authReducer = (state, action) => {
     default:
       return state;
   }
+};
+
+// Helper function to get permissions by role
+const getPermissionsByRole = (role) => {
+  const permissions = {
+    admin: [
+      'dashboard.view',
+      'products.view', 'products.create', 'products.update', 'products.delete',
+      'inventory.view', 'inventory.update',
+      'orders.view', 'orders.create', 'orders.update', 'orders.delete',
+      'customers.view', 'customers.create', 'customers.update', 'customers.delete',
+      'staff.view', 'staff.create', 'staff.update', 'staff.delete',
+      'reports.view', 'reports.create',
+      'settings.view', 'settings.update',
+      'pos.use',
+    ],
+    cashier: [
+      'pos.use',
+      'orders.view', 'orders.create',
+      'customers.view', 'customers.create', 'customers.update',
+      'products.view',
+      'inventory.view',
+    ],
+    staff: [
+      'dashboard.view',
+      'sales.view',
+      'gamification.view',
+      'training.view',
+      'profile.view', 'profile.update',
+    ],
+  };
+
+  return permissions[role] || [];
 };
 
 // Create context
@@ -577,37 +620,4 @@ export const useAuth = () => {
   return context;
 };
 
-// Helper function to get permissions by role
-const getPermissionsByRole = (role) => {
-  const permissions = {
-    admin: [
-      'dashboard.view',
-      'products.view', 'products.create', 'products.update', 'products.delete',
-      'inventory.view', 'inventory.update',
-      'orders.view', 'orders.create', 'orders.update', 'orders.delete',
-      'customers.view', 'customers.create', 'customers.update', 'customers.delete',
-      'staff.view', 'staff.create', 'staff.update', 'staff.delete',
-      'reports.view', 'reports.create',
-      'settings.view', 'settings.update',
-      'pos.use',
-    ],
-    cashier: [
-      'pos.use',
-      'orders.view', 'orders.create',
-      'customers.view', 'customers.create', 'customers.update',
-      'products.view',
-      'inventory.view',
-    ],
-    staff: [
-      'dashboard.view',
-      'sales.view',
-      'gamification.view',
-      'training.view',
-      'profile.view', 'profile.update',
-    ],
-  };
-
-  return permissions[role] || [];
-};
-
-export default AuthContext; 
+export default AuthContext;
