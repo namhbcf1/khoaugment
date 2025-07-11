@@ -245,41 +245,89 @@ Build: ${import.meta.env.DEV ? 'development' : 'production'}
 
 // React 18 Root Creation and Error Boundaries
 const container = document.getElementById('root')
-const root = ReactDOM.createRoot(container)
 
-// Hide loading screen when React app is ready
-const hideLoadingScreen = () => {
-  console.log('🎯 Hiding loading screen - React app ready');
-  document.body.classList.add('app-ready');
+// Add error handling for React root creation
+try {
+  const root = ReactDOM.createRoot(container)
 
-  // Also remove the loading div after a short delay
-  setTimeout(() => {
-    const loadingDiv = document.querySelector('.app-loading');
-    if (loadingDiv) {
-      loadingDiv.remove();
-    }
-  }, 500);
-};
+  console.log('🚀 Creating React root and rendering app...');
 
-// Development vs Production rendering
-if (import.meta.env.DEV) {
-  // Development mode with React DevTools
-  root.render(
-    <React.StrictMode>
+  // Hide loading screen when React app is ready
+  const hideLoadingScreen = () => {
+    console.log('🎯 React app rendered - hiding loading screen');
+    document.body.classList.add('app-ready');
+
+    // Also remove the loading div after a short delay
+    setTimeout(() => {
+      const loadingDiv = document.querySelector('.app-loading');
+      if (loadingDiv) {
+        loadingDiv.remove();
+        console.log('🗑️ Loading div removed by React');
+      }
+    }, 500);
+  };
+
+  // Development vs Production rendering
+  if (import.meta.env.DEV) {
+    // Development mode with React DevTools
+    root.render(
+      <React.StrictMode>
+        <HelmetProvider>
+          <App />
+        </HelmetProvider>
+      </React.StrictMode>
+    )
+  } else {
+    // Production mode
+    root.render(
       <HelmetProvider>
         <App />
       </HelmetProvider>
-    </React.StrictMode>
-  )
+    )
+  }
+
+  // Hide loading screen after render
   hideLoadingScreen();
-} else {
-  // Production mode
-  root.render(
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  )
-  hideLoadingScreen();
+
+} catch (error) {
+  console.error('❌ Error creating React root:', error);
+
+  // Fallback: show error message and hide loading
+  document.body.classList.add('app-ready');
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    rootElement.innerHTML = `
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #1890ff 0%, #0958d9 100%);
+        color: white;
+        text-align: center;
+        padding: 20px;
+      ">
+        <h1>⚠️ Lỗi khởi tạo ứng dụng</h1>
+        <p>Có lỗi xảy ra khi khởi tạo React app</p>
+        <p style="font-size: 14px; opacity: 0.8; margin-top: 20px;">
+          Vui lòng thử refresh trang hoặc liên hệ hỗ trợ
+        </p>
+        <button onclick="window.location.reload()" style="
+          padding: 12px 24px;
+          background: white;
+          color: #1890ff;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          margin-top: 20px;
+          font-size: 16px;
+        ">
+          🔄 Refresh Trang
+        </button>
+      </div>
+    `;
+  }
 }
 
 // Hot Module Replacement for Development
@@ -306,8 +354,8 @@ if (import.meta.env.DEV) {
   })
 }
 
-// Export for testing purposes
-export { root }
+// Export for testing purposes (root is created inside try-catch)
+// export { root }
 
 // Console welcome message
 console.log(`
