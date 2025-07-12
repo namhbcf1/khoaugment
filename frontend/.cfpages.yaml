@@ -1,27 +1,44 @@
-# Cloudflare Pages configuration
+---
+# Cloudflare Pages Configuration
 build:
-  command: npm run build:cloudflare
+  command: npm run build
   environment:
-    NODE_VERSION: 18
-    NPM_VERSION: 9
+    NODE_ENV: production
 
-# Routes for SPA
+# MIME type configurations
+headers:
+  "/*.js":
+    Content-Type: application/javascript; charset=utf-8
+    Cache-Control: public, max-age=31536000, immutable
+
+  "/*.css":
+    Content-Type: text/css; charset=utf-8
+    Cache-Control: public, max-age=31536000, immutable
+
+  "/assets/*":
+    Content-Type: application/javascript; charset=utf-8
+    Cache-Control: public, max-age=31536000, immutable
+
+  "/sw.js":
+    Content-Type: application/javascript; charset=utf-8
+    Cache-Control: no-cache, no-store, must-revalidate
+
+  "/manifest.json":
+    Content-Type: application/manifest+json; charset=utf-8
+    Cache-Control: public, max-age=86400
+
+# Routing configuration
 routes:
-  - pattern: /assets/*
+  - pattern: "/assets/*.(js|css|json)"
     headers:
-      Content-Type: application/javascript
-  - pattern: /assets/*.js
+      Content-Type: "auto"
+
+  - pattern: "/*.(js|css|json)"
     headers:
-      Content-Type: application/javascript
-  - pattern: /assets/*.css
+      Content-Type: "auto"
+
+  - pattern: "/*"
     headers:
-      Content-Type: text/css
-  - pattern: /*.js
-    headers:
-      Content-Type: application/javascript
-  - pattern: /*.css
-    headers:
-      Content-Type: text/css
-  - pattern: /*
-    static: false
-    script: index.html
+      X-Frame-Options: DENY
+      X-Content-Type-Options: nosniff
+      Referrer-Policy: strict-origin-when-cross-origin

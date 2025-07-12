@@ -1,15 +1,145 @@
 import react from "@vitejs/plugin-react";
+import fs from "fs";
 import path from "path";
 import { defineConfig } from "vite";
 
+// Enhanced manifest plugin for Cloudflare with MIME type handling
+const cloudflareManifestPlugin = () => {
+  return {
+    name: "vite:cf-manifest",
+    generateBundle(_, bundle) {
+      // Generate a custom asset-manifest.json with content types
+      const manifest = {};
+      const contentTypes = {};
+
+      for (const fileName in bundle) {
+        const file = bundle[fileName];
+        const ext = path.extname(fileName);
+        let contentType = "text/plain";
+
+        // Map file extensions to MIME types
+        switch (ext) {
+          case ".js":
+          case ".mjs":
+            contentType = "application/javascript; charset=utf-8";
+            break;
+          case ".css":
+            contentType = "text/css; charset=utf-8";
+            break;
+          case ".json":
+            contentType = "application/json; charset=utf-8";
+            break;
+          case ".html":
+            contentType = "text/html; charset=utf-8";
+            break;
+          case ".svg":
+            contentType = "image/svg+xml";
+            break;
+          case ".png":
+            contentType = "image/png";
+            break;
+          case ".jpg":
+          case ".jpeg":
+            contentType = "image/jpeg";
+            break;
+          case ".webp":
+            contentType = "image/webp";
+            break;
+          case ".woff":
+            contentType = "font/woff";
+            break;
+          case ".woff2":
+            contentType = "font/woff2";
+            break;
+        }
+
+        manifest[fileName] = {
+          contentType,
+          path: fileName,
+        };
+
+        // Build pattern-based content type mapping
+        const pattern = ext ? `*${ext}` : fileName;
+        contentTypes[pattern] = contentType;
+      }
+
+      // Add the manifest to the bundle
+      this.emitFile({
+        type: "asset",
+        fileName: "cf-asset-manifest.json",
+        source: JSON.stringify(manifest, null, 2),
+      });
+
+      // Generate a content-types.json file for reference
+      this.emitFile({
+        type: "asset",
+        fileName: ".well-known/content-types.json",
+        source: JSON.stringify(contentTypes, null, 2),
+      });
+    },
+    closeBundle() {
+      // Ensure the dist directory exists
+      if (!fs.existsSync("dist")) {
+        return;
+      }
+
+      // Ensure .well-known directory exists
+      if (!fs.existsSync("dist/.well-known")) {
+        fs.mkdirSync("dist/.well-known", { recursive: true });
+      }
+
+      // Create a mime.types file for Cloudflare
+      const mimeTypesContent = `# MIME types for Cloudflare Pages
+application/javascript  js mjs
+text/css                css
+application/json        json
+text/html               html htm
+image/svg+xml           svg
+image/png               png
+image/jpeg              jpg jpeg
+image/webp              webp
+font/woff               woff
+font/woff2              woff2
+application/manifest+json  webmanifest
+`;
+
+      fs.writeFileSync("dist/.well-known/mime.types", mimeTypesContent);
+    },
+  };
+};
+
+// Plugin to fix HTML MIME type in index.html
+const fixHtmlPlugin = () => {
+  return {
+    name: "vite:fix-html",
+    generateBundle(_, bundle) {
+      // Check if index.html exists in the bundle
+      const indexHtml = bundle["index.html"];
+      if (indexHtml) {
+        // Add a special comment to enforce HTML MIME type
+        let content = indexHtml.source;
+        if (typeof content === "string") {
+          content = content.replace(
+            "<!DOCTYPE html>",
+            "<!DOCTYPE html>\n<!-- MIME Type: text/html -->\n"
+          );
+          indexHtml.source = content;
+        }
+      }
+    },
+  };
+};
+
 export default defineConfig({
-  // Base URL is important for asset paths
+  // Base URL is important for asset paths - must be "/" for Cloudflare Pages
   base: "/",
   plugins: [
     react({
       // Ensure React works in production mode
       jsxRuntime: "automatic",
     }),
+    cloudflareManifestPlugin(),
+    fixHtmlPlugin(),
   ],
   define: {
     "process.env": {},
@@ -29,6 +159,7 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@styles": path.resolve(__dirname, "./src/styles"),
     },
+    extensions: [".mjs", ".js", ".jsx", ".ts", ".tsx", ".json"],
   },
   build: {
     target: "es2020",
@@ -39,13 +170,12 @@ export default defineConfig({
     // Important settings for Cloudflare Pages
     assetsInlineLimit: 4096,
     cssCodeSplit: true,
-    modulePreload: {
-      polyfill: true,
-    },
-    // Ensure proper MIME types
+    modulePreload: false, // Disable modulePreload as it can cause MIME type issues
+    // Make sure all modules are valid JavaScript modules
     rollupOptions: {
       output: {
-        // Enforce .js extension and proper file naming for Cloudflare
+        format: "es",
+        // Make paths absolute to avoid problems with Cloudflare
         entryFileNames: "assets/[name]-[hash].js",
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
@@ -58,6 +188,8 @@ export default defineConfig({
           }
           return `assets/[name]-[hash][extname]`;
         },
+        // Ensure every module has the right MIME type
+        hoistTransitiveImports: false,
         // Chunking strategy
         manualChunks: (id) => {
           // React ecosystem
@@ -211,20 +343,16 @@ export default defineConfig({
     // Important: Ensure proper compression and optimize code
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: false, // Keep console for debugging in this case
         drop_debugger: true,
-        pure_funcs: [
-          "console.log",
-          "console.info",
-          "console.debug",
-          "console.warn",
-        ],
+        pure_funcs: ["console.debug"],
       },
     },
   },
   server: {
-    port: 3000,
-    host: true,
+    port: 5173,
+    strictPort: false,
+    cors: true,
     proxy: {
       "/api": {
         target: "http://localhost:8787",
@@ -233,8 +361,12 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router-dom", "antd"],
+  },
   preview: {
-    port: 3000,
-    host: true,
+    port: 5173,
+    strictPort: false,
+    cors: true,
   },
 });

@@ -1,0 +1,42 @@
+{
+  "name": "khoaugment",
+  "routes": [
+    {
+      "pattern": "/assets/*",
+      "script": null,
+      "style": null
+    },
+    {
+      "pattern": "/*.*",
+      "script": null,
+      "style": null
+    },
+    {
+      "pattern": "/*",
+      "script": "/assets/index.js",
+      "style": "/assets/index.css"
+    }
+  ],
+  "headers": {
+    "/*.js": {
+      "Content-Type": "application/javascript; charset=utf-8",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    },
+    "/*.css": {
+      "Content-Type": "text/css; charset=utf-8",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    },
+    "/assets/*.js": {
+      "Content-Type": "application/javascript; charset=utf-8",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    },
+    "/assets/*.css": {
+      "Content-Type": "text/css; charset=utf-8",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  },
+  "build": {
+    "command": "npm run build:cloudflare",
+    "output": "dist"
+  }
+}

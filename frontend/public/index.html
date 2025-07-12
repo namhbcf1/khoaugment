@@ -12,22 +12,52 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
 
+    <!-- Explicitly set Content-Type for this HTML document -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
     <!-- Ensure proper MIME types -->
     <script type="text/javascript">
-      // Force module detection
+      // Force module detection and workarounds for Cloudflare Pages
       window.__CF_APP_MODULES = true;
+      window.__VITE_ASSETS_FIX = true;
+
+      // Debug information for troubleshooting
+      window.CF_DEBUG = {
+        loaded: false,
+        errors: [],
+        warnings: [],
+        startTime: Date.now(),
+      };
 
       // Ensure all module scripts load properly
       window.moduleLoadErrors = [];
       window.addEventListener(
         "error",
         function (e) {
-          if (e.target.tagName === "SCRIPT" && e.target.type === "module") {
-            console.error("Module load error:", e);
+          // Track script errors
+          if (e.target && e.target.tagName === "SCRIPT") {
+            console.error("Script load error:", e);
             window.moduleLoadErrors.push({
               src: e.target.src,
+              type: e.target.type,
               error: e.error ? e.error.message : "Unknown error",
+              time: new Date().toISOString(),
             });
+            window.CF_DEBUG.errors.push({
+              type: "script-error",
+              src: e.target.src,
+              message: e.error ? e.error.message : "Unknown error",
+              time: Date.now() - window.CF_DEBUG.startTime,
+            });
+
+            // Try fallback mechanism for module scripts
+            if (e.target.type === "module") {
+              console.warn(
+                "Attempting fallback for module script:",
+                e.target.src
+              );
+              loadScriptWithFallback(e.target.src);
+            }
           }
         },
         true
@@ -41,10 +71,43 @@
           script.type = type || "text/javascript";
           script.async = true;
           script.onload = () => resolve();
-          script.onerror = (e) =>
+          script.onerror = (e) => {
+            window.CF_DEBUG.errors.push({
+              type: "load-script-error",
+              src: url,
+              scriptType: type,
+              time: Date.now() - window.CF_DEBUG.startTime,
+            });
             reject(new Error(`Script load error for ${url}`));
+          };
           document.head.appendChild(script);
         });
+      }
+
+      // Try multiple fallback mechanisms for module scripts
+      function loadScriptWithFallback(url) {
+        // First try with module type
+        const script = document.createElement("script");
+        script.type = "module";
+        script.setAttribute("data-fallback", "true");
+        script.src = url;
+
+        script.onerror = () => {
+          console.warn(
+            "Module fallback failed, trying with JavaScript MIME type"
+          );
+
+          // If module fails, try with explicit JavaScript MIME type
+          const scriptJs = document.createElement("script");
+          scriptJs.setAttribute("data-fallback", "true");
+          scriptJs.setAttribute("data-mime-override", "true");
+          scriptJs.type = "text/javascript"; // Try regular script as fallback
+          scriptJs.src = url;
+
+          document.head.appendChild(scriptJs);
+        };
+
+        document.head.appendChild(script);
       }
     </script>
 
@@ -74,14 +137,65 @@
             KhoAugment POS
           </div>
           <div style="font-size: 1rem; color: #666">Đang tải ứng dụng...</div>
+          <div
+            id="loading-progress"
+            style="
+              margin-top: 1rem;
+              height: 4px;
+              width: 200px;
+              background-color: #f0f0f0;
+              border-radius: 2px;
+              overflow: hidden;
+              margin: 1rem auto;
+            "
+          >
+            <div
+              id="progress-bar"
+              style="
+                height: 100%;
+                width: 0%;
+                background-color: #1890ff;
+                transition: width 0.3s ease;
+              "
+            ></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Use script tag with explicit type and preload key modules -->
-    <script type="module">
-      // Import the module loader wrapper
-      import "/src/main-module.js";
+    <!-- Simulate loading progress -->
+    <script type="text/javascript">
+      (function () {
+        let progress = 0;
+        const progressBar = document.getElementById("progress-bar");
+        const interval = setInterval(() => {
+          if (progress < 90) {
+            progress += Math.random() * 10;
+            progressBar.style.width = `${progress}%`;
+          } else if (window.CF_DEBUG && window.CF_DEBUG.loaded) {
+            progressBar.style.width = "100%";
+            clearInterval(interval);
+          }
+        }, 300);
+
+        // Set timeout to show error if app doesn't load
+        setTimeout(() => {
+          if (!window.CF_DEBUG || !window.CF_DEBUG.loaded) {
+            const root = document.getElementById("root");
+            if (root) {
+              window.CF_DEBUG.warnings.push("Application load timeout reached");
+              console.warn("Application load timeout reached");
+            }
+          }
+        }, 10000);
+      })();
     </script>
+
+    <!-- Use script tag with explicit type for main module -->
+    <script
+      type="module"
+      src="/src/main-module.js"
+      onerror="console.error('Failed to load main module')"
+    ></script>
   </body>
 </html>

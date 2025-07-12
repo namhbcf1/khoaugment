@@ -4,42 +4,114 @@ on:
   push:
     branches: [main]
     paths:
-      - 'frontend/**'
-      - '.github/workflows/deploy-frontend.yml'
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
   workflow_dispatch:
 
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-      
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
       - name: Install dependencies
         run: |
           cd frontend
-          npm ci
-      
-      - name: Build frontend
+          npm ci --legacy-peer-deps
+
+      - name: Build frontend with Cloudflare optimizations
         run: |
           cd frontend
-          npm run build
+          npm run build:cloudflare
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
-          VITE_ENVIRONMENT: 'production'
-      
+          VITE_ENVIRONMENT: "production"
+
+      - name: Verify MIME type configuration
+        run: |
+          cd frontend
+          echo "Checking for MIME type configuration files..."
+          if [ ! -f "dist/_headers" ]; then
+            echo "Warning: _headers file is missing!"
+            exit 1
+          else
+            echo "✅ _headers file found"
+            grep -q "Content-Type" dist/_headers && echo "✅ Content-Type headers found" || echo "⚠️ Content-Type headers missing in _headers file"
+          fi
+
+          if [ ! -f "dist/_routes.json" ]; then
+            echo "Warning: _routes.json file is missing!"
+            exit 1
+          else
+            echo "✅ _routes.json file found"
+            grep -q "Content-Type" dist/_routes.json && echo "✅ Content-Type routes found" || echo "⚠️ Content-Type headers missing in _routes.json file"
+          fi
+
+          if [ ! -f "dist/.well-known/content-types.json" ]; then
+            echo "Warning: .well-known/content-types.json file is missing!"
+            echo "Creating directory and empty file..."
+            mkdir -p dist/.well-known
+            echo "{}" > dist/.well-known/content-types.json
+          else
+            echo "✅ content-types.json file found"
+          fi
+
+          if [ ! -f "dist/module-loader.js" ]; then
+            echo "Warning: module-loader.js is missing!"
+            exit 1
+          else
+            echo "✅ module-loader.js found"
+          fi
+
+          echo "Listing dist directory:"
+          ls -la dist/
+          echo "Listing assets directory:"
+          ls -la dist/assets/ || echo "No assets directory found!"
+
+          echo "Checking for fallback files:"
+          [ -f "dist/200.html" ] && echo "✅ 200.html found" || echo "⚠️ 200.html missing"
+          [ -f "dist/404.html" ] && echo "✅ 404.html found" || echo "⚠️ 404.html missing"
+
+          echo "Creating additional safety measures for MIME types..."
+          # Create a web_config.json file for additional MIME types
+          cat > dist/web_config.json << EOF
+          {
+            "mimeTypes": {
+              ".js": "application/javascript; charset=utf-8",
+              ".mjs": "application/javascript; charset=utf-8",
+              ".css": "text/css; charset=utf-8",
+              ".json": "application/json; charset=utf-8",
+              ".html": "text/html; charset=utf-8",
+              ".svg": "image/svg+xml",
+              ".png": "image/png",
+              ".jpg": "image/jpeg",
+              ".jpeg": "image/jpeg",
+              ".webp": "image/webp",
+              ".woff": "font/woff",
+              ".woff2": "font/woff2"
+            }
+          }
+          EOF
+          echo "✅ Created web_config.json"
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy frontend/dist --project-name=khoaugment
+          command: pages deploy frontend/dist --project-name="khoaugment" --commit-message="Deploy from GitHub Actions" --branch=main --no-bundle
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment completed. Site will be available at https://khoaugment.pages.dev"
+          echo "Please verify that assets are served with correct MIME types"
