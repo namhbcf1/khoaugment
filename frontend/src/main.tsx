@@ -1,73 +1,47 @@
-import { ConfigProvider } from "antd";
-import viVN from "antd/locale/vi_VN";
-import dayjs from "dayjs";
-import "dayjs/locale/vi";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
 
-// Configure dayjs locale
-dayjs.locale("vi");
-
-// Create QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-    },
-  },
+// Global error handler for unhandled promises
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("Unhandled promise rejection:", event.reason);
+  event.preventDefault();
 });
 
-// Ant Design theme configuration
-const theme = {
-  token: {
-    colorPrimary: "#1890ff",
-    colorSuccess: "#52c41a",
-    colorWarning: "#faad14",
-    colorError: "#ff4d4f",
-    borderRadius: 6,
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-  },
-  components: {
-    Button: {
-      borderRadius: 6,
-    },
-    Card: {
-      borderRadius: 8,
-    },
-    Input: {
-      borderRadius: 6,
-    },
-    Select: {
-      borderRadius: 6,
-    },
-  },
-};
+// Global error handler
+window.addEventListener("error", (event) => {
+  console.error("Global error:", event.error);
+});
 
-// Use direct DOM access to check for root element
-const rootElement = document.getElementById("root");
-
-if (rootElement) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <React.StrictMode>
-      <HelmetProvider>
-        <BrowserRouter>
-          <QueryClientProvider client={queryClient}>
-            <ConfigProvider locale={viVN} theme={theme}>
-              <App />
-            </ConfigProvider>
-          </QueryClientProvider>
-        </BrowserRouter>
-      </HelmetProvider>
-    </React.StrictMode>
-  );
+// Define version globally if not already defined
+// Define window app version
+interface WindowWithAppVersion extends Window {
+  __APP_VERSION__?: string;
 }
+
+if (typeof (window as WindowWithAppVersion).__APP_VERSION__ === "undefined") {
+  (window as WindowWithAppVersion).__APP_VERSION__ = "1.0.0";
+}
+
+// Ensure environment variables are available
+console.log(
+  "🚀 App starting with version:",
+  (window as WindowWithAppVersion).__APP_VERSION__ || "unknown"
+);
+console.log("🌍 Environment:", import.meta.env.MODE || "development");
+
+// Mount React app with error boundary
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Failed to find the root element");
+}
+
+ReactDOM.createRoot(rootElement).render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+);

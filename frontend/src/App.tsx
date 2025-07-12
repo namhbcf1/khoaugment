@@ -1,201 +1,196 @@
-import { Spin } from "antd";
-import React, { Suspense } from "react";
-import { Helmet } from "react-helmet-async";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { Route, Routes } from "react-router-dom";
+import { ConfigProvider } from "antd";
+import viVN from "antd/locale/vi_VN";
+import React, { useEffect, useState } from "react";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
 import "./App.css";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import ErrorBoundary from "./components/common/ErrorBoundary";
-import { useAuthStore } from "./stores/authStore";
 
-// Lazy load pages for better performance
-const HomePage = React.lazy(() => import("./pages/HomePage"));
-const LoginPage = React.lazy(() => import("./pages/LoginPage"));
+// Layouts
+import AdminLayout from "./components/layout/AdminLayout";
+import CashierLayout from "./components/layout/CashierLayout";
+import MainLayout from "./components/layout/MainLayout";
 
-// Admin pages
-const AdminDashboard = React.lazy(
-  () => import("./pages/admin/Dashboard/Dashboard")
-);
-const ProductsPage = React.lazy(
-  () => import("./pages/admin/Products/ProductsPage")
-);
-const OrdersPage = React.lazy(() => import("./pages/admin/Orders/OrdersList"));
-const InventoryPage = React.lazy(
-  () => import("./pages/admin/Inventory/InventoryPage")
-);
-const CustomersPage = React.lazy(
-  () => import("./pages/admin/Customers/CustomersPage")
-);
-const ReportsPage = React.lazy(
-  () => import("./pages/admin/Reports/ReportsPage")
-);
-const SettingsPage = React.lazy(
-  () => import("./pages/admin/Settings/SettingsPage")
-);
+// Pages
+import Analytics from "./pages/Analytics";
+import Customers from "./pages/Customers";
+import Dashboard from "./pages/Dashboard";
+import Inventory from "./pages/Inventory";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Orders from "./pages/Orders";
+import POSTerminal from "./pages/POS";
+import Products from "./pages/Products";
 
-// Cashier pages
-const POSTerminalPage = React.lazy(() => import("./pages/cashier/POS/POSPage"));
-const CashierOrdersPage = React.lazy(
-  () => import("./pages/cashier/Orders/OrdersList")
-);
-const CashierCustomersPage = React.lazy(
-  () => import("./pages/cashier/Customers/CustomersList")
-);
+// Import the settings page from the admin directory
+import SettingsPage from "./pages/admin/Settings/SettingsPage";
 
-// Common pages
-const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
+// Types
 
-// Create QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Error boundary
+import ErrorBoundary from "./components/ErrorBoundary";
 
+// Define window app version
+interface WindowWithAppVersion extends Window {
+  __APP_VERSION__?: string;
+}
+
+// Main application component
 const App: React.FC = () => {
-  const { user, loading } = useAuthStore();
+  const [loaded, setLoaded] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [authenticated, setAuthenticated] = useState<boolean>(true); // For demo, set to true
 
-  if (loading) {
+  useEffect(() => {
+    // Initialize app and check version
+    try {
+      console.log(
+        "App initializing with version:",
+        (window as WindowWithAppVersion).__APP_VERSION__ || "unknown"
+      );
+
+      // Simulate API check or authentication
+      setTimeout(() => {
+        setLoaded(true);
+      }, 1000);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Unknown error during initialization";
+      console.error("Error during app initialization:", err);
+      setError(errorMessage);
+    }
+  }, []);
+
+  // Show error state if something went wrong
+  if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <h2 style={{ color: "#ff4d4f" }}>Application Error</h2>
+        <p>{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: "10px 20px",
+            background: "#1890ff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            marginTop: "20px",
+            cursor: "pointer",
+          }}
+        >
+          Reload Application
+        </button>
       </div>
     );
   }
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <Helmet>
-          <title>KhoAugment POS - Hệ thống bán hàng chuyên nghiệp</title>
-          <meta
-            name="description"
-            content="Hệ thống bán hàng Point of Sale chuyên nghiệp cho thị trường Việt Nam"
+  // Show a loading state
+  if (!loaded) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              border: "4px solid #f3f3f3",
+              borderTop: "4px solid #1890ff",
+              borderRadius: "50%",
+              width: "30px",
+              height: "30px",
+              margin: "0 auto",
+              animation: "spin 1s linear infinite",
+            }}
           />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-          <meta name="theme-color" content="#1890ff" />
-        </Helmet>
+          <p style={{ marginTop: "20px" }}>Loading application...</p>
+        </div>
+      </div>
+    );
+  }
 
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center min-h-screen">
-              <Spin size="large" />
-            </div>
-          }
-        >
+  // Render the application with routing
+  return (
+    <ErrorBoundary>
+      <ConfigProvider
+        locale={viVN}
+        theme={{
+          token: {
+            colorPrimary: "#1890ff",
+          },
+        }}
+      >
+        <Router>
           <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/login"
+              element={!authenticated ? <Login /> : <Navigate to="/" />}
+            />
 
             {/* Admin Routes */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
+                authenticated ? <AdminLayout /> : <Navigate to="/login" />
               }
-            />
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/products"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <ProductsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/inventory"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <InventoryPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/orders"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <OrdersPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/customers"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <CustomersPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/reports"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <ReportsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/settings"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <SettingsPage />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route
+                index
+                element={<Navigate to="/admin/dashboard" replace />}
+              />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="products" element={<Products />} />
+              <Route path="inventory" element={<Inventory />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
 
             {/* Cashier Routes */}
             <Route
               path="/pos"
               element={
-                <ProtectedRoute requiredRole={["admin", "cashier"]}>
-                  <POSTerminalPage />
-                </ProtectedRoute>
+                authenticated ? <CashierLayout /> : <Navigate to="/login" />
               }
-            />
-            <Route
-              path="/pos/orders"
-              element={
-                <ProtectedRoute requiredRole={["admin", "cashier"]}>
-                  <CashierOrdersPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pos/customers"
-              element={
-                <ProtectedRoute requiredRole={["admin", "cashier"]}>
-                  <CashierCustomersPage />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route index element={<POSTerminal />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="customers" element={<Customers />} />
+            </Route>
 
-            {/* Main Route */}
-            <Route path="/" element={<HomePage />} />
+            {/* Main Routes */}
+            <Route
+              path="/"
+              element={
+                authenticated ? <MainLayout /> : <Navigate to="/login" />
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="products" element={<Products />} />
+              <Route path="inventory" element={<Inventory />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
 
             {/* 404 Route */}
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </Suspense>
-      </ErrorBoundary>
-    </QueryClientProvider>
+        </Router>
+      </ConfigProvider>
+    </ErrorBoundary>
   );
 };
 

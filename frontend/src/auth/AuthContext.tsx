@@ -1,6 +1,6 @@
 /**
  * Authentication Context
- * Global auth state management for KhoAugment POS System
+ * Global auth state management for KhoChuan POS System
  *
  * @author Trường Phát Computer
  * @version 1.0.0
@@ -12,43 +12,51 @@ import React, {
   ReactNode,
   createContext,
   useCallback,
+  useContext,
   useEffect,
   useState,
 } from "react";
-import { apiClient } from "../services/api/apiClient";
-import { API_ENDPOINTS } from "../utils/constants/API_ENDPOINTS";
+import apiClient from "../services/apiClient";
+import API_ENDPOINTS from "../utils/constants/API_ENDPOINTS";
+import { UserRole } from "../utils/constants/USER_ROLES";
 
 // User interface
 export interface User {
   id: number;
   email: string;
-  role: "admin" | "cashier" | "staff";
   full_name: string;
-  active?: boolean;
-  phone?: string;
-  avatar_url?: string;
-  last_login?: string;
+  role: UserRole;
+  [key: string]: any; // For additional properties
 }
 
 // JWT Token payload interface
-interface JwtPayload {
-  sub: string | number;
+interface JWTPayload {
+  sub: string;
   exp: number;
   iat: number;
   user_id: number;
+  email: string;
   role: string;
   [key: string]: any;
 }
 
-// Authentication context interface
-interface AuthContextType {
+// Login response interface
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: User;
+  permissions: string[];
+  roles: string[];
+}
+
+// Auth context interface
+export interface AuthContextType {
   user: User | null;
   permissions: string[];
   roles: string[];
   loading: boolean;
-  initialized: boolean;
-  error: string | null;
   isAuthenticated: boolean;
+  error: string | null;
   login: (
     email: string,
     password: string
@@ -56,22 +64,38 @@ interface AuthContextType {
   logout: () => Promise<void>;
   hasPermission: (permissionName: string) => boolean;
   hasRole: (roleName: string) => boolean;
+  checkSession: () => Promise<boolean>;
+  refreshAuth: () => Promise<boolean>;
   changePassword: (
     currentPassword: string,
     newPassword: string
   ) => Promise<boolean>;
   requestPasswordReset: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
-  refreshToken: () => Promise<boolean>;
-}
-
-// Auth Provider Props
-interface AuthProviderProps {
-  children: ReactNode;
 }
 
 // Create context with default values
-export const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  permissions: [],
+  roles: [],
+  loading: false,
+  isAuthenticated: false,
+  error: null,
+  login: async () => ({ success: false, user: {} as User, message: "" }),
+  logout: async () => {},
+  hasPermission: () => false,
+  hasRole: () => false,
+  checkSession: async () => false,
+  refreshAuth: async () => false,
+  changePassword: async () => false,
+  requestPasswordReset: async () => false,
+  resetPassword: async () => false,
+});
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -110,9 +134,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Parse JWT token
-  const parseToken = (token: string): JwtPayload | null => {
+  const parseToken = (token: string): JWTPayload | null => {
     try {
-      return jwtDecode<JwtPayload>(token);
+      return jwtDecode<JWTPayload>(token);
     } catch (error) {
       console.error("Failed to parse token:", error);
       return null;
@@ -166,19 +190,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Fetch current user data
   const fetchUserData = async (): Promise<void> => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.AUTH.ME);
+      const response = await apiClient.get<{
+        user: User;
+        permissions: string[];
+        roles: string[];
+      }>(API_ENDPOINTS.AUTH.STATUS);
 
-      if (response.data.success) {
-        const userData = response.data.data;
+      if (response.success) {
+        const userData = response.data!;
         setUser(userData.user);
         setPermissions(userData.permissions || []);
         setRoles(userData.roles || []);
       } else {
-        throw new Error(response.data.message || "Failed to fetch user data");
+        throw new Error(response.error || "Failed to fetch user data");
       }
     } catch (error) {
       console.error("Fetch user data error:", error);
-      logout();
+      await logout();
       throw error;
     }
   };
@@ -191,12 +219,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error("No refresh token available");
       }
 
-      const response = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
-        refresh_token: refreshToken,
-      });
+      const response = await apiClient.post<{
+        access_token: string;
+        refresh_token: string;
+      }>(API_ENDPOINTS.AUTH.REFRESH_TOKEN, { refresh_token: refreshToken });
 
-      if (response.data.success) {
-        const { access_token, refresh_token } = response.data.data;
+      if (response.success) {
+        const { access_token, refresh_token } = response.data!;
         setToken(access_token);
         setRefreshToken(refresh_token);
 
@@ -204,13 +233,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await fetchUserData();
         return true;
       } else {
-        throw new Error(response.data.message || "Token refresh failed");
+        throw new Error(response.error || "Token refresh failed");
       }
     } catch (error) {
       console.error("Token refresh error:", error);
-      logout();
+      await logout();
       return false;
     }
+  };
+
+  // Check session validity
+  const checkSession = async (): Promise<boolean> => {
+    const token = getToken();
+    if (!token || isTokenExpired(token)) {
+      return false;
+    }
+
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.AUTH.STATUS);
+      return response.success;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // Refresh authentication
+  const refreshAuth = async (): Promise<boolean> => {
+    return await refreshUserToken();
   };
 
   // Login user
@@ -220,14 +269,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   ): Promise<{ success: boolean; user: User; message: string }> => {
     setLoading(true);
     try {
-      const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, {
-        email,
-        password,
-      });
+      const response = await apiClient.post<LoginResponse>(
+        API_ENDPOINTS.AUTH.LOGIN,
+        { email, password }
+      );
 
-      if (response.data.success) {
+      if (response.success) {
         const { access_token, refresh_token, user, permissions, roles } =
-          response.data.data;
+          response.data!;
 
         setToken(access_token);
         setRefreshToken(refresh_token);
@@ -238,16 +287,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return {
           success: true,
           user,
-          message: response.data.message,
+          message: response.error || "Login successful",
         };
       } else {
-        throw new Error(response.data.message || "Login failed");
+        throw new Error(response.error || "Login failed");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
-      setError(
-        error.response?.data?.message || error.message || "Login failed"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Login failed";
+      setError(errorMessage);
       throw error;
     } finally {
       setLoading(false);
@@ -289,6 +338,89 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return roles.includes(roleName);
   };
 
+  // Change password
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<boolean> => {
+    try {
+      const response = await apiClient.post(
+        API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+        {
+          current_password: currentPassword,
+          new_password: newPassword,
+        }
+      );
+
+      if (response.success) {
+        message.success("Mật khẩu đã được thay đổi thành công");
+        return true;
+      } else {
+        message.error(response.error || "Không thể thay đổi mật khẩu");
+        return false;
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Không thể thay đổi mật khẩu";
+      message.error(errorMessage);
+      return false;
+    }
+  };
+
+  // Request password reset
+  const requestPasswordReset = async (email: string): Promise<boolean> => {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+        email,
+      });
+
+      if (response.success) {
+        message.success(
+          "Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn"
+        );
+        return true;
+      } else {
+        message.error(response.error || "Không thể gửi email đặt lại mật khẩu");
+        return false;
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Không thể gửi email đặt lại mật khẩu";
+      message.error(errorMessage);
+      return false;
+    }
+  };
+
+  // Reset password with token
+  const resetPassword = async (
+    token: string,
+    newPassword: string
+  ): Promise<boolean> => {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+        token,
+        password: newPassword,
+      });
+
+      if (response.success) {
+        message.success(
+          "Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập."
+        );
+        return true;
+      } else {
+        message.error(response.error || "Không thể đặt lại mật khẩu");
+        return false;
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Không thể đặt lại mật khẩu";
+      message.error(errorMessage);
+      return false;
+    }
+  };
+
   // Initialize auth on component mount
   useEffect(() => {
     initializeAuth();
@@ -309,134 +441,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Set up refresh timer
     const refreshTimer = setTimeout(
-      () => {
-        refreshUserToken().catch((error) => {
-          console.error("Auto refresh token error:", error);
-        });
-      },
-      expiresIn > 0 ? expiresIn : 0
+      refreshUserToken,
+      Math.max(1000, expiresIn)
     );
 
     return () => clearTimeout(refreshTimer);
   }, [user]);
 
-  // Change password
-  const changePassword = async (
-    currentPassword: string,
-    newPassword: string
-  ): Promise<boolean> => {
-    try {
-      const response = await apiClient.post(
-        API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
-        {
-          current_password: currentPassword,
-          new_password: newPassword,
-        }
-      );
+  const isAuthenticated = !!user;
 
-      if (response.data.success) {
-        message.success("Password changed successfully");
-        return true;
-      } else {
-        throw new Error(response.data.message || "Failed to change password");
-      }
-    } catch (error: any) {
-      console.error("Change password error:", error);
-      message.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to change password"
-      );
-      throw error;
-    }
-  };
-
-  // Request password reset
-  const requestPasswordReset = async (email: string): Promise<boolean> => {
-    try {
-      const response = await apiClient.post(
-        API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
-        {
-          email,
-        }
-      );
-
-      if (response.data.success) {
-        message.success("Password reset instructions sent to your email");
-        return true;
-      } else {
-        throw new Error(
-          response.data.message || "Failed to request password reset"
-        );
-      }
-    } catch (error: any) {
-      console.error("Request password reset error:", error);
-      message.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to request password reset"
-      );
-      throw error;
-    }
-  };
-
-  // Reset password with token
-  const resetPassword = async (
-    token: string,
-    newPassword: string
-  ): Promise<boolean> => {
-    try {
-      const response = await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
-        token,
-        password: newPassword,
-      });
-
-      if (response.data.success) {
-        message.success("Password has been reset successfully");
-        return true;
-      } else {
-        throw new Error(response.data.message || "Failed to reset password");
-      }
-    } catch (error: any) {
-      console.error("Reset password error:", error);
-      message.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to reset password"
-      );
-      throw error;
-    }
-  };
-
-  // Context value
-  const value: AuthContextType = {
+  const contextValue: AuthContextType = {
     user,
     permissions,
     roles,
     loading,
-    initialized,
+    isAuthenticated,
     error,
-    isAuthenticated: !!user,
     login,
     logout,
     hasPermission,
     hasRole,
+    checkSession,
+    refreshAuth,
     changePassword,
     requestPasswordReset,
     resetPassword,
-    refreshToken: refreshUserToken,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 };
 
-// Custom hook to use auth context
+// Custom hook for using auth
 export const useAuth = (): AuthContextType => {
-  const context = React.useContext(AuthContext);
+  const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-export default AuthContext;
+export default AuthProvider;

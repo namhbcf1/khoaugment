@@ -10,16 +10,18 @@ import { ExclamationCircleOutlined, LockOutlined } from "@ant-design/icons";
 import { Button, Result, Spin } from "antd";
 import React, { ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuthStore } from "../stores/authStore";
+import { USER_ROLES, UserRole } from "../utils/constants/USER_ROLES";
+import { useAuth } from "./AuthContext";
 
 /**
- * Error handler for TS compatibility
- * In a real implementation, this would be properly typed
+ * Error handler utility for TypeScript compatibility
  */
 const errorHandler = {
-  handle: (error: unknown, context: Record<string, string>) => {
-    // Simple version for TypeScript compatibility
-    console.error("Error in protected route:", error, context);
+  handle: (
+    error: unknown,
+    context: { component: string; location: string }
+  ): void => {
+    console.error("Protected route error:", error, context);
   },
 };
 
@@ -27,55 +29,38 @@ const errorHandler = {
  * Props for the ProtectedRoute component
  */
 interface ProtectedRouteProps {
-  /** Child components to render */
   children: ReactNode;
-  /** Required user roles to access the route */
-  requiredRole?: string | string[];
-  /** Required permissions to access the route */
+  requiredRoles?: UserRole | UserRole[] | null;
   requiredPermissions?: string | string[];
-  /** Whether authentication is required */
   requireAuth?: boolean;
-  /** Custom redirect path */
   redirectTo?: string;
-  /** Custom fallback component */
   fallback?: ReactNode;
-  /** Show unauthorized page instead of redirect */
   showUnauthorized?: boolean;
 }
 
 /**
  * ProtectedRoute Component
- * Route protection wrapper with role and permission-based access control
+ * @param {ProtectedRouteProps} props - Component props
+ * @returns {JSX.Element} Protected route content
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  requiredRole = null,
+  requiredRoles = null,
   requiredPermissions = [],
   requireAuth = true,
-  redirectTo = "/login",
+  redirectTo = "/admin/login",
   fallback = null,
   showUnauthorized = true,
 }) => {
-  // For the TypeScript version, we're using a simplified auth interface
-  // Adapt this to match your actual auth store
-  const authStore = useAuthStore();
-  const user = authStore.user;
-  const loading = authStore.loading;
-  const isAuthenticated = !!user;
-
-  // Role and permission checks
-  const hasRole = (role: string) => {
-    if (!user) return false;
-    return user.role === role || role === "any";
-  };
-
-  const hasPermission = (permission: string) => {
-    // Simplified permission check - in a real app, implement proper permission checking
-    if (!user) return false;
-    // Admin has all permissions
-    if (user.role === "admin") return true;
-    return false;
-  };
+  const {
+    user,
+    loading,
+    isAuthenticated,
+    hasRole,
+    hasPermission,
+    checkSession,
+    refreshAuth,
+  } = useAuth();
 
   const location = useLocation();
   const [sessionChecked, setSessionChecked] = useState<boolean>(false);
@@ -83,16 +68,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check session validity on mount
   useEffect(() => {
-    const validateSession = async () => {
+    const validateSession = async (): Promise<void> => {
       try {
-        // Set session as checked - in a real implementation,
-        // we would verify the session with an API call
-        setSessionChecked(true);
+        if (requireAuth && isAuthenticated) {
+          const isValid = await checkSession?.();
+          if (!isValid && refreshAuth) {
+            // Try to refresh authentication
+            const refreshed = await refreshAuth();
+            if (!refreshed) {
+              setAuthError("Session expired");
+            }
+          }
+        }
       } catch (error) {
         const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Unknown authentication error";
+          error instanceof Error ? error.message : "Authentication error";
         setAuthError(errorMessage);
         errorHandler.handle(error, {
           component: "ProtectedRoute",
@@ -104,7 +94,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     };
 
     validateSession();
-  }, [location.pathname]);
+  }, [
+    requireAuth,
+    isAuthenticated,
+    checkSession,
+    refreshAuth,
+    location.pathname,
+  ]);
 
   // Show loading spinner while checking authentication
   if (loading || !sessionChecked) {
@@ -149,8 +145,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check role requirements
-  if (requiredRole && isAuthenticated) {
-    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  if (requiredRoles && isAuthenticated) {
+    const roles = Array.isArray(requiredRoles)
+      ? requiredRoles
+      : [requiredRoles];
     const hasRequiredRole = roles.some((role) => hasRole(role));
 
     if (!hasRequiredRole) {
@@ -181,17 +179,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check permission requirements
-  if (requiredPermissions && isAuthenticated) {
+  if (requiredPermissions.length > 0 && isAuthenticated) {
     const permissions = Array.isArray(requiredPermissions)
       ? requiredPermissions
       : [requiredPermissions];
-
-    const hasAllPermissions = permissions.every(
-      (permission) =>
-        typeof permission === "string" && hasPermission(permission)
+    const hasAllPermissions = permissions.every((permission) =>
+      hasPermission(permission)
     );
 
-    if (!hasAllPermissions && permissions.length > 0) {
+    if (!hasAllPermissions) {
       if (showUnauthorized) {
         return (
           <Result
@@ -228,14 +224,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 };
 
 /**
- * HOC configuration interface
+ * Configuration for the withProtection HOC
  */
 interface ProtectionConfig extends Omit<ProtectedRouteProps, "children"> {}
 
 /**
  * Higher-order component for protecting routes
+ * @param {ProtectionConfig} config - Protection configuration
+ * @returns {Function} HOC function
  */
-export const withProtection = (config: ProtectionConfig = {}) => {
+export const withProtection = (
+  config: ProtectionConfig = {} as ProtectionConfig
+) => {
   return <P extends object>(Component: React.ComponentType<P>): React.FC<P> => {
     const ProtectedComponent: React.FC<P> = (props) => (
       <ProtectedRoute {...config}>
@@ -253,17 +253,17 @@ export const withProtection = (config: ProtectionConfig = {}) => {
  */
 export const PROTECTION_CONFIGS: Record<string, ProtectionConfig> = {
   ADMIN_ONLY: {
-    requiredRole: "admin",
+    requiredRoles: [USER_ROLES.ADMIN],
     showUnauthorized: true,
   },
 
   STAFF_AND_ADMIN: {
-    requiredRole: ["admin", "staff"],
+    requiredRoles: [USER_ROLES.ADMIN, USER_ROLES.STAFF],
     showUnauthorized: true,
   },
 
   CASHIER_ACCESS: {
-    requiredRole: ["admin", "cashier", "staff"],
+    requiredRoles: [USER_ROLES.ADMIN, USER_ROLES.CASHIER, USER_ROLES.STAFF],
     showUnauthorized: true,
   },
 
