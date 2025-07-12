@@ -43,6 +43,10 @@ import { formatCurrency, showSuccessNotification, showErrorNotification, formatD
 import { PRODUCT_CATEGORIES, UPLOAD_CONFIG } from '../utils/constants';
 import { api } from '../services/api';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
+import productService from '../services/api/productService';
+import Unauthorized from '../components/Common/Unauthorized';
+import Loading from '../components/Common/Loading';
+import ErrorMessage from '../components/Common/ErrorMessage';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -50,9 +54,11 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const Products = () => {
-  const { user, canManageProducts } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { user, hasPermission } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [categories, setCategories] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -64,19 +70,35 @@ const Products = () => {
     status: 'all',
     lowStock: false
   });
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 20,
-    total: 0
-  });
   const [form] = Form.useForm();
   const [bulkForm] = Form.useForm();
 
+  if (!hasPermission('products.view')) {
+    return <Unauthorized />;
+  }
+
   useEffect(() => {
-    loadProducts();
-    loadCategories();
-    loadStatistics();
-  }, [filters, pagination.current, pagination.pageSize]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsRes, categoriesRes] = await Promise.all([
+          productService.getAll({ page: pagination.current, limit: pagination.pageSize }),
+          productService.getCategories()
+        ]);
+        setProducts(productsRes.data);
+        setPagination(prev => ({ ...prev, total: productsRes.total }));
+        setCategories(categoriesRes.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [pagination.current, pagination.pageSize]);
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorMessage error={error} onRetry={() => fetchData()} />;
 
   const loadProducts = async () => {
     try {
@@ -456,7 +478,7 @@ const Products = () => {
               setDrawerVisible(true);
             }}
           />
-          {canManageProducts() && (
+          {hasPermission('products.edit') && (
             <>
               <Button
                 icon={<EditOutlined />}
@@ -486,17 +508,6 @@ const Products = () => {
       )
     }
   ];
-
-  if (!canManageProducts()) {
-    return (
-      <Alert
-        message="Access Denied"
-        description="You don't have permission to manage products."
-        type="error"
-        showIcon
-      />
-    );
-  }
 
   return (
     <div style={{ padding: '16px', background: '#f0f2f5', minHeight: '100vh' }}>
@@ -533,17 +544,19 @@ const Products = () => {
             >
               Export
             </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setSelectedProduct(null);
-                form.resetFields();
-                setModalVisible(true);
-              }}
-            >
-              Add Product
-            </Button>
+            {hasPermission('products.create') && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setSelectedProduct(null);
+                  form.resetFields();
+                  setModalVisible(true);
+                }}
+              >
+                Add Product
+              </Button>
+            )}
           </Space>
         }
       >

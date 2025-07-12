@@ -1,324 +1,363 @@
 /**
- * API Client Configuration
- * Centralized HTTP client for all API communications
+ * API Client
+ * Centralized API client with interceptors for authentication and error handling
  * 
- * @author Trường Phát Computer
+ * @author KhoChuan POS
  * @version 1.0.0
  */
 
 import axios from 'axios';
-import { API_ENDPOINTS } from '../../utils/constants/API_ENDPOINTS.js';
+import { API_ENDPOINTS } from '../../utils/constants/API_ENDPOINTS';
 
-/**
- * API Client Configuration
- */
-const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || 'https://api.khoaugment.com/v1',
-  timeout: 30000, // 30 seconds
+// Default API configuration
+const DEFAULT_TIMEOUT = 30000; // 30 seconds
+const RETRY_ATTEMPTS = 2;
+const RETRY_DELAY = 1000; // 1 second
+
+// Create axios instance
+export const apiClient = axios.create({
+  baseURL: API_ENDPOINTS.BASE_URL,
+  timeout: DEFAULT_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
+    'X-Client': 'KhoChuan-POS-Frontend',
+    'X-Client-Version': import.meta.env?.VITE_APP_VERSION || '1.0.0'
+  }
+});
+
+// Get auth token from local storage
+const getAuthToken = () => {
+  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+};
+
+// Get refresh token from local storage
+const getRefreshToken = () => {
+  return localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+};
+
+// Set auth token in local storage
+const setAuthToken = (token, remember = true) => {
+  if (token) {
+    if (remember) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      sessionStorage.setItem('auth_token', token);
+    }
   }
 };
 
-/**
- * Create axios instance with default configuration
- */
-const apiClient = axios.create(API_CONFIG);
+// Set refresh token in local storage
+const setRefreshToken = (token, remember = true) => {
+  if (token) {
+    if (remember) {
+      localStorage.setItem('refresh_token', token);
+    } else {
+      sessionStorage.setItem('refresh_token', token);
+    }
+  }
+};
 
-/**
- * Request interceptor
- * Adds authentication token and request logging
- */
+// Clear auth tokens
+const clearAuthTokens = () => {
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('refresh_token');
+  sessionStorage.removeItem('auth_token');
+  sessionStorage.removeItem('refresh_token');
+};
+
+// Request interceptor for authentication
 apiClient.interceptors.request.use(
-  (config) => {
-    // Add authentication token if available
+  async (config) => {
+    // Skip auth token for login/refresh endpoints
+    if (config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/refresh-token'))) {
+      return config;
+    }
+    
+    // Add auth token to request
     const token = getAuthToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
-
-    // Add request ID for tracking
-    config.headers['X-Request-ID'] = generateRequestId();
-
-    // Add timestamp
-    config.headers['X-Request-Time'] = new Date().toISOString();
-
-    // Log request in development
-    if (import.meta.env.DEV) {
-      console.log('🚀 API Request:', {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        data: config.data,
-        headers: config.headers
-      });
-    }
-
+    
+    // Add request timestamp for performance tracking
+    config.metadata = { startTime: Date.now() };
+    
+    // Add offline flag for background sync
+    config.headers['X-Offline-Operation'] = navigator.onLine ? 'false' : 'true';
+    
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-/**
- * Response interceptor
- * Handles response logging, error handling, and token refresh
- */
+// Response interceptor for error handling and token refresh
 apiClient.interceptors.response.use(
   (response) => {
-    // Log response in development
-    if (import.meta.env.DEV) {
-      console.log('✅ API Response:', {
-        status: response.status,
-        url: response.config.url,
-        data: response.data
-      });
+    // Calculate request duration for performance monitoring
+    if (response.config.metadata) {
+      const duration = Date.now() - response.config.metadata.startTime;
+      response.duration = duration;
+      
+      // Log slow requests
+      if (duration > 1000) {
+        console.warn(`Slow API request: ${response.config.url} took ${duration}ms`);
+      }
     }
-
+    
+    // Cache successful GET responses for offline use
+    if (response.config.method === 'get' && response.status === 200) {
+      cacheResponse(response.config.url, response.data);
+    }
+    
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
-
-    // Log error
-    console.error('❌ API Error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      message: error.response?.data?.message || error.message,
-      data: error.response?.data
-    });
-
-    // Handle 401 Unauthorized - Token expired
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    
+    // Handle network errors (offline)
+    if (!error.response && error.message === 'Network Error') {
+      // Queue request for background sync when online
+      await queueOfflineRequest(originalRequest);
+      
+      // Return cached response if available
+      const cachedResponse = await getCachedResponse(originalRequest.url);
+      if (cachedResponse) {
+        return Promise.resolve({
+          ...cachedResponse,
+          isOfflineCache: true
+        });
+      }
+      
+      return Promise.reject({
+        ...error,
+        isOfflineError: true,
+        message: 'You are currently offline. This operation will sync when you\'re back online.'
+      });
+    }
+    
+    // Handle token expired error (401)
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      // Only attempt refresh once
       originalRequest._retry = true;
-
+      
       try {
-        // Try to refresh token
+        // Attempt to refresh token
         const refreshToken = getRefreshToken();
-        if (refreshToken) {
-          const response = await axios.post(API_ENDPOINTS.AUTH.REFRESH, {
-            refresh_token: refreshToken
-          });
-
-          if (response.data.success) {
-            // Update stored token
-            setAuthToken(response.data.data.access_token);
-            
-            // Retry original request with new token
-            originalRequest.headers.Authorization = `Bearer ${response.data.data.access_token}`;
-            return apiClient(originalRequest);
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
+        
+        const response = await axios.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
+          refresh_token: refreshToken
+        });
+        
+        if (response.data.success) {
+          const { access_token, refresh_token } = response.data.data;
+          
+          // Update tokens
+          setAuthToken(access_token);
+          if (refresh_token) {
+            setRefreshToken(refresh_token);
           }
+          
+          // Update header with new token
+          originalRequest.headers['Authorization'] = `Bearer ${access_token}`;
+          
+          // Retry original request
+          return apiClient(originalRequest);
+        } else {
+          throw new Error(response.data.message || 'Token refresh failed');
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-      }
-
-      // If refresh fails, clear auth data and redirect to login
-      clearAuthData();
-      window.location.href = '/admin/login';
-      return Promise.reject(error);
-    }
-
-    // Handle 403 Forbidden - Insufficient permissions
-    if (error.response?.status === 403) {
-      // Show permission denied message
-      showErrorMessage('Bạn không có quyền thực hiện hành động này');
-    }
-
-    // Handle 404 Not Found
-    if (error.response?.status === 404) {
-      showErrorMessage('Không tìm thấy tài nguyên yêu cầu');
-    }
-
-    // Handle 422 Validation Error
-    if (error.response?.status === 422) {
-      const validationErrors = error.response.data.errors;
-      if (validationErrors) {
-        const errorMessages = Object.values(validationErrors).flat();
-        showErrorMessage(errorMessages.join(', '));
+        // If refresh fails, clear tokens and redirect to login
+        clearAuthTokens();
+        window.location.href = '/login?session_expired=true';
+        return Promise.reject(refreshError);
       }
     }
-
-    // Handle 429 Too Many Requests
-    if (error.response?.status === 429) {
-      showErrorMessage('Quá nhiều yêu cầu. Vui lòng thử lại sau.');
+    
+    // Handle rate limit (429)
+    if (error.response && error.response.status === 429 && !originalRequest._rateLimit) {
+      // Get retry after header or use default delay
+      const retryAfter = error.response.headers['retry-after'] 
+        ? parseInt(error.response.headers['retry-after']) * 1000 
+        : RETRY_DELAY;
+      
+      // Mark as rate limited to avoid multiple retries
+      originalRequest._rateLimit = true;
+      
+      // Wait for the retry delay
+      await new Promise(resolve => setTimeout(resolve, retryAfter));
+      
+      // Retry the request
+      return apiClient(originalRequest);
     }
-
-    // Handle 500 Internal Server Error
-    if (error.response?.status >= 500) {
-      showErrorMessage('Lỗi máy chủ. Vui lòng thử lại sau.');
+    
+    // Handle server errors with retry logic (5xx)
+    if (error.response && error.response.status >= 500 && !originalRequest._serverRetry) {
+      originalRequest._serverRetry = true;
+      
+      // Wait for the retry delay
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      
+      // Retry the request
+      return apiClient(originalRequest);
     }
-
-    // Handle network errors
-    if (!error.response) {
-      showErrorMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
-    }
-
-    return Promise.reject(error);
+    
+    // Format error response
+    const errorResponse = {
+      status: error.response ? error.response.status : 0,
+      message: error.response ? error.response.data?.message || error.message : error.message,
+      data: error.response ? error.response.data : null,
+      originalError: error
+    };
+    
+    return Promise.reject(errorResponse);
   }
 );
 
 /**
- * Helper function to get authentication token
- * @returns {string|null} Authentication token
+ * Queue a request for processing when back online
+ * @param {Object} request - The API request config
+ * @returns {Promise<void>}
  */
-function getAuthToken() {
-  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-}
-
-/**
- * Helper function to get refresh token
- * @returns {string|null} Refresh token
- */
-function getRefreshToken() {
-  return localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-}
-
-/**
- * Helper function to set authentication token
- * @param {string} token - Authentication token
- */
-function setAuthToken(token) {
-  const storage = localStorage.getItem('auth_token') ? localStorage : sessionStorage;
-  storage.setItem('auth_token', token);
-}
-
-/**
- * Helper function to clear authentication data
- */
-function clearAuthData() {
-  ['auth_token', 'refresh_token', 'user_data', 'token_expires_at', 'user_permissions'].forEach(key => {
-    localStorage.removeItem(key);
-    sessionStorage.removeItem(key);
-  });
-}
-
-/**
- * Helper function to show error messages
- * @param {string} message - Error message
- */
-function showErrorMessage(message) {
-  // Try to use Ant Design message if available
-  if (window.antd && window.antd.message) {
-    window.antd.message.error(message);
-  } else {
-    // Fallback to console error
-    console.error('API Error:', message);
+async function queueOfflineRequest(request) {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
+    // Store in local queue if service worker isn't available
+    const offlineQueue = JSON.parse(localStorage.getItem('offlineApiQueue') || '[]');
+    offlineQueue.push({
+      url: request.url,
+      method: request.method,
+      data: request.data,
+      headers: request.headers,
+      timestamp: Date.now()
+    });
+    localStorage.setItem('offlineApiQueue', JSON.stringify(offlineQueue));
+    return;
+  }
+  
+  // Send to service worker for background sync
+  try {
+    await navigator.serviceWorker.ready;
+    await navigator.serviceWorker.controller.postMessage({
+      type: 'ENQUEUE_REQUEST',
+      payload: {
+        url: request.url,
+        method: request.method,
+        data: request.data,
+        headers: request.headers,
+        timestamp: Date.now()
+      }
+    });
+  } catch (error) {
+    console.error('Failed to queue offline request:', error);
   }
 }
 
 /**
- * Generate unique request ID for tracking
- * @returns {string} Request ID
+ * Cache API response for offline use
+ * @param {string} url - The request URL
+ * @param {Object} data - The response data
  */
-function generateRequestId() {
-  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+function cacheResponse(url, data) {
+  try {
+    // Create a simple in-memory cache
+    if (!window._apiCache) {
+      window._apiCache = {};
+    }
+    
+    // Store in memory cache
+    window._apiCache[url] = {
+      data,
+      timestamp: Date.now()
+    };
+    
+    // Store in IndexedDB for persistence
+    if ('indexedDB' in window) {
+      const request = indexedDB.open('khoChuan_api_cache', 1);
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('responses')) {
+          db.createObjectStore('responses', { keyPath: 'url' });
+        }
+      };
+      
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        const transaction = db.transaction(['responses'], 'readwrite');
+        const store = transaction.objectStore('responses');
+        
+        store.put({
+          url,
+          data,
+          timestamp: Date.now()
+        });
+      };
+    }
+  } catch (error) {
+    console.error('Error caching response:', error);
+  }
 }
 
 /**
- * API Client wrapper with additional methods
+ * Get cached response for offline fallback
+ * @param {string} url - The request URL
+ * @returns {Promise<Object|null>} - Cached response or null
  */
-const apiClientWrapper = {
-  // Standard HTTP methods
-  get: (url, config) => apiClient.get(url, config),
-  post: (url, data, config) => apiClient.post(url, data, config),
-  put: (url, data, config) => apiClient.put(url, data, config),
-  patch: (url, data, config) => apiClient.patch(url, data, config),
-  delete: (url, config) => apiClient.delete(url, config),
-
-  // File upload method
-  upload: (url, formData, onUploadProgress) => {
-    return apiClient.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress,
-    });
-  },
-
-  // Download method
-  download: async (url, filename) => {
-    try {
-      const response = await apiClient.get(url, {
-        responseType: 'blob',
+async function getCachedResponse(url) {
+  try {
+    // Check memory cache first
+    if (window._apiCache && window._apiCache[url]) {
+      return window._apiCache[url];
+    }
+    
+    // Check IndexedDB
+    if ('indexedDB' in window) {
+      return new Promise((resolve) => {
+        const request = indexedDB.open('khoChuan_api_cache', 1);
+        
+        request.onsuccess = (event) => {
+          const db = event.target.result;
+          const transaction = db.transaction(['responses'], 'readonly');
+          const store = transaction.objectStore('responses');
+          const getRequest = store.get(url);
+          
+          getRequest.onsuccess = () => {
+            if (getRequest.result) {
+              resolve(getRequest.result);
+            } else {
+              resolve(null);
+            }
+          };
+          
+          getRequest.onerror = () => {
+            resolve(null);
+          };
+        };
+        
+        request.onerror = () => {
+          resolve(null);
+        };
       });
-
-      // Create download link
-      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-
-      return { success: true };
-    } catch (error) {
-      console.error('Download error:', error);
-      throw error;
     }
-  },
+  } catch (error) {
+    console.error('Error getting cached response:', error);
+  }
+  
+  return null;
+}
 
-  // Batch requests method
-  batch: async (requests) => {
-    try {
-      const promises = requests.map(request => {
-        const { method, url, data, config } = request;
-        return apiClient[method](url, data, config);
-      });
-
-      const responses = await Promise.allSettled(promises);
-      return responses.map((result, index) => ({
-        request: requests[index],
-        success: result.status === 'fulfilled',
-        data: result.status === 'fulfilled' ? result.value.data : null,
-        error: result.status === 'rejected' ? result.reason : null,
-      }));
-    } catch (error) {
-      console.error('Batch request error:', error);
-      throw error;
-    }
-  },
-
-  // Health check method
-  healthCheck: async () => {
-    try {
-      const response = await apiClient.get('/health');
-      return {
-        success: true,
-        status: response.data.status,
-        timestamp: response.data.timestamp,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString(),
-      };
-    }
-  },
-
-  // Set base URL dynamically
-  setBaseURL: (baseURL) => {
-    apiClient.defaults.baseURL = baseURL;
-  },
-
-  // Set default headers
-  setDefaultHeaders: (headers) => {
-    Object.assign(apiClient.defaults.headers, headers);
-  },
-
-  // Get current configuration
-  getConfig: () => ({
-    baseURL: apiClient.defaults.baseURL,
-    timeout: apiClient.defaults.timeout,
-    headers: apiClient.defaults.headers,
-  }),
+// Export authentication functions
+export const auth = {
+  getAuthToken,
+  getRefreshToken,
+  setAuthToken,
+  setRefreshToken,
+  clearAuthTokens
 };
 
-export { apiClient, apiClientWrapper as default };
-export const api = apiClientWrapper;
+export default apiClient;

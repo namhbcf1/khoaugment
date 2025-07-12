@@ -1,810 +1,787 @@
-// frontend/src/pages/cashier/POS/POSTerminal.jsx
-import React, { useState, useEffect } from 'react';
-import { 
-  Row, 
-  Col, 
-  Card, 
-  Button, 
-  Input, 
-  Typography, 
-  Table, 
-  Divider,
-  Tag,
-  Badge,
-  Space,
-  InputNumber,
-  Drawer,
-  List,
-  Avatar,
-  Tabs,
-  message,
-  Tooltip,
-  Modal
-} from 'antd';
 import {
-  ShoppingCartOutlined,
-  SearchOutlined,
-  BarcodeOutlined,
-  UserOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  MinusOutlined,
-  CreditCardOutlined,
-  DollarOutlined,
-  PrinterOutlined,
-  ShoppingOutlined,
-  AppstoreOutlined,
-  BarsOutlined,
-  SaveOutlined,
-  CheckOutlined
+    BarcodeOutlined,
+    DollarOutlined,
+    PrinterOutlined,
+    SearchOutlined,
+    UserOutlined
 } from '@ant-design/icons';
+import {
+    Button,
+    Card,
+    Col,
+    Input,
+    InputNumber,
+    Layout,
+    Modal,
+    Row,
+    Select,
+    Space,
+    Spin,
+    Table,
+    Tabs,
+    Tag,
+    Typography,
+    message,
+} from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../../../hooks/useAuth';
 import './POSTerminal.css';
 
+// Services
+import customerService from '../../../services/api/customerService';
+import orderService from '../../../services/api/orderService';
+import productService from '../../../services/api/productService';
+import barcodeService from '../../../services/hardware/barcodeService';
+import printerService from '../../../services/hardware/printerService';
+
+const { Header, Content } = Layout;
 const { Title, Text } = Typography;
-const { Search } = Input;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 /**
- * Trang POS Terminal cho nhân viên thu ngân
+ * POS Terminal Component
+ * Main interface for the Point of Sale system
  */
 const POSTerminal = () => {
-  const [cart, setCart] = useState([]);
+  // Auth context
+  const { user } = useAuth();
+
+  // States
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchText, setSearchText] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
-  const [checkoutModalVisible, setCheckoutModalVisible] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [customer, setCustomer] = useState(null);
+  const [customerSearchResults, setCustomerSearchResults] = useState([]);
+  const [customerModalVisible, setCustomerModalVisible] = useState(false);
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [amountReceived, setAmountReceived] = useState(0);
-  const [loading, setLoading] = useState(false);
-
-  // Tải dữ liệu sản phẩm và danh mục
+  const [cashReceived, setCashReceived] = useState(0);
+  const [searchValue, setSearchValue] = useState('');
+  const [paymentResult, setPaymentResult] = useState(null);
+  const [orderCompleted, setOrderCompleted] = useState(false);
+  const [discount, setDiscount] = useState({
+    type: 'none',
+    value: 0,
+    reason: ''
+  });
+  
+  // Refs
+  const barcodeInputRef = useRef(null);
+  
+  // Setup hardware
   useEffect(() => {
-    // Giả lập API call
-    setTimeout(() => {
-      const mockProducts = generateMockProducts();
-      const mockCategories = [...new Set(mockProducts.map(p => p.category))];
-      
-      setProducts(mockProducts);
-      setFilteredProducts(mockProducts);
-      setCategories(mockCategories);
-      setLoading(false);
-    }, 1000);
+    initHardware();
+    
+    return () => {
+      // Clean up hardware
+      barcodeService.disconnect();
+    };
   }, []);
-
-  // Tạo dữ liệu sản phẩm mẫu
-  const generateMockProducts = () => {
-    return [
-      {
-        id: 1,
-        name: 'Laptop Dell Inspiron 15',
-        price: 15000000,
-        category: 'Laptop',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799892',
-        stock: 25
-      },
-      {
-        id: 2,
-        name: 'Màn hình Dell 24"',
-        price: 3500000,
-        category: 'Màn hình',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799893',
-        stock: 42
-      },
-      {
-        id: 3,
-        name: 'Chuột không dây Logitech',
-        price: 450000,
-        category: 'Phụ kiện',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799894',
-        stock: 78
-      },
-      {
-        id: 4,
-        name: 'Bàn phím cơ AKKO',
-        price: 1200000,
-        category: 'Phụ kiện',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799895',
-        stock: 15
-      },
-      {
-        id: 5,
-        name: 'Laptop Acer Nitro 5',
-        price: 22000000,
-        category: 'Laptop',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799896',
-        stock: 12
-      },
-      {
-        id: 6,
-        name: 'Tai nghe Sony WH-1000XM4',
-        price: 5800000,
-        category: 'Âm thanh',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799897',
-        stock: 8
-      },
-      {
-        id: 7,
-        name: 'Máy tính để bàn HP Pavilion',
-        price: 18000000,
-        category: 'PC',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799898',
-        stock: 10
-      },
-      {
-        id: 8,
-        name: 'SSD Samsung 1TB',
-        price: 2500000,
-        category: 'Linh kiện',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799899',
-        stock: 35
-      },
-      {
-        id: 9,
-        name: 'RAM Kingston 16GB DDR4',
-        price: 1500000,
-        category: 'Linh kiện',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799900',
-        stock: 28
-      },
-      {
-        id: 10,
-        name: 'Card đồ họa NVIDIA RTX 3060',
-        price: 9500000,
-        category: 'Linh kiện',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799901',
-        stock: 5
-      },
-      {
-        id: 11,
-        name: 'Máy in HP LaserJet',
-        price: 4200000,
-        category: 'Máy in',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799902',
-        stock: 7
-      },
-      {
-        id: 12,
-        name: 'Webcam Logitech C920',
-        price: 1800000,
-        category: 'Phụ kiện',
-        image: 'https://via.placeholder.com/80',
-        barcode: '8935236799903',
-        stock: 15
-      },
-    ];
-  };
-
-  // Khách hàng mẫu
-  const mockCustomers = [
-    { id: 1, name: 'Nguyễn Văn A', phone: '0912345678', points: 120 },
-    { id: 2, name: 'Trần Thị B', phone: '0923456789', points: 85 },
-    { id: 3, name: 'Lê Văn C', phone: '0934567890', points: 210 },
-    { id: 4, name: 'Phạm Thị D', phone: '0945678901', points: 45 },
-    { id: 5, name: 'Hoàng Văn E', phone: '0956789012', points: 150 },
-  ];
-
-  // Lọc sản phẩm dựa trên tìm kiếm và danh mục
+  
+  // Fetch data on component mount
   useEffect(() => {
-    let result = [...products];
-    
-    // Lọc theo danh mục
-    if (selectedCategory !== 'all') {
-      result = result.filter(item => item.category === selectedCategory);
-    }
-    
-    // Lọc theo từ khóa tìm kiếm
-    if (searchText) {
-      const keyword = searchText.toLowerCase();
-      result = result.filter(
-        item => 
-          item.name.toLowerCase().includes(keyword) || 
-          item.barcode.includes(keyword)
-      );
-    }
-    
-    setFilteredProducts(result);
-  }, [selectedCategory, searchText, products]);
-
-  // Thêm sản phẩm vào giỏ hàng
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      // Kiểm tra số lượng tồn kho
-      if (existingItem.quantity >= product.stock) {
-        message.warning(`Chỉ còn ${product.stock} sản phẩm trong kho!`);
-        return;
-      }
+    fetchData();
+  }, []);
+  
+  // Initialize hardware connections
+  const initHardware = async () => {
+    try {
+      // Initialize barcode scanner
+      await barcodeService.init((barcode) => {
+        handleBarcodeScanned(barcode);
+      });
       
-      setCart(
-        cart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      if (product.stock <= 0) {
-        message.warning('Sản phẩm đã hết hàng!');
-        return;
-      }
+      // Initialize receipt printer
+      await printerService.init();
       
-      setCart([...cart, { ...product, quantity: 1 }]);
+      message.success('Thiết bị phần cứng đã được kết nối');
+    } catch (err) {
+      console.error('Hardware initialization error:', err);
+      message.warning('Không thể kết nối với một số thiết bị phần cứng. Hệ thống vẫn hoạt động bình thường.');
     }
-    
-    message.success(`Đã thêm ${product.name} vào giỏ hàng`);
   };
-
-  // Cập nhật số lượng sản phẩm trong giỏ hàng
-  const updateCartItemQuantity = (productId, quantity) => {
-    const product = products.find(p => p.id === productId);
+  
+  // Fetch products and categories
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch products
+      const productsResponse = await productService.getProducts();
+      if (!productsResponse.success) {
+        throw new Error('Failed to fetch products');
+      }
+      
+      // Fetch categories
+      const categoriesResponse = await productService.getCategories();
+      if (!categoriesResponse.success) {
+        throw new Error('Failed to fetch categories');
+      }
+      
+      setProducts(productsResponse.data);
+      setFilteredProducts(productsResponse.data);
+      setCategories(categoriesResponse.data);
+    } catch (err) {
+      console.error('Data fetch error:', err);
+      setError('Failed to load POS data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  /**
+   * Handle barcode scanner input
+   */
+  const handleBarcodeScanned = async (barcode) => {
+    try {
+      const product = await productService.getProductByBarcode(barcode);
+      if (product.success && product.data) {
+        addToCart(product.data);
+        message.success(`Đã thêm: ${product.data.name}`);
+      } else {
+        message.error('Không tìm thấy sản phẩm');
+      }
+    } catch (err) {
+      console.error('Barcode scan error:', err);
+      message.error('Lỗi khi quét mã vạch');
+    }
+  };
+  
+  /**
+   * Search products by name or code
+   */
+  const handleSearch = (value) => {
+    setSearchValue(value);
     
-    // Kiểm tra số lượng tồn kho
-    if (quantity > product.stock) {
-      message.warning(`Chỉ còn ${product.stock} sản phẩm trong kho!`);
+    if (!value) {
+      setFilteredProducts(products);
       return;
     }
     
-    if (quantity <= 0) {
-      // Xóa sản phẩm khỏi giỏ hàng nếu số lượng <= 0
-      setCart(cart.filter(item => item.id !== productId));
-    } else {
-      setCart(
-        cart.map(item =>
-          item.id === productId ? { ...item, quantity } : item
-        )
-      );
+    const filtered = products.filter(product => 
+      product.name.toLowerCase().includes(value.toLowerCase()) ||
+      (product.code && product.code.toLowerCase().includes(value.toLowerCase()))
+    );
+    
+    setFilteredProducts(filtered);
+  };
+  
+  /**
+   * Filter products by category
+   */
+  const filterProductsByCategory = (categoryId) => {
+    if (!categoryId) {
+      setFilteredProducts(products);
+      return;
     }
+    
+    const filtered = products.filter(product => product.category_id === categoryId);
+    setFilteredProducts(filtered);
   };
-
-  // Xóa sản phẩm khỏi giỏ hàng
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
-    message.success('Đã xóa sản phẩm khỏi giỏ hàng');
-  };
-
-  // Xóa toàn bộ giỏ hàng
-  const clearCart = () => {
-    Modal.confirm({
-      title: 'Xóa giỏ hàng',
-      content: 'Bạn có chắc chắn muốn xóa toàn bộ giỏ hàng?',
-      okText: 'Xóa',
-      cancelText: 'Hủy',
-      onOk: () => {
-        setCart([]);
-        message.success('Đã xóa toàn bộ giỏ hàng');
+  
+  /**
+   * Add product to cart
+   */
+  const addToCart = (product) => {
+    setCart(prevCart => {
+      // Check if product already in cart
+      const existingItem = prevCart.find(item => item.id === product.id);
+      
+      if (existingItem) {
+        // Update quantity if already in cart
+        return prevCart.map(item => 
+          item.id === product.id 
+            ? { 
+                ...item, 
+                quantity: item.quantity + 1,
+                subtotal: (item.quantity + 1) * item.price
+              } 
+            : item
+        );
+      } else {
+        // Add new item to cart
+        return [...prevCart, {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          subtotal: product.price
+        }];
       }
     });
   };
-
-  // Chọn khách hàng
-  const selectCustomer = (customer) => {
-    setSelectedCustomer(customer);
-    setCustomerDrawerVisible(false);
-    message.success(`Đã chọn khách hàng: ${customer.name}`);
-  };
-
-  // Tính tổng tiền giỏ hàng
-  const calculateTotal = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
-
-  // Xử lý thanh toán
-  const handleCheckout = () => {
-    setLoading(true);
+  
+  /**
+   * Update cart item quantity
+   */
+  const updateCartItemQuantity = (productId, quantity) => {
+    if (!quantity || quantity < 1) return;
     
-    // Giả lập API call
-    setTimeout(() => {
+    setCart(prevCart => 
+      prevCart.map(item => 
+        item.id === productId 
+          ? { 
+              ...item, 
+              quantity,
+              subtotal: quantity * item.price
+            } 
+          : item
+      )
+    );
+  };
+  
+  /**
+   * Remove item from cart
+   */
+  const removeFromCart = (productId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  };
+  
+  /**
+   * Calculate cart total
+   */
+  const calculateTotal = () => {
+    return cart.reduce((sum, item) => sum + item.subtotal, 0);
+  };
+  
+  /**
+   * Search customers by name or phone
+   */
+  const handleCustomerSearch = async (value) => {
+    if (!value || value.length < 2) {
+      setCustomerSearchResults([]);
+      return;
+    }
+    
+    try {
+      const response = await customerService.searchCustomers(value);
+      
+      if (response.success) {
+        setCustomerSearchResults(response.data);
+      } else {
+        setCustomerSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Customer search error:', error);
+      message.error('Lỗi tìm kiếm khách hàng');
+    }
+  };
+  
+  /**
+   * Select a customer for the order
+   */
+  const selectCustomer = (selectedCustomer) => {
+    setCustomer(selectedCustomer);
+    setCustomerModalVisible(false);
+  };
+  
+  /**
+   * Clear selected customer
+   */
+  const clearCustomer = () => {
+    setCustomer(null);
+  };
+  
+  /**
+   * Open payment modal
+   */
+  const openPaymentModal = () => {
+    if (cart.length === 0) {
+      message.warning('Giỏ hàng trống');
+      return;
+    }
+    
+    // Set default cash received amount to the total
+    setCashReceived(calculateTotal());
+    setPaymentModalVisible(true);
+  };
+  
+  /**
+   * Process payment
+   */
+  const handlePayment = async () => {
+    if (cart.length === 0) {
+      message.warning('Giỏ hàng trống');
+      return;
+    }
+    
+    setProcessingPayment(true);
+    setPaymentResult(null);
+    
+    try {
+      // Calculate totals with tax and discount
+      const subtotal = calculateTotal();
+      const taxRate = 0.1; // 10% tax
+      
+      // Apply discount if any
+      let discountAmount = 0;
+      if (discount.type === 'percentage') {
+        discountAmount = subtotal * (discount.value / 100);
+      } else if (discount.type === 'fixed') {
+        discountAmount = discount.value;
+      }
+      
+      const taxableAmount = subtotal - discountAmount;
+      const taxAmount = taxableAmount * taxRate;
+      const totalAmount = taxableAmount + taxAmount;
+      
+      // Create order data
+      const orderData = {
+        customer_id: customer?.id || null,
+        cashier_id: user.id,
+        items: cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          unit_price: item.price,
+          subtotal: item.subtotal
+        })),
+        subtotal: subtotal,
+        discount_type: discount.type,
+        discount_value: discount.value,
+        discount_amount: discountAmount,
+        tax_amount: taxAmount,
+        total_amount: totalAmount,
+        payment_method: paymentMethod,
+        notes: discount.reason || (customer ? `Khách hàng: ${customer.name}` : '')
+      };
+      
+      // Payment data
+      const paymentData = {
+        payment_method: paymentMethod,
+        amount: totalAmount
+      };
+      
+      if (paymentMethod === 'cash') {
+        paymentData.amount_received = cashReceived;
+        paymentData.change_amount = cashReceived - totalAmount;
+      }
+      
+      // Process order with payment
+      const result = await orderService.processPOSOrder(
+        orderData,
+        paymentData,
+        true, // Print receipt
+        paymentMethod === 'cash' // Open cash drawer for cash payments
+      );
+      
+      // Set payment result
+      setPaymentResult(result);
+      setOrderCompleted(true);
+      
+      // Clear cart after successful payment
       message.success('Thanh toán thành công!');
+      
+      // Don't clear cart yet, wait for user to start new order
+    } catch (error) {
+      console.error('Payment error:', error);
+      message.error('Lỗi thanh toán: ' + (error.message || 'Không xác định'));
+    } finally {
+      setProcessingPayment(false);
+      setPaymentModalVisible(false);
+    }
+  };
+  
+  /**
+   * Start a new order after completion
+   */
+  const startNewOrder = () => {
+    setCart([]);
+    setCustomer(null);
+    setDiscount({ type: 'none', value: 0, reason: '' });
+    setOrderCompleted(false);
+    setPaymentResult(null);
+    message.success('Đã bắt đầu đơn hàng mới');
+    
+    // Focus barcode input
+    if (barcodeInputRef.current) {
+      barcodeInputRef.current.focus();
+    }
+  };
+
+  // Function to update order with payment information
+  const updateOrderPayment = async (orderData, paymentResult) => {
+    // Update order with payment information
+    const orderResponse = await orderService.updateOrder({
+      ...orderData,
+      payment_status: 'completed',
+      transaction_id: paymentResult.transaction_id
+    });
+    
+    if (orderResponse.success) {
+      // Print receipt
+      await printerService.printReceipt({
+        storeName: 'KhoChuan POS',
+        address: '123 Main Street, Ho Chi Minh City',
+        orderNumber: orderResponse.data.order_number,
+        date: new Date().toLocaleString(),
+        items: cart.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        subtotal: orderData.subtotal,
+        tax: orderData.tax_amount,
+        total: orderData.total_amount,
+        paymentMethod: paymentMethod === 'cash' ? 'Cash' : 'Card/Digital',
+        cashier: user.name
+      });
+      
+      message.success('Payment completed successfully');
+      
+      // Clear cart and reset
       setCart([]);
-      setSelectedCustomer(null);
-      setCheckoutModalVisible(false);
-      setLoading(false);
-    }, 1500);
+      setCustomer(null);
+      setPaymentModalVisible(false);
+    } else {
+      throw new Error('Failed to create order');
+    }
   };
 
-  // Format tiền tệ
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(value);
-  };
-
-  // Tính tiền thối lại
-  const calculateChange = () => {
-    const total = calculateTotal();
-    return amountReceived > total ? amountReceived - total : 0;
-  };
-
-  // Cột cho bảng giỏ hàng
   const cartColumns = [
     {
-      title: 'Sản phẩm',
+      title: 'Product',
       dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img src={record.image} alt={text} style={{ width: 40, height: 40, marginRight: 10 }} />
-          <div>
-            <div>{text}</div>
-            <div style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)' }}>{record.barcode}</div>
-          </div>
-        </div>
-      ),
     },
     {
-      title: 'Giá',
+      title: 'Price',
       dataIndex: 'price',
       key: 'price',
-      render: (text) => formatCurrency(text),
+      render: price => `${price.toLocaleString()} ₫`,
     },
     {
-      title: 'Số lượng',
+      title: 'Quantity',
       dataIndex: 'quantity',
       key: 'quantity',
-      render: (text, record) => (
-        <div className="quantity-control">
-          <Button 
-            icon={<MinusOutlined />}
-            onClick={() => updateCartItemQuantity(record.id, record.quantity - 1)}
-          />
-          <InputNumber
-            min={1}
-            max={record.stock}
-            value={text}
-            onChange={(value) => updateCartItemQuantity(record.id, value)}
-          />
-          <Button 
-            icon={<PlusOutlined />}
-            onClick={() => updateCartItemQuantity(record.id, record.quantity + 1)}
-          />
-        </div>
+      render: (quantity, record) => (
+        <InputNumber
+          min={1}
+          value={quantity}
+          onChange={(value) => updateCartItemQuantity(record.id, value)}
+        />
       ),
     },
     {
-      title: 'Thành tiền',
-      dataIndex: 'price',
-      key: 'total',
-      render: (text, record) => formatCurrency(text * record.quantity),
+      title: 'Subtotal',
+      dataIndex: 'subtotal',
+      key: 'subtotal',
+      render: subtotal => `${subtotal.toLocaleString()} ₫`,
     },
     {
-      title: '',
+      title: 'Action',
       key: 'action',
       render: (_, record) => (
-        <Button 
-          type="text" 
-          danger 
-          icon={<DeleteOutlined />}
-          onClick={() => removeFromCart(record.id)}
-        />
+        <Button type="text" danger onClick={() => removeFromCart(record.id)}>
+          Remove
+        </Button>
       ),
     },
   ];
 
-  // Render sản phẩm theo dạng lưới
-  const renderProductGrid = () => {
-    return (
-      <Row gutter={[16, 16]}>
-        {filteredProducts.map((product) => (
-          <Col xs={12} sm={8} md={6} lg={6} xl={4} key={product.id}>
-            <Card
-              hoverable
-              cover={<img alt={product.name} src={product.image} style={{ height: 100, objectFit: 'contain' }} />}
-              onClick={() => addToCart(product)}
-              className="product-card"
-            >
-              <div className="product-card-content">
-                <div className="product-card-title">{product.name}</div>
-                <div className="product-card-price">{formatCurrency(product.price)}</div>
-                <div className="product-card-stock">
-                  <Badge 
-                    status={product.stock > 10 ? 'success' : product.stock > 0 ? 'warning' : 'error'} 
-                    text={`${product.stock} trong kho`}
-                  />
-                </div>
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    );
-  };
+  const productColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      render: price => `${price.toLocaleString()} ₫`,
+    },
+    {
+      title: 'Stock',
+      dataIndex: 'stock_quantity',
+      key: 'stock',
+      render: stock => (
+        <Tag color={stock > 0 ? 'green' : 'red'}>
+          {stock > 0 ? `${stock} in stock` : 'Out of stock'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Button
+          type="primary"
+          onClick={() => addToCart(record)}
+          disabled={record.stock_quantity <= 0}
+        >
+          Add
+        </Button>
+      ),
+    },
+  ];
 
-  // Render sản phẩm theo dạng bảng
-  const renderProductTable = () => {
-    const columns = [
-      {
-        title: 'Sản phẩm',
-        dataIndex: 'name',
-        key: 'name',
-        render: (text, record) => (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src={record.image} alt={text} style={{ width: 40, height: 40, marginRight: 10 }} />
-            <div>
-              <div>{text}</div>
-              <div style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)' }}>{record.barcode}</div>
-            </div>
-          </div>
-        ),
-      },
-      {
-        title: 'Danh mục',
-        dataIndex: 'category',
-        key: 'category',
-        render: (text) => <Tag>{text}</Tag>
-      },
-      {
-        title: 'Giá',
-        dataIndex: 'price',
-        key: 'price',
-        render: (text) => formatCurrency(text),
-      },
-      {
-        title: 'Tồn kho',
-        dataIndex: 'stock',
-        key: 'stock',
-        render: (text) => (
-          <Badge 
-            status={text > 10 ? 'success' : text > 0 ? 'warning' : 'error'} 
-            text={text}
-          />
-        ),
-      },
-      {
-        title: 'Thao tác',
-        key: 'action',
-        render: (_, record) => (
-          <Button 
-            type="primary" 
-            size="small"
-            onClick={() => addToCart(record)}
-            disabled={record.stock <= 0}
-          >
-            Thêm
-          </Button>
-        ),
-      },
-    ];
-    
-    return <Table columns={columns} dataSource={filteredProducts} rowKey="id" pagination={{ pageSize: 6 }} />;
-  };
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <Spin size="large" />
+        <Text>Loading POS Terminal...</Text>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <Title level={3}>Error Loading POS Terminal</Title>
+        <Text type="danger">{error}</Text>
+        <Button type="primary" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="pos-terminal">
-      <Row gutter={[16, 16]}>
-        {/* Cột trái - Danh sách sản phẩm */}
-        <Col xs={24} lg={15}>
-          <Card className="full-height-card">
-            <div className="pos-header">
-              <Title level={4}>Bán hàng</Title>
-              <Space>
-                <Button 
-                  icon={<AppstoreOutlined />} 
-                  type={viewMode === 'grid' ? 'primary' : 'default'}
-                  onClick={() => setViewMode('grid')}
-                />
-                <Button 
-                  icon={<BarsOutlined />}
-                  type={viewMode === 'list' ? 'primary' : 'default'}
-                  onClick={() => setViewMode('list')}
-                />
-              </Space>
-            </div>
-            
-            <div className="pos-search-bar">
-              <Search
-                placeholder="Nhập tên hoặc quét mã vạch..."
-                enterButton={<SearchOutlined />}
-                prefix={<BarcodeOutlined />}
-                onChange={(e) => setSearchText(e.target.value)}
-                value={searchText}
-              />
-            </div>
-            
-            <div className="pos-categories">
-              <Button
-                type={selectedCategory === 'all' ? 'primary' : 'default'}
-                onClick={() => setSelectedCategory('all')}
-              >
-                Tất cả
-              </Button>
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  type={selectedCategory === category ? 'primary' : 'default'}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-            
-            <Divider />
-            
-            <div className="pos-products">
-              {viewMode === 'grid' ? renderProductGrid() : renderProductTable()}
-            </div>
-          </Card>
-        </Col>
-        
-        {/* Cột phải - Giỏ hàng và thanh toán */}
-        <Col xs={24} lg={9}>
-          <Card className="full-height-card cart-section">
-            <div className="cart-header">
-              <div className="cart-title">
-                <ShoppingCartOutlined />
-                <span>Giỏ hàng</span>
-                <Badge count={cart.length} showZero />
-              </div>
-              
-              <div className="customer-section">
-                <Button 
-                  icon={<UserOutlined />} 
-                  onClick={() => setCustomerDrawerVisible(true)}
-                >
-                  {selectedCustomer ? selectedCustomer.name : 'Chọn khách hàng'}
-                </Button>
-              </div>
-            </div>
-            
-            <div className="cart-content">
-              {cart.length === 0 ? (
-                <div className="empty-cart">
-                  <ShoppingOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />
-                  <Text type="secondary">Giỏ hàng trống</Text>
+    <Layout className="pos-terminal">
+      <Row gutter={16}>
+        {/* Left Side - Cart */}
+        <Col span={12}>
+          <Card title="Shopping Cart" className="cart-container">
+            <div className="customer-section">
+              {customer ? (
+                <div className="selected-customer">
+                  <UserOutlined /> {customer.name} ({customer.phone})
+                  <Button type="link" onClick={clearCustomer}>Change</Button>
                 </div>
               ) : (
-                <Table
-                  columns={cartColumns}
-                  dataSource={cart}
-                  rowKey="id"
-                  pagination={false}
-                  size="small"
-                />
+                <Button 
+                  icon={<UserOutlined />} 
+                  onClick={() => setCustomerModalVisible(true)}
+                >
+                  Select Customer
+                </Button>
               )}
             </div>
             
-            <div className="cart-footer">
-              <div className="cart-summary">
-                <div className="cart-summary-row">
-                  <Text>Tổng sản phẩm:</Text>
-                  <Text>{cart.reduce((total, item) => total + item.quantity, 0)} sản phẩm</Text>
-                </div>
-                
-                <div className="cart-summary-row">
-                  <Text>Tổng tiền:</Text>
-                  <Text strong className="total-amount">{formatCurrency(calculateTotal())}</Text>
-                </div>
-                
-                {selectedCustomer && (
-                  <div className="cart-summary-row">
-                    <Text>Khách hàng:</Text>
-                    <Text>{selectedCustomer.name} ({selectedCustomer.points} điểm)</Text>
-                  </div>
-                )}
-              </div>
-              
-              <div className="cart-actions">
-                <Button 
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={clearCart}
-                  disabled={cart.length === 0}
-                >
-                  Xóa tất cả
-                </Button>
-                
-                <Button 
-                  type="primary"
-                  icon={<CreditCardOutlined />}
-                  size="large"
-                  onClick={() => setCheckoutModalVisible(true)}
-                  disabled={cart.length === 0}
-                >
-                  Thanh toán
-                </Button>
-              </div>
+            <Table
+              dataSource={cart}
+              columns={cartColumns}
+              rowKey="id"
+              pagination={false}
+              summary={() => (
+                <Table.Summary>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell colSpan={3}><strong>Total</strong></Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <strong>{calculateTotal().toLocaleString()} ₫</strong>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell />
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )}
+            />
+            
+            <div className="cart-actions">
+              <Button 
+                type="primary" 
+                size="large" 
+                icon={<DollarOutlined />} 
+                onClick={openPaymentModal}
+                disabled={cart.length === 0}
+              >
+                Payment
+              </Button>
+              <Button 
+                danger 
+                size="large" 
+                onClick={() => setCart([])}
+                disabled={cart.length === 0}
+              >
+                Clear Cart
+              </Button>
             </div>
+            
+            {/* Order completed message */}
+            {orderCompleted && (
+              <div className="order-completed">
+                <Title level={4}>Order #{paymentResult?.order_number} Completed</Title>
+                <p>Total: {paymentResult?.total_amount.toLocaleString()} ₫</p>
+                <p>Payment Method: {paymentMethod === 'cash' ? 'Cash' : 'Card/Digital'}</p>
+                
+                <Space>
+                  <Button 
+                    type="primary" 
+                    icon={<PrinterOutlined />}
+                    onClick={() => printerService.printLastReceipt()}
+                  >
+                    Print Receipt
+                  </Button>
+                  <Button onClick={startNewOrder}>
+                    New Order
+                  </Button>
+                </Space>
+              </div>
+            )}
+          </Card>
+        </Col>
+        
+        {/* Right Side - Products */}
+        <Col span={12}>
+          <Card title="Products" className="products-container">
+            {/* Barcode Scanner Input */}
+            <Input
+              placeholder="Scan barcode or enter product code"
+              prefix={<BarcodeOutlined />}
+              className="barcode-input"
+              ref={barcodeInputRef}
+              onPressEnter={(e) => handleBarcodeScanned(e.target.value)}
+            />
+            
+            {/* Search and Categories */}
+            <div className="product-filters">
+              <Input
+                placeholder="Search products..."
+                prefix={<SearchOutlined />}
+                className="product-search"
+                value={searchValue}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+              
+              <Tabs defaultActiveKey="all">
+                <TabPane tab="All" key="all" onClick={() => setFilteredProducts(products)} />
+                {categories.map(category => (
+                  <TabPane 
+                    tab={category.name} 
+                    key={category.id.toString()} 
+                    onClick={() => filterProductsByCategory(category.id)} 
+                  />
+                ))}
+              </Tabs>
+            </div>
+            
+            {/* Products Table */}
+            <Table
+              dataSource={filteredProducts}
+              columns={productColumns}
+              rowKey="id"
+              pagination={{ pageSize: 10 }}
+              size="small"
+            />
           </Card>
         </Col>
       </Row>
       
-      {/* Drawer chọn khách hàng */}
-      <Drawer
-        title="Chọn khách hàng"
-        placement="right"
-        onClose={() => setCustomerDrawerVisible(false)}
-        visible={customerDrawerVisible}
-        width={400}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <Search
-            placeholder="Tìm kiếm theo tên hoặc SĐT"
-            enterButton
-          />
-        </div>
-        
-        <List
-          itemLayout="horizontal"
-          dataSource={mockCustomers}
-          renderItem={(item) => (
-            <List.Item
-              actions={[
-                <Button 
-                  type="primary"
-                  size="small"
-                  onClick={() => selectCustomer(item)}
-                >
-                  Chọn
-                </Button>
-              ]}
-            >
-              <List.Item.Meta
-                avatar={<Avatar icon={<UserOutlined />} />}
-                title={item.name}
-                description={
-                  <div>
-                    <div>SĐT: {item.phone}</div>
-                    <div>Điểm tích lũy: {item.points}</div>
-                  </div>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      </Drawer>
-      
-      {/* Modal thanh toán */}
+      {/* Customer Selection Modal */}
       <Modal
-        title="Thanh toán"
-        visible={checkoutModalVisible}
-        onCancel={() => setCheckoutModalVisible(false)}
+        title="Select Customer"
+        visible={customerModalVisible}
+        onCancel={() => setCustomerModalVisible(false)}
         footer={null}
-        width={600}
+        width={700}
       >
-        <div className="checkout-modal">
-          <div className="checkout-summary">
-            <Title level={4}>Tổng quan đơn hàng</Title>
+        <Input.Search
+          placeholder="Search by name or phone..."
+          onSearch={handleCustomerSearch}
+          enterButton
+        />
+        
+        <Table
+          dataSource={customerSearchResults}
+          columns={[
+            {
+              title: 'Name',
+              dataIndex: 'name',
+              key: 'name',
+            },
+            {
+              title: 'Phone',
+              dataIndex: 'phone',
+              key: 'phone',
+            },
+            {
+              title: 'Actions',
+              key: 'actions',
+              render: (_, record) => (
+                <Button type="primary" onClick={() => selectCustomer(record)}>
+                  Select
+                </Button>
+              ),
+            },
+          ]}
+          rowKey="id"
+          pagination={{ pageSize: 5 }}
+          size="small"
+        />
+      </Modal>
+      
+      {/* Payment Modal */}
+      <Modal
+        title="Payment"
+        visible={paymentModalVisible}
+        onCancel={() => setPaymentModalVisible(false)}
+        footer={null}
+        width={500}
+      >
+        <Spin spinning={processingPayment}>
+          <div className="payment-summary">
+            <p>Subtotal: {calculateTotal().toLocaleString()} ₫</p>
+            <p>Tax (10%): {(calculateTotal() * 0.1).toLocaleString()} ₫</p>
+            <Title level={4}>Total: {(calculateTotal() * 1.1).toLocaleString()} ₫</Title>
+          </div>
+          
+          <div className="payment-method">
+            <Title level={5}>Payment Method</Title>
+            <Select 
+              value={paymentMethod} 
+              onChange={value => setPaymentMethod(value)}
+              style={{ width: '100%', marginBottom: 16 }}
+            >
+              <Option value="cash">Cash</Option>
+              <Option value="card">Card</Option>
+              <Option value="vnpay">VNPay</Option>
+              <Option value="momo">MoMo</Option>
+              <Option value="zalopay">ZaloPay</Option>
+            </Select>
             
-            <div className="checkout-items">
-              <div className="checkout-item-header">
-                <Text strong>Sản phẩm</Text>
-                <Text strong>SL</Text>
-                <Text strong>Thành tiền</Text>
-              </div>
-              
-              {cart.map((item) => (
-                <div className="checkout-item" key={item.id}>
-                  <Text>{item.name}</Text>
-                  <Text>{item.quantity}</Text>
-                  <Text>{formatCurrency(item.price * item.quantity)}</Text>
+            {paymentMethod === 'cash' && (
+              <div className="cash-payment">
+                <div className="cash-input">
+                  <span>Cash Received:</span>
+                  <InputNumber
+                    min={0}
+                    value={cashReceived}
+                    onChange={value => setCashReceived(value)}
+                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    style={{ width: '100%' }}
+                  />
                 </div>
-              ))}
-            </div>
-            
-            <Divider />
-            
-            <div className="checkout-total">
-              <Text strong>Tổng tiền:</Text>
-              <Text strong className="checkout-total-amount">
-                {formatCurrency(calculateTotal())}
-              </Text>
-            </div>
-            
-            {selectedCustomer && (
-              <div className="checkout-customer">
-                <Text>Khách hàng: {selectedCustomer.name}</Text>
-                <Text>Điểm tích lũy: {selectedCustomer.points}</Text>
+                
+                <div className="cash-change">
+                  <span>Change:</span>
+                  <span className="change-amount">
+                    {Math.max(0, cashReceived - (calculateTotal() * 1.1)).toLocaleString()} ₫
+                  </span>
+                </div>
               </div>
             )}
           </div>
           
-          <div className="payment-section">
-            <Title level={4}>Phương thức thanh toán</Title>
-            
-            <div className="payment-methods">
-              <div className="payment-method-selection">
-                <Button
-                  type={paymentMethod === 'cash' ? 'primary' : 'default'}
-                  icon={<DollarOutlined />}
-                  size="large"
-                  onClick={() => setPaymentMethod('cash')}
-                >
-                  Tiền mặt
-                </Button>
-                
-                <Button
-                  type={paymentMethod === 'card' ? 'primary' : 'default'}
-                  icon={<CreditCardOutlined />}
-                  size="large"
-                  onClick={() => setPaymentMethod('card')}
-                >
-                  Thẻ
-                </Button>
-              </div>
-              
-              {paymentMethod === 'cash' && (
-                <div className="cash-payment">
-                  <div className="amount-input">
-                    <Text>Tiền khách đưa:</Text>
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                      size="large"
-                      min={calculateTotal()}
-                      onChange={setAmountReceived}
-                    />
-                  </div>
-                  
-                  <div className="change-amount">
-                    <Text>Tiền thối lại:</Text>
-                    <Text strong>{formatCurrency(calculateChange())}</Text>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="payment-actions">
-              <Button
-                onClick={() => setCheckoutModalVisible(false)}
-              >
-                Hủy
-              </Button>
-              
-              <Button
-                type="primary"
-                icon={<CheckOutlined />}
-                size="large"
-                loading={loading}
-                onClick={handleCheckout}
-              >
-                Hoàn tất thanh toán
-              </Button>
-              
-              <Tooltip title="Lưu đơn chờ">
-                <Button
-                  icon={<SaveOutlined />}
-                  onClick={() => {
-                    message.success('Đã lưu đơn hàng chờ');
-                    setCheckoutModalVisible(false);
-                  }}
-                >
-                  Lưu
-                </Button>
-              </Tooltip>
-              
-              <Tooltip title="In hóa đơn">
-                <Button
-                  icon={<PrinterOutlined />}
-                  onClick={() => message.info('Đang in hóa đơn...')}
-                >
-                  In
-                </Button>
-              </Tooltip>
-            </div>
+          <div className="payment-actions">
+            <Button
+              type="primary"
+              size="large"
+              onClick={handlePayment}
+              disabled={processingPayment}
+              block
+            >
+              Complete Payment
+            </Button>
           </div>
-        </div>
+        </Spin>
       </Modal>
-    </div>
+    </Layout>
   );
 };
 
-export default POSTerminal;
+export default POSTerminal; 

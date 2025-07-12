@@ -1,0 +1,209 @@
+name: KhoAugment Integration Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "tests/**"
+      - ".github/workflows/integration-tests.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "tests/**"
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      TEST_BASE_URL: ${{ secrets.TEST_BASE_URL || 'https://khoaugment.pages.dev' }}
+      TEST_API_URL: ${{ secrets.TEST_API_URL || 'https://khoaugment-api.workers.dev' }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
+      - name: Verify API health
+        run: node tests/verify-api-health.js
+        continue-on-error: true
+
+      - name: Run integration tests
+        run: |
+          mkdir -p test-results
+          npx playwright test --config=tests/integration.config.js
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: |
+            test-results/
+            playwright-report/
+            test-results/artifacts/
+          retention-days: 30
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "# Integration Test Results" > $GITHUB_STEP_SUMMARY
+
+          if [ -f "test-results/integration-results.json" ]; then
+            echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+            
+            PASSED=$(grep -o '"status":"passed"' test-results/integration-results.json | wc -l)
+            FAILED=$(grep -o '"status":"failed"' test-results/integration-results.json | wc -l)
+            SKIPPED=$(grep -o '"status":"skipped"' test-results/integration-results.json | wc -l)
+            TOTAL=$((PASSED + FAILED + SKIPPED))
+            
+            echo "| Status | Count | Percentage |" >> $GITHUB_STEP_SUMMARY
+            echo "| ------ | ----- | ---------- |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED | $(echo "scale=2; $PASSED*100/$TOTAL" | bc)% |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED | $(echo "scale=2; $FAILED*100/$TOTAL" | bc)% |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED | $(echo "scale=2; $SKIPPED*100/$TOTAL" | bc)% |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | $TOTAL | 100% |" >> $GITHUB_STEP_SUMMARY
+            
+            if [ $FAILED -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "## Failed Tests" >> $GITHUB_STEP_SUMMARY
+              grep -B 2 -A 1 '"status":"failed"' test-results/integration-results.json | grep "title" | sort | uniq | sed 's/"title"://g' | sed 's/,//g' | sed 's/"//g' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Cloudflare Environment" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend URL: ${TEST_BASE_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "- API URL: ${TEST_API_URL}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failure
+        if: ${{ failure() }}
+        run: |
+          echo "Integration tests failed. See the logs for details."
+          # Add notification logic here (e.g., send email, Slack message, etc.)
+
+  vietnamese-language-tests:
+    name: Vietnamese Language Tests
+    needs: integration-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      TEST_BASE_URL: ${{ secrets.TEST_BASE_URL || 'https://khoaugment.pages.dev' }}
+      TEST_API_URL: ${{ secrets.TEST_API_URL || 'https://khoaugment-api.workers.dev' }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      LANG: vi_VN.UTF-8
+      LANGUAGE: vi_VN:vi
+      LC_ALL: vi_VN.UTF-8
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Set up Vietnamese locale
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y language-pack-vi
+          sudo locale-gen vi_VN.UTF-8
+          locale
+
+      - name: Test Vietnamese characters
+        run: |
+          echo "Testing Vietnamese character support"
+          echo "Xin chào Việt Nam"
+          echo "Kiểm tra tiếng Việt"
+
+      - name: Run Vietnamese language tests
+        run: |
+          # Set browser to Vietnamese locale
+          mkdir -p test-results/vietnamese
+          PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright test tests/integration-suite.js --project="Chrome Desktop" --grep="Vietnamese" --reporter=json,html
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: vietnamese-test-results
+          path: |
+            test-results/vietnamese/
+            playwright-report/
+          retention-days: 30
+
+  cloudflare-limit-tests:
+    name: Cloudflare Limit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+
+    env:
+      TEST_BASE_URL: ${{ secrets.TEST_BASE_URL || 'https://khoaugment.pages.dev' }}
+      TEST_API_URL: ${{ secrets.TEST_API_URL || 'https://khoaugment-api.workers.dev' }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run D1 database tests
+        run: |
+          node tests/integration-suite.js --filter="D1 database performance under concurrent requests" --reporter=json
+
+      - name: Run R2 storage tests
+        run: |
+          node tests/integration-suite.js --filter="R2 storage upload and retrieval performance" --reporter=json
+
+      - name: Run Worker CPU time limit tests
+        run: |
+          node tests/integration-suite.js --filter="Worker CPU time limit test" --reporter=json
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudflare-limit-test-results
+          path: test-results/
+          retention-days: 7

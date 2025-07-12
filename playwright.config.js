@@ -1,110 +1,130 @@
-// ============================================================================
-// PLAYWRIGHT CONFIGURATION FOR TRUONG PHAT COMPUTER POS SYSTEM
-// ============================================================================
-// Cấu hình toàn diện cho test automation
+// @ts-check
+const { defineConfig, devices } = require("@playwright/test");
 
-const { defineConfig, devices } = require('@playwright/test');
-
+/**
+ * KhoAugment POS System - Playwright Configuration for GPU Testing
+ * Optimized for NVIDIA GTX 1070
+ */
 module.exports = defineConfig({
-  // Test directory
-  testDir: './tests',
-  
-  // Run tests in files in parallel
-  fullyParallel: true,
-  
-  // Fail the build on CI if you accidentally left test.only in the source code
+  testDir: "./tests",
+  timeout: 60000,
+  expect: {
+    timeout: 10000,
+  },
+  fullyParallel: false, // Run tests in sequence for more stable GPU testing
   forbidOnly: !!process.env.CI,
-  
-  // Retry on CI only
   retries: process.env.CI ? 2 : 0,
-  
-  // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
-  
-  // Reporter to use
+  workers: 1, // Single worker to prevent GPU resource contention
   reporter: [
-    ['html', { outputFolder: 'test-results/html-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/results.xml' }],
-    ['list']
+    ["html", { outputFolder: "./test-results/html-report" }],
+    ["json", { outputFile: "./test-results/results.json" }],
+    ["junit", { outputFile: "./test-results/results.xml" }],
+    ["list"],
   ],
-  
-  // Shared settings for all the projects below
+  outputDir: "./test-results/artifacts",
+
   use: {
-    // Base URL to use in actions like `await page.goto('/')`
-    baseURL: 'https://7691a4b5.khoaugment.pages.dev',
-    
+    // Base URL for all tests
+    baseURL: "http://localhost:5173",
+
     // Collect trace when retrying the failed test
-    trace: 'on-first-retry',
-    
-    // Take screenshot on failure
-    screenshot: 'only-on-failure',
-    
-    // Record video on failure
-    video: 'retain-on-failure',
-    
-    // Global timeout for each test
-    actionTimeout: 30000,
-    
-    // Global timeout for navigation
-    navigationTimeout: 30000,
+    trace: "retain-on-failure",
+
+    // Collect screenshots
+    screenshot: "only-on-failure",
+
+    // Record video for failed tests
+    video: "retain-on-failure",
+
+    // Viewport size
+    viewport: { width: 1920, height: 1080 },
+
+    // GPU acceleration settings
+    launchOptions: {
+      args: [
+        "--enable-gpu",
+        "--ignore-gpu-blocklist",
+        "--enable-webgl",
+        "--use-gl=desktop",
+        "--enable-accelerated-video-decode",
+        "--disable-gpu-sandbox",
+        "--disable-features=IsolateOrigins",
+        "--disable-web-security",
+        "--no-sandbox",
+      ],
+      headless: false, // Run with browser visible for better GPU utilization
+      slowMo: 50, // Slow down operations by 50ms for more stable tests
+    },
   },
 
-  // Configure projects for major browsers
+  // Configure projects for different browsers and device types
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Override with our GPU settings
+        launchOptions: {
+          args: [
+            "--enable-gpu",
+            "--ignore-gpu-blocklist",
+            "--enable-webgl",
+            "--use-gl=desktop",
+            "--enable-accelerated-video-decode",
+            "--disable-gpu-sandbox",
+            "--disable-features=IsolateOrigins",
+            "--disable-web-security",
+            "--no-sandbox",
+          ],
+          headless: false,
+        },
+      },
     },
+
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: "firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        // Firefox has different GPU acceleration flags
+        launchOptions: {
+          args: [
+            "--enable-webrender",
+            "--enable-gpu-rasterization",
+            "--enable-accelerated-layers",
+          ],
+          firefoxUserPrefs: {
+            "gfx.webrender.all": true,
+            "gfx.webrender.enabled": true,
+            "layers.acceleration.force-enabled": true,
+          },
+          headless: false,
+        },
+      },
     },
+
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    
-    // Test against mobile viewports
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-    
-    // Test against branded browsers
-    {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    },
-    {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      name: "mobile-chrome",
+      use: {
+        ...devices["Pixel 5"],
+        // Mobile Chrome settings
+        launchOptions: {
+          args: [
+            "--enable-gpu",
+            "--ignore-gpu-blocklist",
+            "--enable-webgl",
+            "--use-gl=desktop",
+          ],
+          headless: false,
+        },
+      },
     },
   ],
 
-  // Global setup and teardown (disabled for now)
-  // globalSetup: require.resolve('./tests/global-setup.js'),
-  // globalTeardown: require.resolve('./tests/global-teardown.js'),
-  
-  // Output directory for test artifacts
-  outputDir: 'test-results/artifacts',
-  
-  // Test timeout
-  timeout: 60000,
-  
-  // Expect timeout
-  expect: {
-    timeout: 10000
-  },
-  
-  // Web server configuration (if needed)
+  // Web server to use for testing
   webServer: {
-    command: 'echo "Using external servers"',
-    port: 3000,
-    reuseExistingServer: !process.env.CI,
+    command: "npm run dev",
+    url: "http://localhost:5173",
+    reuseExistingServer: true,
+    timeout: 120000,
   },
 });

@@ -6,8 +6,8 @@
  * @version 1.0.0
  */
 
-import { API_ENDPOINTS } from '../../utils/constants/API_ENDPOINTS.js';
-import { apiClient } from './apiClient.js';
+import { API_ENDPOINTS } from '../../utils/constants/API_ENDPOINTS';
+import apiClient, { auth } from './apiClient';
 
 /**
  * Authentication Service Class
@@ -33,7 +33,7 @@ class AuthService {
 
       if (response.data.success) {
         // Store authentication data
-        this.setAuthData(response.data.data);
+        this.setAuthData(response.data.data, credentials.remember);
         
         // Set up automatic token refresh
         this.setupTokenRefresh(response.data.data.expires_in);
@@ -64,7 +64,7 @@ class AuthService {
    */
   async logout() {
     try {
-      const token = this.getToken();
+      const token = auth.getAuthToken();
       if (token) {
         await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
       }
@@ -83,12 +83,12 @@ class AuthService {
    */
   async refreshToken() {
     try {
-      const refreshToken = this.getRefreshToken();
+      const refreshToken = auth.getRefreshToken();
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
 
-      const response = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH, {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
         refresh_token: refreshToken
       });
 
@@ -223,34 +223,9 @@ class AuthService {
    * @returns {boolean} Authentication status
    */
   isAuthenticated() {
-    const token = this.getToken();
+    const token = auth.getAuthToken();
     const user = this.getUser();
     return !!(token && user && !this.isTokenExpired());
-  }
-
-  /**
-   * Get stored authentication token
-   * @returns {string|null} Authentication token
-   */
-  getToken() {
-    return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-  }
-
-  /**
-   * Get stored refresh token
-   * @returns {string|null} Refresh token
-   */
-  getRefreshToken() {
-    return localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-  }
-
-  /**
-   * Get stored user data
-   * @returns {Object|null} User data
-   */
-  getUser() {
-    const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
-    return userData ? JSON.parse(userData) : null;
   }
 
   /**
@@ -258,38 +233,63 @@ class AuthService {
    * @returns {boolean} Token expiration status
    */
   isTokenExpired() {
-    const expiresAt = localStorage.getItem('token_expires_at') || sessionStorage.getItem('token_expires_at');
-    if (!expiresAt) return true;
+    const token = auth.getAuthToken();
+    if (!token) return true;
     
-    return Date.now() >= parseInt(expiresAt);
-  }
-
-  /**
-   * Store authentication data
-   * @param {Object} authData - Authentication data from server
-   */
-  setAuthData(authData) {
-    const storage = authData.remember ? localStorage : sessionStorage;
-    
-    storage.setItem('auth_token', authData.access_token);
-    storage.setItem('refresh_token', authData.refresh_token);
-    storage.setItem('user_data', JSON.stringify(authData.user));
-    storage.setItem('token_expires_at', (Date.now() + (authData.expires_in * 1000)).toString());
-    
-    if (authData.permissions) {
-      storage.setItem('user_permissions', JSON.stringify(authData.permissions));
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiry = payload.exp * 1000;
+      return Date.now() > expiry;
+    } catch (error) {
+      return true;
     }
   }
 
   /**
-   * Clear all authentication data
+   * Set authentication data in storage
+   * @param {Object} authData - Authentication data from API
+   * @param {boolean} remember - Whether to remember user
+   */
+  setAuthData(authData, remember = true) {
+    if (!authData) return;
+    
+    const { access_token, refresh_token, user, permissions, roles } = authData;
+    
+    if (access_token) {
+      auth.setAuthToken(access_token, remember);
+    }
+    
+    if (refresh_token) {
+      auth.setRefreshToken(refresh_token, remember);
+    }
+    
+    if (user) {
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(user));
+    }
+    
+    if (permissions) {
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('permissions', JSON.stringify(permissions));
+    }
+    
+    if (roles) {
+      const storage = remember ? localStorage : sessionStorage;
+      storage.setItem('roles', JSON.stringify(roles));
+    }
+  }
+
+  /**
+   * Clear authentication data from storage
    */
   clearAuthData() {
-    // Clear from both localStorage and sessionStorage
-    ['auth_token', 'refresh_token', 'user_data', 'token_expires_at', 'user_permissions'].forEach(key => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
-    });
+    auth.clearAuthTokens();
+    localStorage.removeItem('user');
+    localStorage.removeItem('permissions');
+    localStorage.removeItem('roles');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('permissions');
+    sessionStorage.removeItem('roles');
     
     // Clear token refresh timer
     if (this.refreshTimer) {
@@ -299,44 +299,181 @@ class AuthService {
   }
 
   /**
-   * Set up automatic token refresh
-   * @param {number} expiresIn - Token expiration time in seconds
+   * Get stored user data
+   * @returns {Object|null} User data
    */
-  setupTokenRefresh(expiresIn) {
-    // Clear existing timer
-    if (this.refreshTimer) {
-      clearTimeout(this.refreshTimer);
-    }
+  getUser() {
+    const userJson = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (!userJson) return null;
     
-    // Set up refresh 5 minutes before expiration
-    const refreshTime = (expiresIn - 300) * 1000; // 5 minutes before expiry
-    
-    if (refreshTime > 0) {
-      this.refreshTimer = setTimeout(async () => {
-        try {
-          await this.refreshToken();
-        } catch (error) {
-          console.error('Auto token refresh failed:', error);
-          // Redirect to login if refresh fails
-          window.location.href = '/admin/login';
-        }
-      }, refreshTime);
+    try {
+      return JSON.parse(userJson);
+    } catch (error) {
+      return null;
     }
   }
 
   /**
-   * Get device information for security logging
+   * Get stored user permissions
+   * @returns {Array} User permissions
+   */
+  getPermissions() {
+    const permissionsJson = localStorage.getItem('permissions') || sessionStorage.getItem('permissions');
+    if (!permissionsJson) return [];
+    
+    try {
+      return JSON.parse(permissionsJson);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  /**
+   * Get stored user roles
+   * @returns {Array} User roles
+   */
+  getRoles() {
+    const rolesJson = localStorage.getItem('roles') || sessionStorage.getItem('roles');
+    if (!rolesJson) return [];
+    
+    try {
+      return JSON.parse(rolesJson);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  /**
+   * Check if user has specific permission
+   * @param {string} permission - Permission to check
+   * @returns {boolean} Whether user has permission
+   */
+  hasPermission(permission) {
+    const roles = this.getRoles();
+    if (roles.includes('admin')) return true;
+    
+    const permissions = this.getPermissions();
+    return permissions.includes(permission);
+  }
+
+  /**
+   * Check if user has specific role
+   * @param {string} role - Role to check
+   * @returns {boolean} Whether user has role
+   */
+  hasRole(role) {
+    const roles = this.getRoles();
+    return roles.includes(role);
+  }
+
+  /**
+   * Set up automatic token refresh
+   * @param {number} expiresIn - Token expiration time in seconds
+   */
+  setupTokenRefresh(expiresIn) {
+    if (!expiresIn) return;
+    
+    // Clear any existing timer
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
+    
+    // Convert to milliseconds and subtract buffer time (5 minutes)
+    const refreshTime = (expiresIn * 1000) - (5 * 60 * 1000);
+    
+    // Set timer to refresh token before expiration
+    this.refreshTimer = setTimeout(() => {
+      this.refreshToken().catch(error => {
+        console.error('Auto token refresh failed:', error);
+      });
+    }, refreshTime);
+  }
+
+  /**
+   * Get device information for login
    * @returns {Object} Device information
    */
   getDeviceInfo() {
     return {
-      user_agent: navigator.userAgent,
       platform: navigator.platform,
+      userAgent: navigator.userAgent,
       language: navigator.language,
-      screen_resolution: `${screen.width}x${screen.height}`,
+      screenSize: `${window.screen.width}x${window.screen.height}`,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       timestamp: new Date().toISOString()
     };
+  }
+
+  /**
+   * Request password reset
+   * @param {string} email - User email
+   * @returns {Promise<Object>} Reset request response
+   */
+  async requestPasswordReset(email) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+      
+      return {
+        success: response.data.success,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Có lỗi xảy ra khi yêu cầu đặt lại mật khẩu'
+      );
+    }
+  }
+
+  /**
+   * Reset password with token
+   * @param {Object} resetData - Password reset data
+   * @param {string} resetData.token - Reset token
+   * @param {string} resetData.password - New password
+   * @param {string} resetData.password_confirmation - Confirm new password
+   * @returns {Promise<Object>} Reset response
+   */
+  async resetPassword(resetData) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, resetData);
+      
+      return {
+        success: response.data.success,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Có lỗi xảy ra khi đặt lại mật khẩu'
+      );
+    }
+  }
+
+  /**
+   * Verify email with token
+   * @param {string} token - Verification token
+   * @returns {Promise<Object>} Verification response
+   */
+  async verifyEmail(token) {
+    try {
+      const response = await apiClient.get(`${API_ENDPOINTS.AUTH.VERIFY_EMAIL}?token=${token}`);
+      
+      return {
+        success: response.data.success,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Email verification error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Có lỗi xảy ra khi xác minh email'
+      );
+    }
   }
 }
 

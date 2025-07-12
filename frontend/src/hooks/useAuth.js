@@ -1,422 +1,217 @@
-import { useContext, useEffect, useState } from 'react';
+/**
+ * Custom useAuth hook
+ * Provides authentication functionality throughout the application
+ * 
+ * @author KhoChuan POS
+ * @version 1.0.0
+ */
+
+import { message } from 'antd';
+import { useCallback, useContext, useState } from 'react';
 import { AuthContext } from '../auth/AuthContext';
-import { 
-  hasRole, 
-  hasAnyRole, 
-  hasAllRoles, 
-  hasPermission, 
-  hasAnyPermission, 
-  hasAllPermissions,
-  getUserPermissions,
-  isFeatureEnabled,
-  checkBusinessRule
-} from '../auth/permissions';
+import authService from '../services/api/authService';
 
 /**
- * useAuthRedirect Hook - Auto redirect dựa trên role
- */
-export const useAuthRedirect = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuthRedirect must be used within an AuthProvider');
-  }
-  const { user, isAuthenticated, loading } = context;
-  
-  const getDefaultRoute = () => {
-    if (!user) return '/login';
-    
-    switch (user.role) {
-      case 'admin':
-        return '/admin/dashboard';
-      case 'manager':
-        return '/admin/dashboard';
-      case 'cashier':
-        return '/cashier/pos';
-      case 'staff':
-        return '/staff/dashboard';
-      default:
-        return '/dashboard';
-    }
-  };
-  
-  return {
-    getDefaultRoute,
-    shouldRedirect: isAuthenticated && !loading
-  };
-};
-
-/**
- * useAuthStorage Hook - Quản lý auth trong localStorage
- */
-export const useAuthStorage = () => {
-  const [token, setTokenState] = useState(() => {
-    try {
-      return localStorage.getItem('khochuan_token');
-    } catch {
-      return null;
-    }
-  });
-
-  const [refreshTokenValue, setRefreshTokenState] = useState(() => {
-    try {
-      return localStorage.getItem('khochuan_refresh_token');
-    } catch {
-      return null;
-    }
-  });
-
-  const setToken = (newToken) => {
-    try {
-      if (newToken) {
-        localStorage.setItem('khochuan_token', newToken);
-      } else {
-        localStorage.removeItem('khochuan_token');
-      }
-      setTokenState(newToken);
-    } catch (error) {
-      console.error('Error setting auth token:', error);
-    }
-  };
-
-  const setRefreshToken = (newRefreshToken) => {
-    try {
-      if (newRefreshToken) {
-        localStorage.setItem('khochuan_refresh_token', newRefreshToken);
-      } else {
-        localStorage.removeItem('khochuan_refresh_token');
-      }
-      setRefreshTokenState(newRefreshToken);
-    } catch (error) {
-      console.error('Error setting refresh token:', error);
-    }
-  };
-
-  const clearTokens = () => {
-    try {
-      localStorage.removeItem('khochuan_token');
-      localStorage.removeItem('khochuan_refresh_token');
-      localStorage.removeItem('khochuan_user');
-      setTokenState(null);
-      setRefreshTokenState(null);
-    } catch (error) {
-      console.error('Error clearing tokens:', error);
-    }
-  };
-
-  const saveUser = (userData) => {
-    try {
-      localStorage.setItem('khochuan_user', JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  };
-
-  const getStoredUser = () => {
-    try {
-      const storedUser = localStorage.getItem('khochuan_user');
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch {
-      return null;
-    }
-  };
-
-  return {
-    token,
-    refreshToken: refreshTokenValue,
-    setToken,
-    setRefreshToken,
-    clearTokens,
-    saveUser,
-    getStoredUser
-  };
-};
-
-/**
- * useRoleBasedNavigation Hook - Navigation dựa trên role
- */
-export const useRoleBasedNavigation = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useRoleBasedNavigation must be used within an AuthProvider');
-  }
-  const { user } = context;
-  
-  const getAvailableRoutes = () => {
-    if (!user) return [];
-    
-    const routes = [];
-    
-    // Admin routes
-    if (hasAnyRole(user, ['admin', 'manager'])) {
-      routes.push(
-        { path: '/admin/dashboard', name: 'Admin Dashboard', icon: 'HomeIcon' },
-        { path: '/admin/products', name: 'Quản lý sản phẩm', icon: 'CubeIcon' },
-        { path: '/admin/orders', name: 'Quản lý đơn hàng', icon: 'ShoppingCartIcon' },
-        { path: '/admin/customers', name: 'Quản lý khách hàng', icon: 'UsersIcon' },
-        { path: '/admin/analytics', name: 'Báo cáo phân tích', icon: 'ChartBarIcon' }
-      );
-    }
-    
-    // Staff management (Admin only)
-    if (hasRole(user, 'admin')) {
-      routes.push(
-        { path: '/admin/staff', name: 'Quản lý nhân viên', icon: 'UserGroupIcon' },
-        { path: '/admin/settings', name: 'Cài đặt hệ thống', icon: 'CogIcon' }
-      );
-    }
-    
-    // Cashier routes
-    if (hasAnyRole(['admin', 'manager', 'cashier'])) {
-      routes.push(
-        { path: '/cashier/pos', name: 'POS Terminal', icon: 'ComputerDesktopIcon' },
-        { path: '/cashier/orders', name: 'Lịch sử đơn hàng', icon: 'DocumentTextIcon' },
-        { path: '/cashier/session', name: 'Quản lý ca', icon: 'ClockIcon' }
-      );
-    }
-    
-    // Staff routes
-    if (hasAnyRole(['admin', 'manager', 'cashier', 'staff'])) {
-      routes.push(
-        { path: '/staff/dashboard', name: 'Dashboard cá nhân', icon: 'HomeIcon' },
-        { path: '/staff/leaderboard', name: 'Bảng xếp hạng', icon: 'TrophyIcon' },
-        { path: '/staff/achievements', name: 'Thành tích', icon: 'StarIcon' },
-        { path: '/staff/training', name: 'Đào tạo', icon: 'AcademicCapIcon' }
-      );
-    }
-    
-    return routes;
-  };
-  
-  const canAccessRoute = (routePath) => {
-    if (!user) return false;
-    
-    // Route patterns và permissions
-    const routePermissions = {
-      '/admin': ['admin', 'manager'],
-      '/admin/staff': ['admin'],
-      '/admin/settings': ['admin'],
-      '/cashier': ['admin', 'manager', 'cashier'],
-      '/staff': ['admin', 'manager', 'cashier', 'staff']
-    };
-    
-    for (const [pattern, roles] of Object.entries(routePermissions)) {
-      if (routePath.startsWith(pattern)) {
-        return hasAnyRole(user, roles);
-      }
-    }
-    
-    return true; // Default allow
-  };
-  
-  return {
-    getAvailableRoutes,
-    canAccessRoute
-  };
-};
-
-/**
- * useSessionTimeout Hook - Quản lý timeout session
- */
-export const useSessionTimeout = (timeoutMinutes = 30) => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useSessionTimeout must be used within an AuthProvider');
-  }
-  const { logout, user } = context;
-  const isAuthenticated = !!user;
-  const [isIdle, setIsIdle] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(timeoutMinutes * 60);
-  
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    
-    let idleTimer;
-    let countdownTimer;
-    
-    const resetIdleTimer = () => {
-      setIsIdle(false);
-      setTimeLeft(timeoutMinutes * 60);
-      
-      if (idleTimer) clearTimeout(idleTimer);
-      if (countdownTimer) clearInterval(countdownTimer);
-      
-      idleTimer = setTimeout(() => {
-        setIsIdle(true);
-        
-        // Start countdown
-        countdownTimer = setInterval(() => {
-          setTimeLeft(prev => {
-            if (prev <= 1) {
-              logout();
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        
-      }, timeoutMinutes * 60 * 1000);
-    };
-    
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
-    events.forEach(event => {
-      document.addEventListener(event, resetIdleTimer, true);
-    });
-    
-    resetIdleTimer(); // Initialize
-    
-    return () => {
-      if (idleTimer) clearTimeout(idleTimer);
-      if (countdownTimer) clearInterval(countdownTimer);
-      events.forEach(event => {
-        document.removeEventListener(event, resetIdleTimer, true);
-      });
-    };
-  }, [isAuthenticated, logout, timeoutMinutes]);
-  
-  const formatTimeLeft = () => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-  
-  return {
-    isIdle,
-    timeLeft,
-    formatTimeLeft,
-    extendSession: () => setIsIdle(false)
-  };
-};
-
-/**
- * useAuthGuard Hook - Bảo vệ component/route
- */
-export const useAuthGuard = (requiredRole = null, requiredPermissions = []) => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuthGuard must be used within an AuthProvider');
-  }
-  const { user, isAuthenticated, loading } = context;
-
-  // Use permission functions
-  const userHasRole = (role) => hasRole(user, role);
-  const userHasAllPermissions = (permissions) => hasAllPermissions(user, permissions);
-  
-  const canAccess = () => {
-    if (!isAuthenticated) return false;
-
-    if (requiredRole && !userHasRole(requiredRole)) return false;
-
-    if (requiredPermissions.length > 0 && !userHasAllPermissions(requiredPermissions)) {
-      return false;
-    }
-
-    return true;
-  };
-
-  const getAccessDeniedReason = () => {
-    if (!isAuthenticated) return 'Chưa đăng nhập';
-    if (requiredRole && !userHasRole(requiredRole)) return `Cần quyền ${requiredRole}`;
-    if (requiredPermissions.length > 0) return 'Không đủ quyền truy cập';
-    return null;
-  };
-  
-  return {
-    canAccess: canAccess(),
-    loading,
-    reason: getAccessDeniedReason()
-  };
-};
-
-/**
- * Default export
+ * Custom hook for authentication
+ * @returns {Object} Authentication methods and state
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
   
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-
-  const { 
-    user, 
-    loading, 
-    login, 
-    logout, 
-    refreshToken, 
-    updateProfile,
-    error,
-    clearError 
-  } = context;
-
-  // Helper functions với user hiện tại
-  const authHelpers = {
-    // Role checking
-    hasRole: (role) => hasRole(user, role),
-    hasAnyRole: (roles) => hasAnyRole(user, roles),
-    hasAllRoles: (roles) => hasAllRoles(user, roles),
+  
+  /**
+   * Login user
+   * @param {Object} credentials - Login credentials
+   * @param {string} credentials.email - User email
+   * @param {string} credentials.password - User password
+   * @param {boolean} credentials.remember - Remember user
+   * @returns {Promise<Object>} Login result
+   */
+  const login = useCallback(async (credentials) => {
+    setLoading(true);
+    try {
+      const result = await authService.login(credentials);
+      context.setUser(result.user);
+      context.setPermissions(result.permissions || []);
+      context.setRoles(result.roles || []);
+      message.success(result.message || 'Đăng nhập thành công');
+      return result;
+    } catch (error) {
+      message.error(error.message || 'Đăng nhập thất bại');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [context]);
+  
+  /**
+   * Logout user
+   * @returns {Promise<void>}
+   */
+  const logout = useCallback(async () => {
+    setLoading(true);
+    try {
+      await authService.logout();
+      context.setUser(null);
+      context.setPermissions([]);
+      context.setRoles([]);
+      message.success('Đăng xuất thành công');
+    } catch (error) {
+      message.error(error.message || 'Đăng xuất thất bại');
+    } finally {
+      setLoading(false);
+    }
+  }, [context]);
+  
+  /**
+   * Check if user has specific permission
+   * @param {string} permission - Permission to check
+   * @returns {boolean} Has permission
+   */
+  const hasPermission = useCallback((permission) => {
+    // Admin role has all permissions
+    if (context.roles.includes('admin')) {
+      return true;
+    }
     
-    // Permission checking  
-    hasPermission: (permission) => hasPermission(user, permission),
-    hasAnyPermission: (permissions) => hasAnyPermission(user, permissions),
-    hasAllPermissions: (permissions) => hasAllPermissions(user, permissions),
-    
-    // Get user permissions
-    getUserPermissions: () => getUserPermissions(user),
-    
-    // Feature flags
-    isFeatureEnabled: (feature) => isFeatureEnabled(user, feature),
-    
-    // Business rules
-    checkBusinessRule: (rule, value) => checkBusinessRule(user, rule, value),
-    
-    // Computed properties
-    isAdmin: hasRole(user, 'admin'),
-    isManager: hasAnyRole(user, ['admin', 'manager']),
-    isCashier: hasAnyRole(user, ['admin', 'manager', 'cashier']),
-    isStaff: hasAnyRole(user, ['admin', 'manager', 'cashier', 'staff']),
-    
-    // Auth state
-    isAuthenticated: !!user,
-    isLoading: loading
-  };
-
-  return {
-    // User data
-    user,
-    loading,
-    error,
-    
-    // Auth actions
-    login,
-    logout,
-    refreshToken,
-    updateProfile,
-    clearError,
-    
-    // Helper functions
-    ...authHelpers
-  };
-};
-
-/**
- * usePermissions Hook - Chỉ cho permissions
- */
-export const usePermissions = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('usePermissions must be used within an AuthProvider');
-  }
-  const { user } = context;
+    return context.permissions.includes(permission);
+  }, [context.permissions, context.roles]);
+  
+  /**
+   * Check if user has specific role
+   * @param {string} role - Role to check
+   * @returns {boolean} Has role
+   */
+  const hasRole = useCallback((role) => {
+    return context.roles.includes(role);
+  }, [context.roles]);
+  
+  /**
+   * Update user profile
+   * @param {Object} profileData - Profile data
+   * @returns {Promise<Object>} Update result
+   */
+  const updateProfile = useCallback(async (profileData) => {
+    setLoading(true);
+    try {
+      const result = await authService.updateProfile(profileData);
+      context.setUser(result.user);
+      message.success(result.message || 'Cập nhật thông tin thành công');
+      return result;
+    } catch (error) {
+      message.error(error.message || 'Cập nhật thông tin thất bại');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [context]);
+  
+  /**
+   * Change password
+   * @param {Object} passwordData - Password data
+   * @param {string} passwordData.current_password - Current password
+   * @param {string} passwordData.new_password - New password
+   * @param {string} passwordData.confirm_password - Confirm new password
+   * @returns {Promise<Object>} Change result
+   */
+  const changePassword = useCallback(async (passwordData) => {
+    setLoading(true);
+    try {
+      const result = await authService.changePassword(passwordData);
+      message.success(result.message || 'Đổi mật khẩu thành công');
+      return result;
+    } catch (error) {
+      message.error(error.message || 'Đổi mật khẩu thất bại');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  /**
+   * Request password reset
+   * @param {string} email - User email
+   * @returns {Promise<Object>} Reset request result
+   */
+  const requestPasswordReset = useCallback(async (email) => {
+    setLoading(true);
+    try {
+      const result = await authService.requestPasswordReset(email);
+      message.success(result.message || 'Yêu cầu đặt lại mật khẩu đã được gửi');
+      return result;
+    } catch (error) {
+      message.error(error.message || 'Yêu cầu đặt lại mật khẩu thất bại');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  /**
+   * Reset password
+   * @param {Object} resetData - Reset data
+   * @param {string} resetData.token - Reset token
+   * @param {string} resetData.password - New password
+   * @param {string} resetData.password_confirmation - Confirm new password
+   * @returns {Promise<Object>} Reset result
+   */
+  const resetPassword = useCallback(async (resetData) => {
+    setLoading(true);
+    try {
+      const result = await authService.resetPassword(resetData);
+      message.success(result.message || 'Đặt lại mật khẩu thành công');
+      return result;
+    } catch (error) {
+      message.error(error.message || 'Đặt lại mật khẩu thất bại');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  /**
+   * Verify email
+   * @param {string} token - Verification token
+   * @returns {Promise<Object>} Verification result
+   */
+  const verifyEmail = useCallback(async (token) => {
+    setLoading(true);
+    try {
+      const result = await authService.verifyEmail(token);
+      message.success(result.message || 'Xác minh email thành công');
+      return result;
+    } catch (error) {
+      message.error(error.message || 'Xác minh email thất bại');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   
   return {
-    hasRole: (role) => hasRole(user, role),
-    hasAnyRole: (roles) => hasAnyRole(user, roles),
-    hasAllRoles: (roles) => hasAllRoles(user, roles),
-    hasPermission: (permission) => hasPermission(user, permission),
-    hasAnyPermission: (permissions) => hasAnyPermission(user, permissions),
-    hasAllPermissions: (permissions) => hasAllPermissions(user, permissions),
-    getUserPermissions: () => getUserPermissions(user),
-    checkBusinessRule: (rule, value) => checkBusinessRule(user, rule, value)
+    // State
+    user: context.user,
+    permissions: context.permissions,
+    roles: context.roles,
+    isAuthenticated: !!context.user,
+    loading: context.loading || loading,
+    initialized: context.initialized,
+    
+    // Methods
+    login,
+    logout,
+    hasPermission,
+    hasRole,
+    updateProfile,
+    changePassword,
+    requestPasswordReset,
+    resetPassword,
+    verifyEmail
   };
 };
+
+export default useAuth;

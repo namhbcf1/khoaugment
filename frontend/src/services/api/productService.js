@@ -1,78 +1,93 @@
 /**
- * Product Management Service
- * Real backend integration for product operations
+ * Product Service
+ * Handles all product-related API operations
  * 
- * @author Trường Phát Computer
+ * @author KhoChuan POS
  * @version 1.0.0
  */
 
-import { API_ENDPOINTS } from '../../utils/constants/API_ENDPOINTS.js';
-import { apiClient } from './apiClient.js';
+import { API_ENDPOINTS } from '../../utils/constants/API_ENDPOINTS';
+import apiClient from './apiClient';
 
 /**
  * Product Service Class
- * Handles all product-related API calls
+ * Manages all product operations
  */
 class ProductService {
   /**
-   * Get all products with pagination and filters
+   * Get all products with pagination and filtering
    * @param {Object} params - Query parameters
    * @param {number} params.page - Page number
    * @param {number} params.limit - Items per page
-   * @param {string} params.search - Search query
-   * @param {string} params.category - Category filter
-   * @param {string} params.sort - Sort field
-   * @param {string} params.order - Sort order (asc/desc)
-   * @returns {Promise<Object>} Products list with pagination
+   * @param {string} params.search - Search term
+   * @param {string} params.category_id - Filter by category
+   * @param {boolean} params.in_stock - Filter by stock availability
+   * @param {boolean} params.popular - Get popular products
+   * @param {string} params.sort_by - Sort field
+   * @param {string} params.sort_dir - Sort direction (asc/desc)
+   * @returns {Promise<Object>} Products data with pagination
    */
   async getProducts(params = {}) {
     try {
       const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.LIST, { params });
       
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          pagination: response.data.pagination,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to get products');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        pagination: response.data.pagination,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Get products error:', error);
+      console.error('Error fetching products:', error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
-        'Có lỗi xảy ra khi lấy danh sách sản phẩm'
+        'Có lỗi xảy ra khi tải danh sách sản phẩm'
       );
     }
   }
 
   /**
    * Get product by ID
-   * @param {string|number} productId - Product ID
-   * @returns {Promise<Object>} Product details
+   * @param {string|number} id - Product ID
+   * @returns {Promise<Object>} Product data
    */
-  async getProductById(productId) {
+  async getProductById(id) {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.GET_BY_ID(productId));
+      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.GET_BY_ID(id));
       
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to get product');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Get product error:', error);
+      console.error(`Error fetching product #${id}:`, error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
-        'Có lỗi xảy ra khi lấy thông tin sản phẩm'
+        'Có lỗi xảy ra khi tải thông tin sản phẩm'
+      );
+    }
+  }
+
+  /**
+   * Get product by barcode
+   * @param {string} barcode - Product barcode
+   * @returns {Promise<Object>} Product data
+   */
+  async getProductByBarcode(barcode) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.GET_BY_BARCODE(barcode));
+      
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error(`Error fetching product with barcode ${barcode}:`, error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi tìm sản phẩm theo mã vạch'
       );
     }
   }
@@ -80,25 +95,20 @@ class ProductService {
   /**
    * Create new product
    * @param {Object} productData - Product data
-   * @returns {Promise<Object>} Created product
+   * @returns {Promise<Object>} Created product data
    */
   async createProduct(productData) {
     try {
       const response = await apiClient.post(API_ENDPOINTS.PRODUCTS.CREATE, productData);
       
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to create product');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Create product error:', error);
+      console.error('Error creating product:', error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
         'Có lỗi xảy ra khi tạo sản phẩm'
       );
@@ -107,27 +117,22 @@ class ProductService {
 
   /**
    * Update product
-   * @param {string|number} productId - Product ID
+   * @param {string|number} id - Product ID
    * @param {Object} productData - Updated product data
-   * @returns {Promise<Object>} Updated product
+   * @returns {Promise<Object>} Updated product data
    */
-  async updateProduct(productId, productData) {
+  async updateProduct(id, productData) {
     try {
-      const response = await apiClient.put(API_ENDPOINTS.PRODUCTS.UPDATE(productId), productData);
+      const response = await apiClient.put(API_ENDPOINTS.PRODUCTS.UPDATE(id), productData);
       
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to update product');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Update product error:', error);
+      console.error(`Error updating product #${id}:`, error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
         'Có lỗi xảy ra khi cập nhật sản phẩm'
       );
@@ -136,25 +141,20 @@ class ProductService {
 
   /**
    * Delete product
-   * @param {string|number} productId - Product ID
+   * @param {string|number} id - Product ID
    * @returns {Promise<Object>} Delete response
    */
-  async deleteProduct(productId) {
+  async deleteProduct(id) {
     try {
-      const response = await apiClient.delete(API_ENDPOINTS.PRODUCTS.DELETE(productId));
+      const response = await apiClient.delete(API_ENDPOINTS.PRODUCTS.DELETE(id));
       
-      if (response.data.success) {
-        return {
-          success: true,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to delete product');
-      }
+      return {
+        success: true,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Delete product error:', error);
+      console.error(`Error deleting product #${id}:`, error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
         'Có lỗi xảy ra khi xóa sản phẩm'
       );
@@ -162,34 +162,143 @@ class ProductService {
   }
 
   /**
+   * Get all categories
+   * @returns {Promise<Object>} Categories data
+   */
+  async getCategories() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.CATEGORIES.LIST);
+      
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi tải danh sách danh mục'
+      );
+    }
+  }
+
+  /**
+   * Get category by ID
+   * @param {string|number} id - Category ID
+   * @returns {Promise<Object>} Category data
+   */
+  async getCategoryById(id) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.CATEGORIES.GET_BY_ID(id));
+      
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error(`Error fetching category #${id}:`, error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi tải thông tin danh mục'
+      );
+    }
+  }
+
+  /**
+   * Create new category
+   * @param {Object} categoryData - Category data
+   * @returns {Promise<Object>} Created category data
+   */
+  async createCategory(categoryData) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.CATEGORIES.CREATE, categoryData);
+      
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi tạo danh mục'
+      );
+    }
+  }
+
+  /**
+   * Update category
+   * @param {string|number} id - Category ID
+   * @param {Object} categoryData - Updated category data
+   * @returns {Promise<Object>} Updated category data
+   */
+  async updateCategory(id, categoryData) {
+    try {
+      const response = await apiClient.put(API_ENDPOINTS.CATEGORIES.UPDATE(id), categoryData);
+      
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error(`Error updating category #${id}:`, error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi cập nhật danh mục'
+      );
+    }
+  }
+
+  /**
+   * Delete category
+   * @param {string|number} id - Category ID
+   * @returns {Promise<Object>} Delete response
+   */
+  async deleteCategory(id) {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.CATEGORIES.DELETE(id));
+      
+      return {
+        success: true,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error(`Error deleting category #${id}:`, error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi xóa danh mục'
+      );
+    }
+  }
+
+  /**
    * Search products
    * @param {string} query - Search query
-   * @param {Object} filters - Additional filters
+   * @param {Object} params - Additional parameters
    * @returns {Promise<Object>} Search results
    */
-  async searchProducts(query, filters = {}) {
+  async searchProducts(query, params = {}) {
     try {
-      const params = {
-        q: query,
-        ...filters
+      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.SEARCH, { 
+        params: { 
+          query,
+          ...params
+        } 
+      });
+      
+      return {
+        success: true,
+        data: response.data.data,
+        pagination: response.data.pagination,
+        message: response.data.message
       };
-      
-      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.SEARCH, { params });
-      
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          total: response.data.total,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to search products');
-      }
     } catch (error) {
-      console.error('Search products error:', error);
+      console.error('Error searching products:', error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
         'Có lỗi xảy ra khi tìm kiếm sản phẩm'
       );
@@ -197,62 +306,71 @@ class ProductService {
   }
 
   /**
-   * Get product categories
-   * @returns {Promise<Object>} Categories list
+   * Get low stock products
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} Low stock products data
    */
-  async getCategories() {
+  async getLowStockProducts(params = {}) {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.CATEGORIES);
+      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.LOW_STOCK, { params });
       
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to get categories');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        pagination: response.data.pagination,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Get categories error:', error);
+      console.error('Error fetching low stock products:', error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
-        'Có lỗi xảy ra khi lấy danh mục sản phẩm'
+        'Có lỗi xảy ra khi tải sản phẩm sắp hết hàng'
+      );
+    }
+  }
+
+  /**
+   * Get product price history
+   * @param {string|number} id - Product ID
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} Price history data
+   */
+  async getProductPriceHistory(id, params = {}) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.PRICE_HISTORY(id), { params });
+      
+      return {
+        success: true,
+        data: response.data.data,
+        pagination: response.data.pagination,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error(`Error fetching price history for product #${id}:`, error);
+      throw new Error(
+        error.message || 
+        'Có lỗi xảy ra khi tải lịch sử giá sản phẩm'
       );
     }
   }
 
   /**
    * Bulk import products
-   * @param {File} file - CSV/Excel file
-   * @param {Function} onProgress - Progress callback
-   * @returns {Promise<Object>} Import results
+   * @param {Array} products - Products data
+   * @returns {Promise<Object>} Import result
    */
-  async bulkImport(file, onProgress) {
+  async bulkImportProducts(products) {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const response = await apiClient.post(API_ENDPOINTS.PRODUCTS.BULK_IMPORT, { products });
       
-      const response = await apiClient.upload(
-        API_ENDPOINTS.PRODUCTS.BULK_IMPORT,
-        formData,
-        onProgress
-      );
-      
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to import products');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Bulk import error:', error);
+      console.error('Error bulk importing products:', error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
         'Có lỗi xảy ra khi nhập sản phẩm hàng loạt'
       );
@@ -261,86 +379,23 @@ class ProductService {
 
   /**
    * Bulk update products
-   * @param {Array} products - Array of products to update
-   * @returns {Promise<Object>} Update results
+   * @param {Array} products - Products data with IDs
+   * @returns {Promise<Object>} Update result
    */
-  async bulkUpdate(products) {
+  async bulkUpdateProducts(products) {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.PRODUCTS.BULK_UPDATE, {
-        products
-      });
+      const response = await apiClient.put(API_ENDPOINTS.PRODUCTS.BULK_UPDATE, { products });
       
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to bulk update products');
-      }
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
     } catch (error) {
-      console.error('Bulk update error:', error);
+      console.error('Error bulk updating products:', error);
       throw new Error(
-        error.response?.data?.message || 
         error.message || 
         'Có lỗi xảy ra khi cập nhật sản phẩm hàng loạt'
-      );
-    }
-  }
-
-  /**
-   * Get product price history
-   * @param {string|number} productId - Product ID
-   * @returns {Promise<Object>} Price history
-   */
-  async getPriceHistory(productId) {
-    try {
-      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.PRICE_HISTORY(productId));
-      
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to get price history');
-      }
-    } catch (error) {
-      console.error('Get price history error:', error);
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Có lỗi xảy ra khi lấy lịch sử giá'
-      );
-    }
-  }
-
-  /**
-   * Get product variants
-   * @param {string|number} productId - Product ID
-   * @returns {Promise<Object>} Product variants
-   */
-  async getProductVariants(productId) {
-    try {
-      const response = await apiClient.get(API_ENDPOINTS.PRODUCTS.VARIANTS(productId));
-      
-      if (response.data.success) {
-        return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message
-        };
-      } else {
-        throw new Error(response.data.message || 'Failed to get product variants');
-      }
-    } catch (error) {
-      console.error('Get product variants error:', error);
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Có lỗi xảy ra khi lấy biến thể sản phẩm'
       );
     }
   }

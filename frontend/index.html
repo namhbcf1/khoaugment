@@ -1,144 +1,148 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-  
   <head>
     <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa" />
-  <meta name="keywords" content="Trường Phát Computer, Hòa Bình, máy tính, laptop, linh kiện, sửa chữa, bảo hành, POS, point of sale" />
-  <meta name="author" content="Trường Phát Computer" />
-  <meta name="robots" content="index, follow" />
-  
-  <!-- Security Headers -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-    
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      name="description"
+      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+    />
+    <meta
+      name="keywords"
+      content="Trường Phát Computer, Hòa Bình, máy tính, laptop, linh kiện, sửa chữa, bảo hành, POS, point of sale"
+    />
+    <meta name="author" content="Trường Phát Computer" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta
+      http-equiv="Referrer-Policy"
+      content="strict-origin-when-cross-origin"
+    />
+
     <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#1677ff" />
-  <meta name="background-color" content="#ffffff" />
-  <meta name="display" content="standalone" />
-  <meta name="orientation" content="portrait" />
-  
-  <!-- iOS PWA Support -->
+    <meta name="theme-color" content="#1677ff" />
+    <meta name="background-color" content="#ffffff" />
+    <meta name="display" content="standalone" />
+    <meta name="orientation" content="portrait" />
+
+    <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Trường Phát Computer" />
-  <meta name="apple-touch-fullscreen" content="yes" />
-  
-  <!-- Windows PWA Support -->
-  <meta name="msapplication-TileColor" content="#1677ff" />
-  <meta name="msapplication-TileImage" content="/icons/mstile-144x144.png" />
-  <meta name="msapplication-config" content="/browserconfig.xml" />
-  
-  <!-- Open Graph / Social Media -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Trường Phát Computer Hòa Bình" />
-  <meta property="og:description" content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa" />
-  <meta property="og:image" content="/images/og-image.png" />
-  <meta property="og:url" content="https://truongphat.pages.dev" />
-  <meta property="og:site_name" content="Trường Phát Computer" />
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Trường Phát Computer Hòa Bình" />
-  <meta name="twitter:description" content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa" />
-  <meta name="twitter:image" content="/images/twitter-card.png" />
-  
-  <!-- Favicons -->
-  <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-  <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677ff" />
-  
-  <!-- Manifest -->
-  <link rel="manifest" href="/manifest.json" />
-  
-  <!-- Preconnect to improve performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-  
-  <!-- DNS Prefetch -->
-  <link rel="dns-prefetch" href="//truongphat-api.workers.dev" />
-  
-  <!-- Critical CSS - Inline for performance -->
-  <style>
-    /* Critical loading styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    html {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      line-height: 1.15;
-      -webkit-text-size-adjust: 100%;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    body {
-      margin: 0;
-      font-size: 14px;
-      font-variant: tabular-nums;
-      line-height: 1.5715;
-      background-color: #f0f2f5;
-      color: rgba(0, 0, 0, 0.85);
-      font-feature-settings: 'tnum';
-    }
-    
-    #root {
-      min-height: 100vh;
-      position: relative;
-    }
-    
-    /* Simple loading screen */
-    .app-loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: #f0f2f5;
-      color: #1677ff;
-      text-align: center;
-      font-size: 18px;
-      font-weight: 500;
-    }
-  </style>
-  
-  <title>Trường Phát Computer Hòa Bình</title>
+    <meta name="apple-touch-fullscreen" content="yes" />
+
+    <!-- Windows PWA Support -->
+    <meta name="msapplication-TileColor" content="#1677ff" />
+    <meta name="msapplication-TileImage" content="/icons/mstile-144x144.png" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Trường Phát Computer Hòa Bình" />
+    <meta
+      property="og:description"
+      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+    />
+    <meta property="og:image" content="/images/og-image.png" />
+    <meta property="og:url" content="https://truongphat.pages.dev" />
+    <meta property="og:site_name" content="Trường Phát Computer" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Trường Phát Computer Hòa Bình" />
+    <meta
+      name="twitter:description"
+      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+    />
+    <meta name="twitter:image" content="/images/twitter-card.png" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/icons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/icons/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icons/apple-touch-icon.png"
+    />
+    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677ff" />
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Preconnect to improve performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//truongphat-api.workers.dev" />
+
+    <!-- Critical CSS - Inline for performance -->
+    <style>
+      /* Critical styles */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica,
+          Arial, sans-serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        font-size: 14px;
+        font-variant: tabular-nums;
+        line-height: 1.5715;
+        background-color: #f0f2f5;
+        color: rgba(0, 0, 0, 0.85);
+        font-feature-settings: "tnum";
+      }
+
+      #root {
+        min-height: 100vh;
+        position: relative;
+      }
+    </style>
+
+    <title>Trường Phát Computer Hòa Bình</title>
   </head>
   <body>
-    <div id="root">
-      <!-- Simple loading screen -->
-      <div class="app-loading">
-        💻 Trường Phát Computer - Đang tải...
-      </div>
-    </div>
+    <div id="root"></div>
 
     <script>
       // Polyfills for production environment
-      if (typeof global === 'undefined') {
+      if (typeof global === "undefined") {
         var global = globalThis;
       }
-      if (typeof process === 'undefined') {
-        var process = { env: { NODE_ENV: 'production' } };
+      if (typeof process === "undefined") {
+        var process = { env: { NODE_ENV: "production" } };
       }
-
-      // Debug: Remove loading screen after 2 seconds regardless
-      setTimeout(() => {
-        console.log('Removing loading screen...');
-        const loadingDiv = document.querySelector('.app-loading');
-        if (loadingDiv) {
-          loadingDiv.style.display = 'none';
-          console.log('Loading screen removed');
-        } else {
-          console.log('Loading screen not found');
-        }
-      }, 2000);
     </script>
 
     <script type="module" src="/src/main.jsx"></script>

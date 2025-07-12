@@ -1,0 +1,106 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Start All Services",
+      "dependsOrder": "parallel",
+      "dependsOn": ["Frontend Dev", "Backend Dev"]
+    },
+    {
+      "label": "Frontend Dev",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend Dev",
+      "type": "shell", 
+      "command": "wrangler",
+      "args": ["dev", "--port", "8787"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🗄️ D1 Migrations Apply",
+      "type": "shell",
+      "command": "wrangler",
+      "args": ["d1", "migrations", "apply", "khoaugment-db", "--local"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test"
+    },
+    {
+      "label": "🗄️ D1 Execute Query",
+      "type": "shell",
+      "command": "wrangler",
+      "args": ["d1", "execute", "khoaugment-db", "--local", "--command=SELECT * FROM users LIMIT 5;"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test"
+    },
+    {
+      "label": "📦 Deploy Frontend",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "dependsOn": "Build Frontend"
+    },
+    {
+      "label": "⚡ Deploy Backend",
+      "type": "shell",
+      "command": "wrangler",
+      "args": ["deploy"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build"
+    },
+    {
+      "label": "🧪 Run Tests",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "test"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test"
+    },
+    {
+      "label": "🎭 E2E Tests",
+      "type": "shell",
+      "command": "npx",
+      "args": ["playwright", "test"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test"
+    }
+  ]
+}

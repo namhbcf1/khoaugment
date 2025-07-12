@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Authentication</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Authentication Issue</h1>
+    <p>Testing different authentication request formats...</p>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'https://khoaugment-api.bangachieu2.workers.dev';
+        const credentials = {
+            email: 'admin@truongphat.com',
+            password: 'admin123'
+        };
+        
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = `result ${isError ? 'error' : 'success'}`;
+            div.innerHTML = `<pre>${message}</pre>`;
+            document.getElementById('results').appendChild(div);
+            console.log(message);
+        }
+        
+        async function testSimpleFetch() {
+            log('📝 Test 1: Simple fetch (like test page)');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(credentials)
+                });
+                
+                const data = await response.json();
+                
+                log(`Status: ${response.status}
+Response: ${JSON.stringify(data, null, 2)}`, !response.ok);
+                
+                return { success: response.ok, data };
+            } catch (error) {
+                log(`Error: ${error.message}`, true);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testWithHeaders() {
+            log('📝 Test 2: With additional headers (like React frontend)');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Client': 'Khochuan-POS-Frontend',
+                        'X-Client-Version': '1.0.0',
+                        'X-Company': 'Truong-Phat-Computer'
+                    },
+                    body: JSON.stringify(credentials)
+                });
+                
+                const data = await response.json();
+                
+                log(`Status: ${response.status}
+Response: ${JSON.stringify(data, null, 2)}`, !response.ok);
+                
+                return { success: response.ok, data };
+            } catch (error) {
+                log(`Error: ${error.message}`, true);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testHealth() {
+            log('📝 Test 3: Health check');
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                log(`Health Status: ${response.status}
+Health Response: ${JSON.stringify(data, null, 2)}`, !response.ok);
+                
+                return { success: response.ok, data };
+            } catch (error) {
+                log(`Health Error: ${error.message}`, true);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function runAllTests() {
+            log('🚀 Starting authentication debug tests...');
+            log('API URL: ' + API_URL);
+            log('Credentials: ' + JSON.stringify(credentials, null, 2));
+            
+            const results = {
+                health: await testHealth(),
+                simpleFetch: await testSimpleFetch(),
+                withHeaders: await testWithHeaders()
+            };
+            
+            log('📊 SUMMARY:');
+            Object.entries(results).forEach(([test, result]) => {
+                log(`${test}: ${result.success ? '✅ SUCCESS' : '❌ FAILED'}`, !result.success);
+            });
+            
+            if (results.simpleFetch.success) {
+                log('✅ CONCLUSION: Simple fetch works - React frontend has implementation issue');
+            } else if (results.health.success) {
+                log('❌ CONCLUSION: Backend is healthy but authentication is broken');
+            } else {
+                log('❌ CONCLUSION: Backend is completely down');
+            }
+            
+            return results;
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', () => {
+            runAllTests();
+        });
+    </script>
+</body>
+</html>

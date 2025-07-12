@@ -1,0 +1,89 @@
+.error-boundary {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.error-boundary .ant-result {
+  padding: 48px 32px;
+}
+
+.error-boundary .ant-result-icon {
+  margin-bottom: 24px;
+}
+
+.error-boundary .ant-result-icon .anticon {
+  font-size: 48px;
+  color: #ff4d4f;
+}
+
+.error-boundary .ant-result-title {
+  color: #262626;
+  font-size: 24px;
+  line-height: 32px;
+  margin-bottom: 16px;
+}
+
+.error-boundary .ant-result-subtitle {
+  color: #8c8c8c;
+  font-size: 14px;
+  line-height: 22px;
+  margin-bottom: 24px;
+}
+
+/* Error details styling */
+.error-boundary .ant-card {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.error-boundary .ant-typography {
+  margin-bottom: 8px;
+}
+
+.error-boundary .ant-typography code {
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .error-boundary {
+    padding: 16px;
+  }
+
+  .error-boundary .ant-result {
+    padding: 32px 16px;
+  }
+
+  .error-boundary .ant-result-icon .anticon {
+    font-size: 36px;
+  }
+
+  .error-boundary .ant-result-title {
+    font-size: 20px;
+  }
+
+  .error-boundary .ant-card {
+    margin: 16px;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .error-boundary .ant-typography code {
+    background: #1f1f1f;
+    border-color: #434343;
+    color: #fff;
+  }
+}

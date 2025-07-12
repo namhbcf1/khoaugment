@@ -21,6 +21,11 @@ import CustomerSegmentation from '../components/AI/CustomerSegmentation';
 import SalesForecasting from '../components/AI/SalesForecasting';
 import ProductRecommendation from '../components/AI/ProductRecommendation';
 import PriceOptimization from '../components/AI/PriceOptimization';
+import aiService from '../services/ai/aiService'; // Assume path
+import { useAuth } from '../hooks/useAuth';
+import Unauthorized from '../components/Unauthorized';
+import Loading from '../components/Loading';
+import ErrorMessage from '../components/ErrorMessage';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -28,43 +33,40 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const AIFeatures = () => {
-  const [loading, setLoading] = useState(false);
-  const [activeModel, setActiveModel] = useState('recommendation');
-  const [modelStatus, setModelStatus] = useState({});
-  const [predictions, setPredictions] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
-  const [customerInsights, setCustomerInsights] = useState([]);
-  const [priceOptimization, setPriceOptimization] = useState([]);
-  const [demandForecasting, setDemandForecasting] = useState([]);
-  const [anomalyDetection, setAnomalyDetection] = useState([]);
-  const [chatbotMetrics, setChatbotMetrics] = useState({});
-  const [aiSettings, setAiSettings] = useState({});
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showTrainingModal, setShowTrainingModal] = useState(false);
+  const { user, hasPermission } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState({}); // For all AI data
+
+  if (!hasPermission('ai.view')) {
+    return <Unauthorized />;
+  }
 
   useEffect(() => {
-    loadAIData();
+    const fetchAIData = async () => {
+      try {
+        setLoading(true);
+        const responses = await Promise.all([
+          aiService.getCustomerSegmentation(),
+          aiService.getDemandForecasting(),
+          // Add others
+        ]);
+        setData({
+          segmentation: responses[0].data,
+          forecasting: responses[1].data,
+          // etc.
+        });
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+    fetchAIData();
   }, []);
 
-  const loadAIData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        loadModelStatus(),
-        loadRecommendations(),
-        loadCustomerInsights(),
-        loadPriceOptimization(),
-        loadDemandForecasting(),
-        loadAnomalyDetection(),
-        loadChatbotMetrics(),
-        loadAISettings()
-      ]);
-    } catch (error) {
-      console.error('Error loading AI data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) return <Loading />;
+  if (error) return <ErrorMessage error={error} />;
 
   const loadModelStatus = async () => {
     try {

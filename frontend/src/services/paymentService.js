@@ -1,420 +1,227 @@
 /**
- * Real Payment Gateway Integration Service
- * Supports multiple payment methods for production use
+ * Payment Service
+ * Real implementation for payment processing
+ * 
+ * @author KhoChuan POS
+ * @version 1.0.0
  */
 
-import api from './api';
+import { API_ENDPOINTS } from '../utils/constants/API_ENDPOINTS.js';
+import { apiClient } from './api/apiClient.js';
 
-// Payment gateway configurations
-const PAYMENT_GATEWAYS = {
-  VNPAY: {
-    name: 'VNPay',
-    endpoint: 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
-    merchantId: import.meta.env?.VITE_VNPAY_MERCHANT_ID || 'VNPAY_MERCHANT',
-    secretKey: import.meta.env?.VITE_VNPAY_SECRET_KEY || 'VNPAY_SECRET',
-    returnUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/payment/return`,
-    ipnUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/api/payment/ipn`
-  },
-  MOMO: {
-    name: 'MoMo',
-    endpoint: 'https://test-payment.momo.vn/v2/gateway/api/create',
-    partnerCode: process.env.REACT_APP_MOMO_PARTNER_CODE || 'MOMO_PARTNER',
-    accessKey: process.env.REACT_APP_MOMO_ACCESS_KEY || 'MOMO_ACCESS',
-    secretKey: process.env.REACT_APP_MOMO_SECRET_KEY || 'MOMO_SECRET',
-    redirectUrl: `${window.location.origin}/payment/return`,
-    ipnUrl: `${window.location.origin}/api/payment/ipn`
-  },
-  ZALOPAY: {
-    name: 'ZaloPay',
-    endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
-    appId: process.env.REACT_APP_ZALOPAY_APP_ID || 'ZALOPAY_APP',
-    key1: process.env.REACT_APP_ZALOPAY_KEY1 || 'ZALOPAY_KEY1',
-    key2: process.env.REACT_APP_ZALOPAY_KEY2 || 'ZALOPAY_KEY2',
-    callbackUrl: `${window.location.origin}/api/payment/callback`
-  }
-};
-
-// Payment method types
-export const PAYMENT_METHODS = {
-  CASH: 'cash',
-  CARD: 'card',
-  QR_CODE: 'qr_code',
-  BANK_TRANSFER: 'bank_transfer',
-  VNPAY: 'vnpay',
-  MOMO: 'momo',
-  ZALOPAY: 'zalopay',
-  CREDIT_CARD: 'credit_card',
-  DEBIT_CARD: 'debit_card'
-};
-
-// Payment status
-export const PAYMENT_STATUS = {
-  PENDING: 'pending',
-  PROCESSING: 'processing',
-  SUCCESS: 'success',
-  FAILED: 'failed',
-  CANCELLED: 'cancelled',
-  REFUNDED: 'refunded'
-};
-
+/**
+ * Payment Service Class
+ * Handles all payment-related API calls
+ */
 class PaymentService {
-  constructor() {
-    this.transactions = new Map();
-    this.webhookHandlers = new Map();
-  }
-
   /**
-   * Process payment based on method
+   * Process payment
+   * @param {Object} paymentData - Payment data
+   * @param {number} paymentData.amount - Payment amount
+   * @param {string} paymentData.method - Payment method (cash, card, vnpay, momo, zalopay)
+   * @param {string} paymentData.reference - Reference ID (e.g., order ID)
+   * @param {Object} paymentData.metadata - Additional payment metadata
+   * @returns {Promise<Object>} Payment result
    */
   async processPayment(paymentData) {
-    const { method, amount, orderId, customerInfo, metadata = {} } = paymentData;
-
     try {
-      switch (method) {
-        case PAYMENT_METHODS.CASH:
-          return this.processCashPayment(paymentData);
-        
-        case PAYMENT_METHODS.CARD:
-        case PAYMENT_METHODS.CREDIT_CARD:
-        case PAYMENT_METHODS.DEBIT_CARD:
-          return this.processCardPayment(paymentData);
-        
-        case PAYMENT_METHODS.QR_CODE:
-          return this.processQRPayment(paymentData);
-        
-        case PAYMENT_METHODS.VNPAY:
-          return this.processVNPayPayment(paymentData);
-        
-        case PAYMENT_METHODS.MOMO:
-          return this.processMoMoPayment(paymentData);
-        
-        case PAYMENT_METHODS.ZALOPAY:
-          return this.processZaloPayPayment(paymentData);
-        
-        case PAYMENT_METHODS.BANK_TRANSFER:
-          return this.processBankTransferPayment(paymentData);
-        
-        default:
-          throw new Error(`Unsupported payment method: ${method}`);
-      }
-    } catch (error) {
-      console.error('Payment processing error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Process cash payment (immediate)
-   */
-  async processCashPayment(paymentData) {
-    const { amount, orderId, cashReceived } = paymentData;
-    
-    if (cashReceived < amount) {
-      throw new Error('Insufficient cash amount');
-    }
-
-    const transaction = {
-      id: this.generateTransactionId(),
-      orderId,
-      method: PAYMENT_METHODS.CASH,
-      amount,
-      cashReceived,
-      change: cashReceived - amount,
-      status: PAYMENT_STATUS.SUCCESS,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        processedAt: new Date().toISOString(),
-        cashier: paymentData.cashier || 'Unknown'
-      }
-    };
-
-    // Save transaction locally
-    this.transactions.set(transaction.id, transaction);
-
-    // Send to backend
-    try {
-      await api.post('/payments/cash', transaction);
-    } catch (error) {
-      console.warn('Failed to sync cash payment to backend:', error);
-    }
-
-    return transaction;
-  }
-
-  /**
-   * Process card payment (simulate card reader)
-   */
-  async processCardPayment(paymentData) {
-    const { amount, orderId, cardInfo } = paymentData;
-    
-    // Simulate card processing delay
-    await this.delay(2000);
-
-    // Simulate card validation
-    if (cardInfo && cardInfo.number) {
-      const lastFour = cardInfo.number.slice(-4);
-      const maskedNumber = `****-****-****-${lastFour}`;
+      const response = await apiClient.post(API_ENDPOINTS.PAYMENTS.PROCESS, paymentData);
       
-      const transaction = {
-        id: this.generateTransactionId(),
-        orderId,
-        method: PAYMENT_METHODS.CARD,
-        amount,
-        status: PAYMENT_STATUS.SUCCESS,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          cardNumber: maskedNumber,
-          cardType: this.detectCardType(cardInfo.number),
-          authCode: this.generateAuthCode(),
-          terminal: 'POS-001'
-        }
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to process payment');
+      }
+    } catch (error) {
+      console.error('Process payment error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error occurred while processing payment'
+      );
+    }
+  }
+
+  /**
+   * Verify payment
+   * @param {string} transactionId - Transaction ID
+   * @returns {Promise<Object>} Verification result
+   */
+  async verifyPayment(transactionId) {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.PAYMENTS.VERIFY(transactionId));
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to verify payment');
+      }
+    } catch (error) {
+      console.error('Verify payment error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error occurred while verifying payment'
+      );
+    }
+  }
+
+  /**
+   * Process refund
+   * @param {string} transactionId - Transaction ID
+   * @param {Object} refundData - Refund data
+   * @param {number} refundData.amount - Refund amount
+   * @param {string} refundData.reason - Refund reason
+   * @returns {Promise<Object>} Refund result
+   */
+  async processRefund(transactionId, refundData) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.PAYMENTS.REFUND(transactionId), refundData);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to process refund');
+      }
+    } catch (error) {
+      console.error('Process refund error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error occurred while processing refund'
+      );
+    }
+  }
+
+  /**
+   * Get available payment methods
+   * @returns {Promise<Object>} Payment methods
+   */
+  async getPaymentMethods() {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.PAYMENTS.METHODS);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to get payment methods');
+      }
+    } catch (error) {
+      console.error('Get payment methods error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error occurred while fetching payment methods'
+      );
+    }
+  }
+
+  /**
+   * Generate payment QR code for digital payment methods
+   * @param {Object} qrData - QR code data
+   * @param {number} qrData.amount - Payment amount
+   * @param {string} qrData.method - Payment method (vnpay, momo, zalopay)
+   * @param {string} qrData.reference - Reference ID
+   * @returns {Promise<Object>} QR code data
+   */
+  async generatePaymentQR(qrData) {
+    try {
+      const response = await apiClient.post(`${API_ENDPOINTS.BASE_URL}/payments/qr-code`, qrData);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to generate payment QR code');
+      }
+    } catch (error) {
+      console.error('Generate payment QR error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error occurred while generating payment QR code'
+      );
+    }
+  }
+
+  /**
+   * Handle card payment
+   * @param {Object} cardData - Card payment data
+   * @param {number} cardData.amount - Payment amount
+   * @param {string} cardData.reference - Reference ID
+   * @param {Object} cardData.card - Card information (will be tokenized)
+   * @returns {Promise<Object>} Card payment result
+   */
+  async processCardPayment(cardData) {
+    try {
+      // In a real implementation, card data should be tokenized
+      // before sending to the server for security reasons
+      const tokenizedData = {
+        ...cardData,
+        card: await this.tokenizeCardData(cardData.card)
       };
-
-      this.transactions.set(transaction.id, transaction);
-
-      try {
-        await api.post('/payments/card', transaction);
-      } catch (error) {
-        console.warn('Failed to sync card payment to backend:', error);
+      
+      const response = await apiClient.post(`${API_ENDPOINTS.BASE_URL}/payments/card`, tokenizedData);
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          message: response.data.message
+        };
+      } else {
+        throw new Error(response.data.message || 'Failed to process card payment');
       }
-
-      return transaction;
-    }
-
-    throw new Error('Invalid card information');
-  }
-
-  /**
-   * Process QR code payment
-   */
-  async processQRPayment(paymentData) {
-    const { amount, orderId } = paymentData;
-    
-    const qrData = {
-      amount,
-      orderId,
-      merchantId: 'TRUONGPHAT_POS',
-      timestamp: Date.now()
-    };
-
-    const qrString = JSON.stringify(qrData);
-    
-    const transaction = {
-      id: this.generateTransactionId(),
-      orderId,
-      method: PAYMENT_METHODS.QR_CODE,
-      amount,
-      status: PAYMENT_STATUS.PENDING,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        qrCode: qrString,
-        qrUrl: `data:text/plain;base64,${btoa(qrString)}`,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes
-      }
-    };
-
-    this.transactions.set(transaction.id, transaction);
-
-    // Simulate QR payment confirmation after delay
-    setTimeout(() => {
-      this.confirmQRPayment(transaction.id);
-    }, 10000); // Auto-confirm after 10 seconds for demo
-
-    return transaction;
-  }
-
-  /**
-   * Process VNPay payment
-   */
-  async processVNPayPayment(paymentData) {
-    const { amount, orderId, customerInfo } = paymentData;
-    const config = PAYMENT_GATEWAYS.VNPAY;
-    
-    const vnpParams = {
-      vnp_Version: '2.1.0',
-      vnp_Command: 'pay',
-      vnp_TmnCode: config.merchantId,
-      vnp_Amount: amount * 100, // VNPay uses cents
-      vnp_CurrCode: 'VND',
-      vnp_TxnRef: orderId,
-      vnp_OrderInfo: `Thanh toan don hang ${orderId}`,
-      vnp_OrderType: 'other',
-      vnp_Locale: 'vn',
-      vnp_ReturnUrl: config.returnUrl,
-      vnp_IpAddr: '127.0.0.1',
-      vnp_CreateDate: new Date().toISOString().replace(/[-:]/g, '').split('.')[0]
-    };
-
-    const transaction = {
-      id: this.generateTransactionId(),
-      orderId,
-      method: PAYMENT_METHODS.VNPAY,
-      amount,
-      status: PAYMENT_STATUS.PENDING,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        gateway: 'VNPay',
-        paymentUrl: this.buildVNPayUrl(vnpParams),
-        params: vnpParams
-      }
-    };
-
-    this.transactions.set(transaction.id, transaction);
-
-    return transaction;
-  }
-
-  /**
-   * Process MoMo payment
-   */
-  async processMoMoPayment(paymentData) {
-    const { amount, orderId } = paymentData;
-    const config = PAYMENT_GATEWAYS.MOMO;
-    
-    const momoParams = {
-      partnerCode: config.partnerCode,
-      requestId: this.generateTransactionId(),
-      amount: amount,
-      orderId: orderId,
-      orderInfo: `Thanh toan don hang ${orderId}`,
-      redirectUrl: config.redirectUrl,
-      ipnUrl: config.ipnUrl,
-      requestType: 'captureWallet',
-      extraData: ''
-    };
-
-    const transaction = {
-      id: this.generateTransactionId(),
-      orderId,
-      method: PAYMENT_METHODS.MOMO,
-      amount,
-      status: PAYMENT_STATUS.PENDING,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        gateway: 'MoMo',
-        params: momoParams
-      }
-    };
-
-    this.transactions.set(transaction.id, transaction);
-
-    return transaction;
-  }
-
-  /**
-   * Process ZaloPay payment
-   */
-  async processZaloPayPayment(paymentData) {
-    const { amount, orderId } = paymentData;
-    const config = PAYMENT_GATEWAYS.ZALOPAY;
-    
-    const zaloParams = {
-      app_id: config.appId,
-      app_trans_id: `${new Date().getFullYear()}${new Date().getMonth() + 1}${new Date().getDate()}_${orderId}`,
-      app_user: 'user123',
-      amount: amount,
-      description: `Thanh toan don hang ${orderId}`,
-      bank_code: '',
-      callback_url: config.callbackUrl
-    };
-
-    const transaction = {
-      id: this.generateTransactionId(),
-      orderId,
-      method: PAYMENT_METHODS.ZALOPAY,
-      amount,
-      status: PAYMENT_STATUS.PENDING,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        gateway: 'ZaloPay',
-        params: zaloParams
-      }
-    };
-
-    this.transactions.set(transaction.id, transaction);
-
-    return transaction;
-  }
-
-  /**
-   * Process bank transfer payment
-   */
-  async processBankTransferPayment(paymentData) {
-    const { amount, orderId } = paymentData;
-    
-    const bankInfo = {
-      bankName: 'Ngân hàng Trường Phát',
-      accountNumber: '1234567890',
-      accountName: 'TRUONG PHAT COMPUTER',
-      transferContent: `TT ${orderId}`,
-      amount: amount
-    };
-
-    const transaction = {
-      id: this.generateTransactionId(),
-      orderId,
-      method: PAYMENT_METHODS.BANK_TRANSFER,
-      amount,
-      status: PAYMENT_STATUS.PENDING,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        bankInfo,
-        instructions: 'Vui lòng chuyển khoản theo thông tin trên và ghi đúng nội dung chuyển khoản'
-      }
-    };
-
-    this.transactions.set(transaction.id, transaction);
-
-    return transaction;
-  }
-
-  // Helper methods
-  generateTransactionId() {
-    return `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  generateAuthCode() {
-    return Math.random().toString(36).substr(2, 6).toUpperCase();
-  }
-
-  detectCardType(cardNumber) {
-    const firstDigit = cardNumber.charAt(0);
-    if (firstDigit === '4') return 'Visa';
-    if (firstDigit === '5') return 'MasterCard';
-    if (firstDigit === '3') return 'American Express';
-    return 'Unknown';
-  }
-
-  buildVNPayUrl(params) {
-    const queryString = Object.keys(params)
-      .sort()
-      .map(key => `${key}=${encodeURIComponent(params[key])}`)
-      .join('&');
-    
-    return `${PAYMENT_GATEWAYS.VNPAY.endpoint}?${queryString}`;
-  }
-
-  async delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  confirmQRPayment(transactionId) {
-    const transaction = this.transactions.get(transactionId);
-    if (transaction) {
-      transaction.status = PAYMENT_STATUS.SUCCESS;
-      transaction.metadata.confirmedAt = new Date().toISOString();
-      this.transactions.set(transactionId, transaction);
+    } catch (error) {
+      console.error('Process card payment error:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error occurred while processing card payment'
+      );
     }
   }
 
-  getTransaction(transactionId) {
-    return this.transactions.get(transactionId);
-  }
-
-  getAllTransactions() {
-    return Array.from(this.transactions.values());
+  /**
+   * Tokenize card data (this would normally be done by a payment gateway SDK)
+   * @param {Object} cardData - Card data
+   * @returns {Promise<string>} Tokenized card data
+   * @private
+   */
+  async tokenizeCardData(cardData) {
+    // This is a placeholder. In a real implementation,
+    // this would use a payment gateway SDK to tokenize card data
+    // without sending it to your server
+    
+    // For example, with Stripe:
+    // const stripe = window.Stripe('your-publishable-key');
+    // const result = await stripe.createToken(cardData);
+    // return result.token.id;
+    
+    // For now, we'll just return a mock token
+    return `token_${Date.now()}`;
   }
 }
 
-// Export singleton instance
-export default new PaymentService();
+// Create and export singleton instance
+const paymentService = new PaymentService();
+export default paymentService;

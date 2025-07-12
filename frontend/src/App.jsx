@@ -1,160 +1,274 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider, Card, Button, Space, Typography } from 'antd';
-import viVN from 'antd/locale/vi_VN';
-import './styles/globals.css';
+import { App as AntApp, ConfigProvider, Spin } from "antd";
+import viVN from "antd/locale/vi_VN";
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./auth/AuthContext";
+import ProtectedRoute from "./auth/ProtectedRoute";
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import "./styles/globals.css";
 
-const { Title, Paragraph } = Typography;
+// Lazy load page components for better performance
+const Login = lazy(() => import("./pages/Login"));
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminProducts = lazy(() => import("./pages/admin/Products/ProductList"));
+const AdminInventory = lazy(() =>
+  import("./pages/admin/Inventory/InventoryManagement")
+);
+const AdminOrders = lazy(() => import("./pages/admin/Orders/OrderList"));
+const AdminCustomers = lazy(() =>
+  import("./pages/admin/Customers/CustomerList")
+);
+const AdminReports = lazy(() =>
+  import("./pages/admin/Reports/ReportsDashboard")
+);
+const AdminSettings = lazy(() => import("./pages/admin/Settings/SettingsPage"));
+const AdminStaff = lazy(() => import("./pages/admin/Staff/StaffList"));
 
-// Simple working login component
-const SimpleLogin = () => {
-  const handleDemoLogin = (role) => {
-    alert(`Demo login as ${role} - This will be connected to backend later`);
-  };
+// Cashier Pages
+const CashierPOS = lazy(() => import("./pages/cashier/POS/POSTerminal"));
+const CashierOrders = lazy(() => import("./pages/cashier/Orders/OrderHistory"));
+const CashierCustomers = lazy(() =>
+  import("./pages/cashier/Customers/CustomerSearch")
+);
 
-  return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      background: '#f0f2f5',
-      padding: '20px'
-    }}>
-      <Card style={{ width: 400, textAlign: 'center' }}>
-        <Title level={2}>🖥️ Khochuan POS - Đăng Nhập</Title>
-        <Paragraph type="secondary">Trường Phát Computer Hòa Bình</Paragraph>
-        <Paragraph type="secondary" style={{ lineHeight: '1.6' }}>
-          <strong>🏢 Trường Phát Computer Hòa Bình</strong> - Hệ thống POS thông minh
-          <br />
-          <strong>🎯 Tính năng:</strong> AI, Gamification, Barcode Scanner, Multi-Payment Methods
-          <br />
-          <strong>💳 Thanh toán:</strong> Tiền mặt, Thẻ, QR Code, Chuyển khoản
-          <br />
-          <strong>👥 Khách hàng:</strong> CRM, Loyalty program, Điểm thưởng
-          <br />
-          <strong>📦 Kho:</strong> Inventory, Quản lý kho, Tồn kho
-          <br />
-          <strong>📊 Analytics:</strong> Dashboard, Báo cáo, Thống kê
-          <br />
-          <strong>🤖 AI:</strong> Thông minh, Gợi ý sản phẩm, Recommendation
-          <br />
-          <strong>🎮 Gamification:</strong> Huy hiệu, Thành tích, Badges, Rewards
-        </Paragraph>
+// Staff Pages
+const StaffDashboard = lazy(() =>
+  import("./pages/staff/Dashboard/StaffDashboard")
+);
+const StaffSales = lazy(() => import("./pages/staff/Sales/SalesSummary"));
+const StaffProfile = lazy(() => import("./pages/staff/Profile/StaffProfile"));
 
-        <Space direction="vertical" style={{ width: '100%', marginTop: '20px' }}>
-          <Button
-            type="primary"
-            block
-            size="large"
-            onClick={() => handleDemoLogin('Admin')}
-          >
-            🔑 Admin - Quản trị viên (Demo)
-          </Button>
+// Error Pages
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Unauthorized = lazy(() => import("./pages/Unauthorized"));
+const ServerError = lazy(() => import("./pages/ServerError"));
 
-          <Button
-            block
-            size="large"
-            onClick={() => handleDemoLogin('Cashier')}
-          >
-            💳 Cashier - Thu ngân (Demo)
-          </Button>
-
-          <Button
-            block
-            size="large"
-            onClick={() => handleDemoLogin('Staff')}
-          >
-            👥 Staff - Nhân viên (Demo)
-          </Button>
-        </Space>
-
-        <div style={{ marginTop: '24px', fontSize: '12px', color: '#999' }}>
-          © 2024 Trường Phát Computer Hòa Bình - Khochuan POS
-          <br />
-          Enterprise POS System with AI, Gamification, Barcode Scanner
-        </div>
-      </Card>
-    </div>
-  );
-};
+// Loading component for suspense fallback
+const LoadingFallback = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100vh",
+      flexDirection: "column",
+      gap: "16px",
+    }}
+  >
+    <Spin size="large" />
+    <p>Đang tải...</p>
+  </div>
+);
 
 // Optimized theme - minimal effects for better performance
 const theme = {
   token: {
-    colorPrimary: '#1890ff',
+    colorPrimary: "#1890ff",
     borderRadius: 8,
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
   components: {
     Layout: {
-      headerBg: '#001529',
-      siderBg: '#001529',
+      headerBg: "#001529",
+      siderBg: "#001529",
     },
     Menu: {
-      darkItemBg: '#001529',
-      darkSubMenuItemBg: '#000c17',
+      darkItemBg: "#001529",
+      darkSubMenuItemBg: "#000c17",
     },
   },
 };
 
 const App = () => {
-  console.log('🚀 KhoChuan POS App initializing...');
+  console.log("🚀 KhoChuan POS App initializing...");
 
-  // Production-ready app with simple working login
-  try {
-    return (
+  return (
+    <ErrorBoundary>
       <ConfigProvider locale={viVN} theme={theme}>
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/admin/login" element={<SimpleLogin />} />
-            <Route path="/login" element={<SimpleLogin />} />
+        <AntApp>
+          <AuthProvider>
+            <BrowserRouter>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/admin/login" element={<Login />} />
 
-            {/* Default Redirects */}
-            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
-            <Route path="/" element={<Navigate to="/admin/login" replace />} />
-            <Route path="*" element={<Navigate to="/admin/login" replace />} />
-          </Routes>
-        </BrowserRouter>
+                  {/* Admin Routes */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <Navigate to="/admin/dashboard" replace />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/products/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <AdminProducts />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/inventory/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <AdminInventory />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/orders/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <AdminOrders />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/customers/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <AdminCustomers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/reports/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                        <AdminReports />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/staff/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin"]}>
+                        <AdminStaff />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings/*"
+                    element={
+                      <ProtectedRoute requiredRoles={["admin"]}>
+                        <AdminSettings />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Cashier Routes */}
+                  <Route
+                    path="/cashier"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["cashier", "admin", "manager"]}
+                      >
+                        <Navigate to="/cashier/pos" replace />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/cashier/pos/*"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["cashier", "admin", "manager"]}
+                      >
+                        <CashierPOS />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/cashier/orders/*"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["cashier", "admin", "manager"]}
+                      >
+                        <CashierOrders />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/cashier/customers/*"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["cashier", "admin", "manager"]}
+                      >
+                        <CashierCustomers />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Staff Routes */}
+                  <Route
+                    path="/staff"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["staff", "cashier", "admin", "manager"]}
+                      >
+                        <Navigate to="/staff/dashboard" replace />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/dashboard"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["staff", "cashier", "admin", "manager"]}
+                      >
+                        <StaffDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/sales/*"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["staff", "cashier", "admin", "manager"]}
+                      >
+                        <StaffSales />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/profile/*"
+                    element={
+                      <ProtectedRoute
+                        requiredRoles={["staff", "cashier", "admin", "manager"]}
+                      >
+                        <StaffProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Error Routes */}
+                  <Route path="/unauthorized" element={<Unauthorized />} />
+                  <Route path="/server-error" element={<ServerError />} />
+                  <Route path="/404" element={<NotFound />} />
+
+                  {/* Default Routes */}
+                  <Route path="/" element={<Navigate to="/login" replace />} />
+                  <Route path="*" element={<Navigate to="/404" replace />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </AuthProvider>
+        </AntApp>
       </ConfigProvider>
-    );
-  } catch (error) {
-    console.error('❌ Error in KhoChuan POS App:', error);
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        flexDirection: 'column',
-        background: '#f0f2f5',
-        color: '#ff4d4f',
-        textAlign: 'center',
-        padding: '20px'
-      }}>
-        <h1>⚠️ Lỗi ứng dụng</h1>
-        <p>Có lỗi xảy ra trong quá trình khởi tạo</p>
-        <p style={{ fontSize: '14px', opacity: 0.8, marginTop: '10px' }}>
-          {error.message || 'Unknown error'}
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          style={{
-            padding: '12px 24px',
-            background: '#1677ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
-        >
-          🔄 Refresh Trang
-        </button>
-      </div>
-    );
-  }
+    </ErrorBoundary>
+  );
 };
 
 export default App;

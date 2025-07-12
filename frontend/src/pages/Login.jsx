@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Form, Input, Button, Checkbox, Card, Typography, Alert, Layout,
-  Row, Col, Divider, Space, Spin
+  Row, Col, Divider, Space, Spin, message
 } from 'antd';
 import {
   UserOutlined, LockOutlined, LoginOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
+import authService from '../services/api/authService';
 
 const { Title, Text, Paragraph } = Typography;
 const { Content } = Layout;
@@ -37,18 +38,12 @@ const Login = () => {
   const onFinish = async (values) => {
     setProcessing(true);
     setLoginError('');
-    
     try {
-      const { email, password, remember } = values;
-      const result = await login({ email, password, remember });
-      
-      if (!result.success) {
-        setLoginError(result.error || 'Đăng nhập không thành công. Vui lòng kiểm tra thông tin đăng nhập.');
-      }
-      // Chuyển hướng sẽ được xử lý bởi useEffect
-    } catch (error) {
-      console.error('Login error:', error);
-      setLoginError(error.message || 'Đăng nhập không thành công. Vui lòng kiểm tra thông tin đăng nhập.');
+      const response = await authService.login(values.email, values.password);
+      // Handle success
+      message.success('Login successful');
+    } catch (err) {
+      setLoginError(err.message);
     } finally {
       setProcessing(false);
     }
@@ -187,55 +182,6 @@ const Login = () => {
                   </Button>
                 </Form.Item>
               </Form>
-
-              <Divider>
-                <Text type="secondary">hoặc đăng nhập với vai trò</Text>
-              </Divider>
-
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button
-                  block
-                  type="primary"
-                  onClick={() => {
-                    form.setFieldsValue({
-                      email: 'admin@truongphat.com',
-                      password: 'admin123'
-                    });
-                    form.submit();
-                  }}
-                  disabled={processing}
-                >
-                  🔑 Admin - Quản trị viên (Demo)
-                </Button>
-
-                <Button
-                  block
-                  onClick={() => {
-                    form.setFieldsValue({
-                      email: 'cashier@truongphat.com',
-                      password: 'cashier123'
-                    });
-                    form.submit();
-                  }}
-                  disabled={processing}
-                >
-                  💳 Cashier - Thu ngân (Demo)
-                </Button>
-
-                <Button
-                  block
-                  onClick={() => {
-                    form.setFieldsValue({
-                      email: 'staff@truongphat.com',
-                      password: 'staff123'
-                    });
-                    form.submit();
-                  }}
-                  disabled={processing}
-                >
-                  👥 Staff - Nhân viên (Demo)
-                </Button>
-              </Space>
               
               <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <Text type="secondary">

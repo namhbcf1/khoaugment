@@ -1,238 +1,244 @@
 /**
- * API Endpoints Configuration
- * Centralized API endpoint definitions for KhoChuan POS
+ * API Endpoints Constants
+ * Defines all API endpoints used by the application
  * 
- * @author Trường Phát Computer
+ * @author KhoChuan POS
  * @version 1.0.0
  */
 
-// Base API URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.khoaugment.com';
-const API_VERSION = '/v1';
-const BASE_URL = `${API_BASE_URL}${API_VERSION}`;
+// Base API URL - will be different for development and production
+const BASE_URL = import.meta.env.VITE_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://api.khochuanpos.com/api/v1'
+    : 'http://localhost:8787/api/v1');
 
-/**
- * Authentication Endpoints
- */
-export const AUTH_ENDPOINTS = {
+// Authentication endpoints
+const AUTH = {
   LOGIN: `${BASE_URL}/auth/login`,
   LOGOUT: `${BASE_URL}/auth/logout`,
-  REFRESH: `${BASE_URL}/auth/refresh`,
+  REFRESH_TOKEN: `${BASE_URL}/auth/refresh-token`,
   REGISTER: `${BASE_URL}/auth/register`,
   FORGOT_PASSWORD: `${BASE_URL}/auth/forgot-password`,
   RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
-  VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
   CHANGE_PASSWORD: `${BASE_URL}/auth/change-password`,
+  VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
+  ME: `${BASE_URL}/auth/me`,
   PROFILE: `${BASE_URL}/auth/profile`,
   PERMISSIONS: `${BASE_URL}/auth/permissions`,
 };
 
-/**
- * Product Management Endpoints
- */
-export const PRODUCT_ENDPOINTS = {
+// User endpoints
+const USERS = {
+  LIST: `${BASE_URL}/users`,
+  GET_BY_ID: (id) => `${BASE_URL}/users/${id}`,
+  CREATE: `${BASE_URL}/users`,
+  UPDATE: (id) => `${BASE_URL}/users/${id}`,
+  DELETE: (id) => `${BASE_URL}/users/${id}`,
+  CHANGE_STATUS: (id) => `${BASE_URL}/users/${id}/status`,
+  PERMISSIONS: `${BASE_URL}/users/permissions`,
+  ROLES: `${BASE_URL}/users/roles`,
+  ACTIVITY: (id) => `${BASE_URL}/users/${id}/activity`,
+  PERFORMANCE: (id) => `${BASE_URL}/users/${id}/performance`,
+};
+
+// Product endpoints
+const PRODUCTS = {
   LIST: `${BASE_URL}/products`,
+  GET_BY_ID: (id) => `${BASE_URL}/products/${id}`,
+  GET_BY_BARCODE: (barcode) => `${BASE_URL}/products/barcode/${barcode}`,
   CREATE: `${BASE_URL}/products`,
   UPDATE: (id) => `${BASE_URL}/products/${id}`,
   DELETE: (id) => `${BASE_URL}/products/${id}`,
-  GET_BY_ID: (id) => `${BASE_URL}/products/${id}`,
+  CATEGORIES: `${BASE_URL}/categories`,
   SEARCH: `${BASE_URL}/products/search`,
-  CATEGORIES: `${BASE_URL}/products/categories`,
-  BULK_IMPORT: `${BASE_URL}/products/bulk-import`,
+  BULK_IMPORT: `${BASE_URL}/products/import`,
   BULK_UPDATE: `${BASE_URL}/products/bulk-update`,
   PRICE_HISTORY: (id) => `${BASE_URL}/products/${id}/price-history`,
   VARIANTS: (id) => `${BASE_URL}/products/${id}/variants`,
+  LOW_STOCK: `${BASE_URL}/products/low-stock`,
+  POPULAR: `${BASE_URL}/products/popular`,
+  TRENDING: `${BASE_URL}/products/trending`,
 };
 
-/**
- * Inventory Management Endpoints
- */
-export const INVENTORY_ENDPOINTS = {
-  LIST: `${BASE_URL}/inventory`,
-  UPDATE_STOCK: (id) => `${BASE_URL}/inventory/${id}/stock`,
-  MOVEMENTS: `${BASE_URL}/inventory/movements`,
-  LOW_STOCK: `${BASE_URL}/inventory/low-stock`,
-  STOCK_ALERTS: `${BASE_URL}/inventory/alerts`,
-  WAREHOUSE_TRANSFER: `${BASE_URL}/inventory/transfer`,
-  STOCK_COUNT: `${BASE_URL}/inventory/stock-count`,
-  FORECASTING: `${BASE_URL}/inventory/forecasting`,
+// Category endpoints
+const CATEGORIES = {
+  LIST: `${BASE_URL}/categories`,
+  GET_BY_ID: (id) => `${BASE_URL}/categories/${id}`,
+  CREATE: `${BASE_URL}/categories`,
+  UPDATE: (id) => `${BASE_URL}/categories/${id}`,
+  DELETE: (id) => `${BASE_URL}/categories/${id}`,
+  PRODUCTS: (id) => `${BASE_URL}/categories/${id}/products`,
 };
 
-/**
- * Order Management Endpoints
- */
-export const ORDER_ENDPOINTS = {
-  LIST: `${BASE_URL}/orders`,
-  CREATE: `${BASE_URL}/orders`,
-  UPDATE: (id) => `${BASE_URL}/orders/${id}`,
-  DELETE: (id) => `${BASE_URL}/orders/${id}`,
-  GET_BY_ID: (id) => `${BASE_URL}/orders/${id}`,
-  CANCEL: (id) => `${BASE_URL}/orders/${id}/cancel`,
-  REFUND: (id) => `${BASE_URL}/orders/${id}/refund`,
-  PRINT_RECEIPT: (id) => `${BASE_URL}/orders/${id}/receipt`,
-  PAYMENT_STATUS: (id) => `${BASE_URL}/orders/${id}/payment-status`,
-  DELIVERY_STATUS: (id) => `${BASE_URL}/orders/${id}/delivery-status`,
-};
-
-/**
- * Customer Management Endpoints
- */
-export const CUSTOMER_ENDPOINTS = {
+// Customer endpoints
+const CUSTOMERS = {
   LIST: `${BASE_URL}/customers`,
+  GET_BY_ID: (id) => `${BASE_URL}/customers/${id}`,
   CREATE: `${BASE_URL}/customers`,
   UPDATE: (id) => `${BASE_URL}/customers/${id}`,
   DELETE: (id) => `${BASE_URL}/customers/${id}`,
-  GET_BY_ID: (id) => `${BASE_URL}/customers/${id}`,
   SEARCH: `${BASE_URL}/customers/search`,
-  LOYALTY_POINTS: (id) => `${BASE_URL}/customers/${id}/loyalty-points`,
-  PURCHASE_HISTORY: (id) => `${BASE_URL}/customers/${id}/purchase-history`,
-  SEGMENTATION: `${BASE_URL}/customers/segmentation`,
+  LOYALTY: (id) => `${BASE_URL}/customers/${id}/loyalty`,
+  LOYALTY_HISTORY: (id) => `${BASE_URL}/customers/${id}/loyalty/history`,
+  ANALYTICS: (id) => `${BASE_URL}/customers/${id}/analytics`,
+  ORDERS: (id) => `${BASE_URL}/customers/${id}/orders`,
+  ADD_POINTS: (id) => `${BASE_URL}/customers/${id}/loyalty/add`,
+  REDEEM_POINTS: (id) => `${BASE_URL}/customers/${id}/loyalty/redeem`,
+  SEGMENTS: `${BASE_URL}/customers/segments`,
 };
 
-/**
- * Staff Management Endpoints
- */
-export const STAFF_ENDPOINTS = {
-  LIST: `${BASE_URL}/staff`,
-  CREATE: `${BASE_URL}/staff`,
-  UPDATE: (id) => `${BASE_URL}/staff/${id}`,
-  DELETE: (id) => `${BASE_URL}/staff/${id}`,
-  GET_BY_ID: (id) => `${BASE_URL}/staff/${id}`,
-  PERFORMANCE: (id) => `${BASE_URL}/staff/${id}/performance`,
-  SCHEDULE: `${BASE_URL}/staff/schedule`,
-  ATTENDANCE: `${BASE_URL}/staff/attendance`,
-  PAYROLL: `${BASE_URL}/staff/payroll`,
-  COMMISSIONS: `${BASE_URL}/staff/commissions`,
+// Order endpoints
+const ORDERS = {
+  LIST: `${BASE_URL}/orders`,
+  GET_BY_ID: (id) => `${BASE_URL}/orders/${id}`,
+  CREATE: `${BASE_URL}/orders`,
+  UPDATE: (id) => `${BASE_URL}/orders/${id}`,
+  DELETE: (id) => `${BASE_URL}/orders/${id}`,
+  UPDATE_STATUS: (id) => `${BASE_URL}/orders/${id}/status`,
+  CANCEL: (id) => `${BASE_URL}/orders/${id}/cancel`,
+  REFUND: (id) => `${BASE_URL}/orders/${id}/refund`,
+  GENERATE_INVOICE: (id) => `${BASE_URL}/orders/${id}/invoice`,
+  STATISTICS: `${BASE_URL}/orders/statistics`,
+  CUSTOMER_HISTORY: (id) => `${BASE_URL}/customers/${id}/orders`,
+  ITEMS: (id) => `${BASE_URL}/orders/${id}/items`,
+  RECEIPT: (id) => `${BASE_URL}/orders/${id}/receipt`,
+  DAILY: `${BASE_URL}/orders/daily`,
+  WEEKLY: `${BASE_URL}/orders/weekly`,
+  MONTHLY: `${BASE_URL}/orders/monthly`,
 };
 
-/**
- * Analytics & Reporting Endpoints
- */
-export const ANALYTICS_ENDPOINTS = {
+// Inventory endpoints
+const INVENTORY = {
+  LIST: `${BASE_URL}/inventory`,
+  GET_BY_ID: (id) => `${BASE_URL}/inventory/${id}`,
+  UPDATE: (id) => `${BASE_URL}/inventory/${id}`,
+  LOGS: `${BASE_URL}/inventory/logs`,
+  STOCK_ADJUSTMENT: `${BASE_URL}/inventory/stock-adjustment`,
+  LOW_STOCK: `${BASE_URL}/inventory/low-stock`,
+  WAREHOUSES: `${BASE_URL}/inventory/warehouses`,
+  TRANSFERS: `${BASE_URL}/inventory/transfers`,
+  CREATE_TRANSFER: `${BASE_URL}/inventory/transfers`,
+  TRANSFER_DETAILS: (id) => `${BASE_URL}/inventory/transfers/${id}`,
+  PRODUCT_HISTORY: (id) => `${BASE_URL}/inventory/product/${id}/history`,
+  STOCK_COUNT: `${BASE_URL}/inventory/stock-count`,
+  EXPIRING: `${BASE_URL}/inventory/expiring`,
+};
+
+// Payment endpoints
+const PAYMENTS = {
+  PROCESS: `${BASE_URL}/payments/process`,
+  VERIFY: (id) => `${BASE_URL}/payments/${id}/verify`,
+  REFUND: (id) => `${BASE_URL}/payments/${id}/refund`,
+  METHODS: `${BASE_URL}/payments/methods`,
+  HISTORY: `${BASE_URL}/payments/history`,
+  TRANSACTION: (id) => `${BASE_URL}/payments/transaction/${id}`,
+  VNPAY: `${BASE_URL}/payments/vnpay`,
+  MOMO: `${BASE_URL}/payments/momo`,
+  ZALOPAY: `${BASE_URL}/payments/zalopay`,
+  CASH: `${BASE_URL}/payments/cash`,
+};
+
+// Analytics endpoints
+const ANALYTICS = {
   DASHBOARD: `${BASE_URL}/analytics/dashboard`,
-  SALES_REPORT: `${BASE_URL}/analytics/sales`,
-  INVENTORY_REPORT: `${BASE_URL}/analytics/inventory`,
-  CUSTOMER_ANALYTICS: `${BASE_URL}/analytics/customers`,
-  STAFF_PERFORMANCE: `${BASE_URL}/analytics/staff-performance`,
-  FINANCIAL_REPORT: `${BASE_URL}/analytics/financial`,
-  REAL_TIME_METRICS: `${BASE_URL}/analytics/real-time`,
-  CUSTOM_REPORTS: `${BASE_URL}/analytics/custom-reports`,
+  SALES: `${BASE_URL}/analytics/sales`,
+  PRODUCTS: `${BASE_URL}/analytics/products`,
+  CUSTOMERS: `${BASE_URL}/analytics/customers`,
+  INVENTORY: `${BASE_URL}/analytics/inventory`,
+  STAFF: `${BASE_URL}/analytics/staff`,
+  CUSTOM: `${BASE_URL}/analytics/custom`,
+  EXPORT: `${BASE_URL}/analytics/export`,
+  DAILY_SALES: `${BASE_URL}/analytics/sales/daily`,
+  WEEKLY_SALES: `${BASE_URL}/analytics/sales/weekly`,
+  MONTHLY_SALES: `${BASE_URL}/analytics/sales/monthly`,
+  YEARLY_SALES: `${BASE_URL}/analytics/sales/yearly`,
+  PRODUCT_PERFORMANCE: `${BASE_URL}/analytics/products/performance`,
+  CUSTOMER_RETENTION: `${BASE_URL}/analytics/customers/retention`,
 };
 
-/**
- * AI & Machine Learning Endpoints
- */
-export const AI_ENDPOINTS = {
+// AI endpoints
+const AI = {
+  CUSTOMER_SEGMENTATION: `${BASE_URL}/ai/customer-segmentation`,
   DEMAND_FORECASTING: `${BASE_URL}/ai/demand-forecasting`,
   PRICE_OPTIMIZATION: `${BASE_URL}/ai/price-optimization`,
-  CUSTOMER_SEGMENTATION: `${BASE_URL}/ai/customer-segmentation`,
-  RECOMMENDATION_ENGINE: `${BASE_URL}/ai/recommendations`,
-  SALES_PREDICTION: `${BASE_URL}/ai/sales-prediction`,
+  PRODUCT_RECOMMENDATION: `${BASE_URL}/ai/product-recommendation`,
+  ANOMALY_DETECTION: `${BASE_URL}/ai/anomaly-detection`,
+  CROSS_SELL: `${BASE_URL}/ai/cross-sell`,
+  UPSELL: `${BASE_URL}/ai/upsell`,
+  CUSTOMER_LIFETIME_VALUE: `${BASE_URL}/ai/customer-lifetime-value`,
+  CHURN_PREDICTION: `${BASE_URL}/ai/churn-prediction`,
   INVENTORY_OPTIMIZATION: `${BASE_URL}/ai/inventory-optimization`,
 };
 
-/**
- * Hardware Integration Endpoints
- */
-export const HARDWARE_ENDPOINTS = {
-  PRINTER_STATUS: `${BASE_URL}/hardware/printer/status`,
-  PRINT_RECEIPT: `${BASE_URL}/hardware/printer/print`,
-  BARCODE_SCAN: `${BASE_URL}/hardware/barcode/scan`,
-  CASH_DRAWER_OPEN: `${BASE_URL}/hardware/cash-drawer/open`,
-  PAYMENT_TERMINAL: `${BASE_URL}/hardware/payment-terminal`,
-  DEVICE_STATUS: `${BASE_URL}/hardware/device-status`,
-};
-
-/**
- * E-commerce Integration Endpoints
- */
-export const ECOMMERCE_ENDPOINTS = {
-  SHOPEE: {
-    PRODUCTS: `${BASE_URL}/ecommerce/shopee/products`,
-    ORDERS: `${BASE_URL}/ecommerce/shopee/orders`,
-    SYNC: `${BASE_URL}/ecommerce/shopee/sync`,
-  },
-  LAZADA: {
-    PRODUCTS: `${BASE_URL}/ecommerce/lazada/products`,
-    ORDERS: `${BASE_URL}/ecommerce/lazada/orders`,
-    SYNC: `${BASE_URL}/ecommerce/lazada/sync`,
-  },
-  TIKI: {
-    PRODUCTS: `${BASE_URL}/ecommerce/tiki/products`,
-    ORDERS: `${BASE_URL}/ecommerce/tiki/orders`,
-    SYNC: `${BASE_URL}/ecommerce/tiki/sync`,
-  },
-  UNIFIED: {
-    SYNC_ALL: `${BASE_URL}/ecommerce/unified/sync-all`,
-    INVENTORY_SYNC: `${BASE_URL}/ecommerce/unified/inventory-sync`,
-    ORDER_SYNC: `${BASE_URL}/ecommerce/unified/order-sync`,
-  },
-};
-
-/**
- * Gamification Endpoints
- */
-export const GAMIFICATION_ENDPOINTS = {
-  ACHIEVEMENTS: `${BASE_URL}/gamification/achievements`,
+// Gamification endpoints
+const GAMIFICATION = {
   LEADERBOARD: `${BASE_URL}/gamification/leaderboard`,
-  REWARDS: `${BASE_URL}/gamification/rewards`,
-  CHALLENGES: `${BASE_URL}/gamification/challenges`,
-  POINTS: `${BASE_URL}/gamification/points`,
+  USER_STATS: (id) => `${BASE_URL}/gamification/users/${id}/stats`,
   BADGES: `${BASE_URL}/gamification/badges`,
+  USER_BADGES: (id) => `${BASE_URL}/gamification/users/${id}/badges`,
+  CHALLENGES: `${BASE_URL}/gamification/challenges`,
+  USER_CHALLENGES: (id) => `${BASE_URL}/gamification/users/${id}/challenges`,
+  REWARDS: `${BASE_URL}/gamification/rewards`,
+  CLAIM_REWARD: (id) => `${BASE_URL}/gamification/rewards/${id}/claim`,
+  ACHIEVEMENTS: `${BASE_URL}/gamification/achievements`,
+  PROGRESS: (id) => `${BASE_URL}/gamification/users/${id}/progress`,
+  TEAMS: `${BASE_URL}/gamification/teams`,
 };
 
-/**
- * System Settings Endpoints
- */
-export const SETTINGS_ENDPOINTS = {
-  COMPANY_PROFILE: `${BASE_URL}/settings/company`,
-  SYSTEM_CONFIG: `${BASE_URL}/settings/system`,
-  SECURITY_SETTINGS: `${BASE_URL}/settings/security`,
-  PAYMENT_GATEWAYS: `${BASE_URL}/settings/payment-gateways`,
+// Settings endpoints
+const SETTINGS = {
+  LIST: `${BASE_URL}/settings`,
+  UPDATE: `${BASE_URL}/settings`,
+  STORE: `${BASE_URL}/settings/store`,
+  TAX: `${BASE_URL}/settings/tax`,
+  CURRENCY: `${BASE_URL}/settings/currency`,
+  NOTIFICATION: `${BASE_URL}/settings/notification`,
+  SECURITY: `${BASE_URL}/settings/security`,
+  BACKUP: `${BASE_URL}/settings/backup`,
+  RECEIPT_TEMPLATE: `${BASE_URL}/settings/receipt-template`,
+  INVOICE_TEMPLATE: `${BASE_URL}/settings/invoice-template`,
+  HARDWARE: `${BASE_URL}/settings/hardware`,
   INTEGRATIONS: `${BASE_URL}/settings/integrations`,
-  BACKUP_RESTORE: `${BASE_URL}/settings/backup`,
 };
 
-/**
- * File Upload Endpoints
- */
-export const UPLOAD_ENDPOINTS = {
-  PRODUCT_IMAGES: `${BASE_URL}/upload/product-images`,
-  CUSTOMER_AVATARS: `${BASE_URL}/upload/customer-avatars`,
-  STAFF_PHOTOS: `${BASE_URL}/upload/staff-photos`,
-  COMPANY_LOGO: `${BASE_URL}/upload/company-logo`,
-  DOCUMENTS: `${BASE_URL}/upload/documents`,
-  BULK_IMPORT: `${BASE_URL}/upload/bulk-import`,
+// Notification endpoints
+const NOTIFICATIONS = {
+  LIST: `${BASE_URL}/notifications`,
+  GET_BY_ID: (id) => `${BASE_URL}/notifications/${id}`,
+  MARK_READ: (id) => `${BASE_URL}/notifications/${id}/read`,
+  MARK_ALL_READ: `${BASE_URL}/notifications/read-all`,
+  COUNT_UNREAD: `${BASE_URL}/notifications/unread-count`,
+  PREFERENCES: `${BASE_URL}/notifications/preferences`,
+  SUBSCRIBE: `${BASE_URL}/notifications/subscribe`,
+  UNSUBSCRIBE: `${BASE_URL}/notifications/unsubscribe`,
 };
 
-/**
- * WebSocket Endpoints
- */
-export const WEBSOCKET_ENDPOINTS = {
-  REAL_TIME_UPDATES: `${API_BASE_URL.replace('http', 'ws')}/ws/updates`,
-  INVENTORY_ALERTS: `${API_BASE_URL.replace('http', 'ws')}/ws/inventory-alerts`,
-  ORDER_NOTIFICATIONS: `${API_BASE_URL.replace('http', 'ws')}/ws/order-notifications`,
-  STAFF_COMMUNICATION: `${API_BASE_URL.replace('http', 'ws')}/ws/staff-chat`,
+// Hardware endpoints
+const HARDWARE = {
+  PRINTERS: `${BASE_URL}/hardware/printers`,
+  CASH_DRAWERS: `${BASE_URL}/hardware/cash-drawers`,
+  BARCODE_SCANNERS: `${BASE_URL}/hardware/barcode-scanners`,
+  PAYMENT_TERMINALS: `${BASE_URL}/hardware/payment-terminals`,
+  PRINTER_TEST: `${BASE_URL}/hardware/printers/test`,
+  CASH_DRAWER_TEST: `${BASE_URL}/hardware/cash-drawers/test`,
+  REGISTER: `${BASE_URL}/hardware/register`,
 };
 
-/**
- * Export all endpoints as a single object
- */
+// Export all endpoints
 export const API_ENDPOINTS = {
-  AUTH: AUTH_ENDPOINTS,
-  PRODUCTS: PRODUCT_ENDPOINTS,
-  INVENTORY: INVENTORY_ENDPOINTS,
-  ORDERS: ORDER_ENDPOINTS,
-  CUSTOMERS: CUSTOMER_ENDPOINTS,
-  STAFF: STAFF_ENDPOINTS,
-  ANALYTICS: ANALYTICS_ENDPOINTS,
-  AI: AI_ENDPOINTS,
-  HARDWARE: HARDWARE_ENDPOINTS,
-  ECOMMERCE: ECOMMERCE_ENDPOINTS,
-  GAMIFICATION: GAMIFICATION_ENDPOINTS,
-  SETTINGS: SETTINGS_ENDPOINTS,
-  UPLOAD: UPLOAD_ENDPOINTS,
-  WEBSOCKET: WEBSOCKET_ENDPOINTS,
+  BASE_URL,
+  AUTH,
+  USERS,
+  PRODUCTS,
+  CATEGORIES,
+  CUSTOMERS,
+  ORDERS,
+  INVENTORY,
+  PAYMENTS,
+  ANALYTICS,
+  AI,
+  GAMIFICATION,
+  SETTINGS,
+  NOTIFICATIONS,
+  HARDWARE,
 };
-
-export default API_ENDPOINTS;

@@ -1,288 +1,143 @@
-# KhoChuan POS System - Complete System Overview
+# KhoAugment POS - System Overview
 
-## 🎯 System Summary
+## System Architecture
 
-KhoChuan POS is a **fully functional, enterprise-grade Point of Sale system** built with modern cloud-native architecture. The system has been completely transformed from mock/demo data to **100% real database operations** with comprehensive business functionality.
+KhoAugment POS is a modern Point of Sale system built using Cloudflare's edge computing platform, optimized for the Vietnamese market. The system follows a distributed architecture with services running at the edge for maximum performance and reliability.
 
-## 🏗️ Architecture Overview
-
-### Frontend Architecture
-- **Framework**: React 18 + Vite
-- **Styling**: Tailwind CSS with custom components
-- **State Management**: Zustand + React Query
-- **Real-time**: WebSocket client integration
-- **PWA**: Service Worker with offline capabilities
-- **Mobile**: Touch-optimized responsive design
-
-### Backend Architecture
-- **Runtime**: Cloudflare Workers (Serverless)
-- **Database**: Cloudflare D1 (SQLite-based)
-- **Authentication**: JWT + Role-Based Access Control
-- **Real-time**: Durable Objects + WebSocket
-- **AI**: Integrated demand forecasting and recommendations
-- **Performance**: Multi-layer caching + rate limiting
-
-### Infrastructure
-- **Frontend Hosting**: Cloudflare Pages
-- **Backend**: Cloudflare Workers
-- **Database**: Cloudflare D1
-- **Real-time**: Durable Objects
-- **CDN**: Cloudflare global network
-- **Monitoring**: Built-in health checks and error tracking
-
-## 📊 Database Schema
-
-### Core Business Tables
-```sql
--- User Management
-users (id, email, password_hash, role, full_name, phone, is_active, created_at, updated_at)
-
--- Product Catalog
-products (id, name, sku, barcode, price, cost_price, stock_quantity, reorder_level, category_id, is_active, created_at, updated_at)
-categories (id, name, description, parent_id, color, sort_order, is_active, created_at, updated_at)
-
--- Customer Management
-customers (id, name, email, phone, address, loyalty_points, total_spent, visit_count, created_at, updated_at)
-
--- Order Processing
-orders (id, order_number, customer_id, cashier_id, subtotal, discount_amount, tax_amount, total_amount, payment_method, status, created_at, updated_at)
-order_items (id, order_id, product_id, quantity, unit_price, total_price, created_at)
-
--- Inventory Management
-inventory_movements (id, product_id, movement_type, quantity, reference_id, reason, user_id, created_at)
-
--- System Management
-user_sessions (id, user_id, token_hash, expires_at, created_at)
-audit_logs (id, user_id, action, table_name, record_id, old_values, new_values, created_at)
+```
+┌─────────────┐       ┌──────────────────┐       ┌───────────────┐
+│             │       │                  │       │               │
+│  Frontend   │──────▶│ Cloudflare Edge  │──────▶│ Backend API   │
+│  (Pages)    │       │     Network      │       │  (Workers)    │
+│             │◀──────│                  │◀──────│               │
+└─────────────┘       └──────────────────┘       └───────┬───────┘
+                                                        │
+                              ┌────────────────────────┬┴─────────────┐
+                              │                        │             │
+                      ┌───────▼──────┐          ┌─────▼─────┐ ┌─────▼─────┐
+                      │              │          │           │ │           │
+                      │ D1 Database  │          │ R2 Storage│ │  KV Cache │
+                      │  (SQLite)    │          │           │ │           │
+                      │              │          │           │ │           │
+                      └──────────────┘          └───────────┘ └───────────┘
 ```
 
-## 🚀 API Endpoints
+## Key Components
 
-### Authentication (4 endpoints)
-- `POST /auth/login` - User authentication
-- `POST /auth/register` - User registration
-- `POST /auth/logout` - Session termination
-- `GET /auth/me` - Current user info
+### 1. Frontend Application
 
-### Products (8 endpoints)
-- `GET /products` - List products with pagination/search
-- `POST /products` - Create new product
-- `PUT /products/:id` - Update product
-- `DELETE /products/:id` - Delete product
-- `GET /products/:id` - Get single product
-- `GET /products/barcode/:barcode` - Barcode lookup
-- `POST /products/search` - Advanced search
-- `GET /products/low-stock` - Low stock alerts
+- **Framework**: React 18 with TypeScript
+- **Hosting**: Cloudflare Pages
+- **Key Features**:
+  - Mobile-first responsive design
+  - Lazy-loading and code-splitting for optimal performance
+  - Vietnamese language support (i18n)
+  - Role-based access control
 
-### Categories (4 endpoints)
-- `GET /categories` - List categories
-- `POST /categories` - Create category
-- `PUT /categories/:id` - Update category
-- `DELETE /categories/:id` - Delete category
+### 2. Backend API
 
-### Orders (3 endpoints)
-- `GET /orders` - List orders with filters
-- `POST /orders` - Create new order
-- `GET /orders/:id` - Get order details
+- **Runtime**: Cloudflare Workers
+- **Framework**: Hono.js
+- **Key Features**:
+  - Edge computing for minimal latency
+  - RESTful API endpoints
+  - JWT authentication
+  - Request validation with Zod
 
-### Customers (4 endpoints)
-- `GET /customers` - List customers
-- `POST /customers` - Create customer
-- `PUT /customers/:id` - Update customer
-- `GET /customers/:id` - Get customer details
+### 3. Database
 
-### Inventory (4 endpoints)
-- `GET /inventory/current` - Current stock levels
-- `GET /inventory/movements` - Stock movement history
-- `POST /inventory/adjustment` - Manual stock adjustment
-- `GET /inventory/alerts` - Inventory alerts
+- **Service**: Cloudflare D1
+- **Type**: SQLite at the edge
+- **Key Tables**:
+  - `users`: User accounts and authentication
+  - `products`: Product catalog and inventory
+  - `orders`: Customer orders and transactions
+  - `customers`: Customer information and loyalty
+  - `inventory_movements`: Inventory audit trail
 
-### Analytics (4 endpoints)
-- `GET /analytics/sales/daily` - Daily sales trends
-- `GET /analytics/sales/products` - Product performance
-- `GET /analytics/sales/customers` - Customer analysis
-- `GET /analytics/inventory/turnover` - Inventory analytics
+### 4. Storage
 
-### AI Features (2 endpoints)
-- `POST /ai/forecast/demand` - Demand forecasting
-- `GET /ai/recommendations/:customer_id` - Product recommendations
+- **Service**: Cloudflare R2
+- **Usage**:
+  - Product images
+  - Receipt PDFs
+  - Report exports
+  - Backup files
 
-### Real-time (2 endpoints)
-- `GET /websocket` - WebSocket connection
-- `POST /broadcast` - Broadcast messages
+### 5. Caching
 
-## 🔐 Security Features
+- **Service**: Cloudflare KV
+- **Usage**:
+  - Session management
+  - Rate limiting
+  - Frequently accessed data
 
-### Authentication & Authorization
-- **JWT Tokens**: Secure token-based authentication
-- **Role-Based Access Control**: Admin, Manager, Cashier, Staff roles
-- **Password Security**: bcrypt hashing with salt rounds = 12
-- **Session Management**: Secure session handling with expiration
+## Data Flow
 
-### Data Protection
-- **Input Validation**: Comprehensive validation for all inputs
-- **SQL Injection Prevention**: Parameterized queries and validation
-- **XSS Protection**: Input sanitization and output encoding
-- **CORS Configuration**: Proper cross-origin resource sharing
+### Authentication Flow
 
-### API Security
-- **Rate Limiting**: Configurable request limits per user/IP
-- **Request Size Limits**: Protection against large payloads
-- **Security Headers**: CSP, HSTS, X-Frame-Options, etc.
-- **Error Handling**: Secure error responses without information leakage
+1. User submits login credentials
+2. Backend validates credentials against database
+3. If valid, creates a session and generates JWT
+4. JWT is stored in browser and used for subsequent requests
+5. Backend validates JWT for protected endpoints
 
-## 📱 Mobile & PWA Features
+### Order Processing Flow
 
-### Progressive Web App
-- **Service Worker**: Offline functionality and background sync
-- **App Manifest**: Installable web app
-- **Offline Storage**: IndexedDB for offline data
-- **Background Sync**: Queue operations when offline
+1. Products scanned or selected in POS interface
+2. Order created in memory with product details
+3. Customer information added (optional)
+4. Payment processed (cash, card, or e-wallet)
+5. Order committed to database in a transaction
+6. Inventory updated
+7. Receipt generated and stored in R2
+8. Order confirmation displayed to user
 
-### Mobile Optimization
-- **Touch Gestures**: Swipe, tap, long press, pinch
-- **Responsive Design**: Mobile-first approach
-- **Touch-Friendly UI**: 44px minimum touch targets
-- **Hardware Acceleration**: Optimized animations
-- **Vibration API**: Haptic feedback support
+### Inventory Management Flow
 
-## 🤖 AI & Machine Learning
+1. Admin/staff adds or updates product information
+2. Inventory levels tracked in products table
+3. Low stock alerts triggered when below threshold
+4. Inventory movements recorded for audit trail
+5. Reports available for stock analysis
 
-### Demand Forecasting
-- **Historical Analysis**: Sales pattern analysis
-- **Trend Detection**: Linear regression for trends
-- **Seasonal Adjustment**: Weekly/monthly patterns
-- **Confidence Intervals**: Prediction accuracy metrics
+## Security Measures
 
-### Product Recommendations
-- **Collaborative Filtering**: Customer behavior analysis
-- **Content-Based**: Product similarity recommendations
-- **Cross-Selling**: Frequently bought together
-- **Personalization**: Customer-specific suggestions
+- **Authentication**: JWT tokens with proper expiration and rotation
+- **Authorization**: Role-based access control for all operations
+- **Data Validation**: Input validation using Zod schemas
+- **Rate Limiting**: Prevent abuse with request rate limiting
+- **CORS Protection**: Strict cross-origin policies
+- **WAF Protection**: Cloudflare Web Application Firewall
+- **Bot Protection**: Cloudflare Bot Management
 
-## 📈 Analytics & Reporting
+## Optimization Strategies
 
-### Sales Analytics
-- **Daily Trends**: Revenue, order count, average order value
-- **Product Performance**: Top sellers, slow movers, profit margins
-- **Customer Analysis**: Acquisition, retention, lifetime value
-- **Period Comparison**: Year-over-year, month-to-month
+- **Edge Computing**: Logic runs close to users for minimal latency
+- **Caching**: Frequently accessed data cached in KV
+- **Batch Operations**: Multiple database operations executed in batches
+- **Code Splitting**: Frontend code split by route and feature
+- **Asset Optimization**: Images and static assets optimized and cached
+- **Connection Pooling**: Database connections reused when possible
 
-### Inventory Analytics
-- **Turnover Rates**: Fast/slow moving items
-- **Stock Optimization**: Reorder points, safety stock
-- **Waste Tracking**: Expired, damaged, theft
-- **Forecasting**: Demand prediction, purchase planning
+## Integration Points
 
-### Financial Reports
-- **Profit & Loss**: Revenue, COGS, gross profit
-- **Cash Flow**: Daily cash flow statements
-- **Tax Reports**: Tax collection and compliance
+- **Payment Gateways**: VNPay, MoMo, ZaloPay
+- **Barcode Scanners**: Via WebUSB API
+- **Receipt Printers**: Via WebUSB API
+- **SMS Services**: For order notifications
+- **Email Services**: For receipts and reports
 
-## 🔄 Real-time Features
+## Deployment Strategy
 
-### WebSocket Implementation
-- **Durable Objects**: Cloudflare-based real-time coordination
-- **Connection Management**: Session handling and cleanup
-- **Broadcasting**: Multi-client message distribution
-- **Conflict Resolution**: Concurrent operation handling
+- **Frontend**: CI/CD pipeline deploys to Cloudflare Pages
+- **Backend**: Wrangler CLI deploys to Cloudflare Workers
+- **Database**: Migrations applied via Wrangler D1 commands
+- **Configuration**: Environment variables and secrets managed securely
 
-### Live Updates
-- **Inventory Sync**: Real-time stock updates across terminals
-- **Order Notifications**: Live order status updates
-- **User Activity**: Show active users and their actions
-- **Data Consistency**: Automatic conflict resolution
+## Monitoring and Analytics
 
-## 🚀 Performance Optimizations
-
-### Caching Strategy
-- **Multi-layer Caching**: Browser, CDN, API, database
-- **Cache Invalidation**: Smart cache invalidation strategies
-- **TTL Management**: Appropriate time-to-live values
-- **Cache Hit Monitoring**: Performance metrics tracking
-
-### Database Optimization
-- **Proper Indexing**: Optimized database indexes
-- **Query Optimization**: Efficient SQL queries
-- **Connection Pooling**: Database connection management
-- **Pagination**: Efficient data loading
-
-### Frontend Optimization
-- **Code Splitting**: Lazy loading of components
-- **Image Optimization**: WebP, lazy loading, responsive images
-- **Bundle Optimization**: Tree shaking, minification
-- **Service Worker**: Aggressive caching strategy
-
-## 🔧 Deployment & DevOps
-
-### Automated Deployment
-- **CI/CD Pipeline**: GitHub Actions workflow
-- **Environment Management**: Development, staging, production
-- **Database Migrations**: Automated schema updates
-- **Health Checks**: Post-deployment verification
-
-### Monitoring & Alerting
-- **Health Monitoring**: System health checks
-- **Error Tracking**: Comprehensive error logging
-- **Performance Metrics**: Response time, throughput monitoring
-- **Alert System**: Critical issue notifications
-
-### Backup & Recovery
-- **Database Backups**: Automated daily backups
-- **Point-in-time Recovery**: Transaction log backups
-- **Disaster Recovery**: Multi-region deployment capability
-- **Data Integrity**: Regular integrity checks
-
-## 🎯 Business Impact
-
-### Immediate Benefits
-- **100% Real Operations**: Can process actual sales immediately
-- **Multi-terminal Support**: Synchronized across devices
-- **Inventory Accuracy**: Real-time stock management
-- **Customer Management**: Complete CRM functionality
-- **Business Intelligence**: Real analytics and insights
-
-### Operational Efficiency
-- **Automated Workflows**: Reduced manual processes
-- **Real-time Sync**: Instant updates across all terminals
-- **Mobile Support**: Work from anywhere capability
-- **Offline Capability**: Continue operations without internet
-- **Error Reduction**: Automated validation and checks
-
-### Scalability
-- **Cloud-Native**: Scales automatically with demand
-- **Multi-location**: Support for multiple store locations
-- **User Management**: Unlimited users with role-based access
-- **Data Growth**: Handles large volumes of transactions
-- **Feature Expansion**: Modular architecture for new features
-
-## 📋 System Status
-
-### Completion Status
-- **Database Operations**: 100% real (0% mock data)
-- **API Endpoints**: 95% implemented and functional
-- **Frontend Integration**: 90% connected to real APIs
-- **Real-time Features**: 85% operational
-- **Business Logic**: 95% complete
-- **Authentication**: 100% functional
-- **Overall System**: 90% production-ready
-
-### Production Readiness
-- **Security**: Enterprise-grade security measures
-- **Performance**: Optimized for high-traffic environments
-- **Monitoring**: Comprehensive system monitoring
-- **Documentation**: Complete system documentation
-- **Testing**: Integration and performance testing
-- **Deployment**: Automated deployment pipeline
-
-## 🎉 Conclusion
-
-KhoChuan POS has been successfully transformed from a mock/demo system into a **fully functional, enterprise-grade Point of Sale system** that can handle real business operations immediately. The system combines modern technology with practical business needs to deliver a comprehensive solution for retail operations.
-
-**Key Achievement**: 100% elimination of mock data and implementation of real database operations across all system components.
-
----
-
-*Last Updated: 2025-07-10*  
-*Version: 1.0.0*  
-*Status: Production Ready*
+- **Error Tracking**: Errors logged and monitored
+- **Performance Metrics**: Response times and resource usage tracked
+- **Business Analytics**: Sales, inventory, and customer metrics
+- **Audit Trail**: All critical operations logged for accountability

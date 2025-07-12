@@ -1,105 +1,55 @@
-name = "khochuan-pos-api"
+name = "khoaugment-backend"
 main = "src/index.js"
-compatibility_date = "2024-01-15"
+compatibility_date = "2024-07-01"
 compatibility_flags = ["nodejs_compat"]
+minify = true
+account_id = "5b62d10947844251d23e0eac532531dd"
 
-[env.production]
-name = "khoaugment-api"
+[env.development]
+name = "khoaugment-backend-dev"
 
 [env.staging]
-name = "khoaugment-api-staging"
+name = "khoaugment-backend-staging"
 
-# D1 Database Configuration
-[[d1_databases]]
-binding = "DB"
-database_name = "khochuan-pos-prod"
-database_id = "7cedbbbb-d8f5-4a66-b238-9b8ace74b200" # Production database
-migrations_dir = "database/migrations"
+[env.production]
+name = "khoaugment-backend-prod"
 
-# KV Storage Configuration
-[[kv_namespaces]]
-binding = "CACHE"
-id = "46b31b2c6ca449aaa3114d0ebb4fe645" # ID từ KV namespace CACHE
+# Uncomment and configure these after successful initial deployment
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "khoaugment-db"
+# database_id = "khoaugment-db"
+# migrations_dir = "migrations"
 
-[[kv_namespaces]]
-binding = "SESSIONS"
-id = "b4966461e07a48e981c78cf9f374fe4c" # ID từ KV namespace SESSIONS
-
-# R2 Storage Configuration - Đã được bình luận vì chưa kích hoạt R2
 # [[r2_buckets]]
-# binding = "STORAGE"
-# bucket_name = "khochuan-files"
+# binding = "BUCKET"
+# bucket_name = "khoaugment-assets"
+# preview_bucket_name = "khoaugment-assets-preview"
 
-# Production Environment Variables
-[env.production.vars]
-ENVIRONMENT = "production"
-JWT_SECRET = "khoaugment-super-secret-jwt-key-production-2025-truongphat"
-SALT = "truongphat-computer-hoabinh-salt-2025"
-ENCRYPTION_KEY = "khoaugment-32-char-encryption-prod!"
-API_VERSION = "v1"
-CORS_ORIGIN = "https://khoaugment.pages.dev"
-COMPANY_NAME = "Trường Phát Computer Hòa Bình"
-COMPANY_ADDRESS = "123 Đường Trường Phát, Hòa Bình, Việt Nam"
-COMPANY_PHONE = "+84-123-456-789"
-COMPANY_EMAIL = "info@truongphat.com"
-ADMIN_EMAIL = "admin@truongphat.com"
-SUPPORT_EMAIL = "support@truongphat.com"
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "CACHE"
+# preview_id = "CACHE_PREVIEW"
 
-# Production environment configuration
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "khochuan-pos-prod"
-database_id = "7cedbbbb-d8f5-4a66-b238-9b8ace74b200"
-
-[[env.production.kv_namespaces]]
-binding = "CACHE"
-id = "46b31b2c6ca449aaa3114d0ebb4fe645"
-
-[[env.production.kv_namespaces]]
-binding = "SESSIONS"
-id = "b4966461e07a48e981c78cf9f374fe4c"
-
-# Development Environment Variables
-[env.development.vars]
+[vars]
 ENVIRONMENT = "development"
-JWT_SECRET = "khoaugment-super-secret-jwt-key-development-2025-truongphat"
-SALT = "truongphat-computer-hoabinh-salt-dev-2025"
-ENCRYPTION_KEY = "khoaugment-32-char-encryption-dev!!"
-API_VERSION = "v1"
-CORS_ORIGIN = "http://localhost:5173"
-COMPANY_NAME = "Trường Phát Computer Hòa Bình"
-COMPANY_ADDRESS = "123 Đường Trường Phát, Hòa Bình, Việt Nam"
-COMPANY_PHONE = "+84-123-456-789"
-COMPANY_EMAIL = "info@truongphat.com"
-ADMIN_EMAIL = "admin@truongphat.com"
-SUPPORT_EMAIL = "support@truongphat.com"
+CORS_ORIGIN = "http://localhost:5173,https://khoaugment-pos.pages.dev"
+MAX_FILE_SIZE = "10485760"
+RATE_LIMIT_REQUESTS = "100"
+RATE_LIMIT_WINDOW = "3600"
 
-# Development database configuration
-[[env.development.d1_databases]]
-binding = "DB"
-database_name = "khochuan-pos-prod"
-database_id = "7cedbbbb-d8f5-4a66-b238-9b8ace74b200"
+# Use wrangler secret put for sensitive values:
+# wrangler secret put JWT_SECRET
+# wrangler secret put ENCRYPTION_KEY
+# wrangler secret put VNPAY_SECRET_KEY
+# wrangler secret put MOMO_SECRET_KEY
+# wrangler secret put ZALOPAY_SECRET_KEY
 
-[[env.development.kv_namespaces]]
-binding = "CACHE"
-id = "46b31b2c6ca449aaa3114d0ebb4fe645"
+[build]
+command = "npm run build"
+cwd = "."
+watch_dir = "src"
 
-[[env.development.kv_namespaces]]
-binding = "SESSIONS"
-id = "b4966461e07a48e981c78cf9f374fe4c"
-
-# Analytics Engine - Đã được bình luận vì chưa kích hoạt Analytics Engine
-# [[analytics_engine_datasets]]
-# binding = "ANALYTICS"
-# dataset = "khochuan_events"
-
-# Durable Objects - Temporarily disabled for deployment
-# [[durable_objects.bindings]]
-# name = "REALTIME"
-# class_name = "RealtimeDurableObject"
-
-# Durable Objects Migrations - Disabled
-# [[migrations]]
-# tag = "v2"
-# deleted_classes = ["RealtimeHandler"]
+[triggers]
+crons = ["0 0 * * *"]
 

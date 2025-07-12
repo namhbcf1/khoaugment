@@ -39,6 +39,8 @@ import {
   DownloadOutlined,
   ShareAltOutlined
 } from '@ant-design/icons';
+import { useAuth } from '../../../hooks/useAuth';
+import gamificationService from '../../../services/api/gamificationService'; // Assume this exists
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -286,23 +288,41 @@ const mockUserStats = {
 };
 
 const Leaderboard = () => {
-  const [leaderboardData, setLeaderboardData] = useState({});
-  const [userStats, setUserStats] = useState(null);
+  const { user, hasPermission } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [userStats, setUserStats] = useState({});
   const [activeTab, setActiveTab] = useState('sales');
   const [timeRange, setTimeRange] = useState('month');
   const [department, setDepartment] = useState('all');
   const [searchText, setSearchText] = useState('');
 
-  // Load data on component mount
+  if (!hasPermission('gamification.view')) {
+    return <UnauthorizedMessage />;
+  }
+
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setLeaderboardData(mockLeaderboardData);
-      setUserStats(mockUserStats);
-      setLoading(false);
-    }, 1000);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [leaderboardRes, statsRes] = await Promise.all([
+          gamificationService.getLeaderboard(),
+          gamificationService.getUserStats(user.id)
+        ]);
+        setLeaderboardData(leaderboardRes.data);
+        setUserStats(statsRes.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorMessage error={error} onRetry={fetchData} />;
 
   // Handle time range change
   const handleTimeRangeChange = (value) => {

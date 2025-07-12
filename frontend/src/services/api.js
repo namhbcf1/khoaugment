@@ -5,9 +5,9 @@
  */
 
 import axios from 'axios';
-import { getAccessToken, refreshToken, clearAuthTokens } from '../utils/helpers/authUtils';
-import { localCache } from '../utils/helpers/cacheUtils';
 import { logEvent } from '../utils/helpers/analyticsUtils';
+import { clearAuthTokens, getAccessToken, refreshToken } from '../utils/helpers/authUtils';
+import { localCache } from '../utils/helpers/cacheUtils';
 
 // Default API configuration
 const DEFAULT_TIMEOUT = 15000; // 15 seconds
@@ -248,12 +248,12 @@ async function getCachedResponse(request) {
   return null;
 }
 
-// API wrapper with offline support
+// API service
 const api = {
   /**
    * GET request
    * @param {String} url - API endpoint
-   * @param {Object} config - Additional config
+   * @param {Object} config - Request config
    * @returns {Promise<Object>} - Response data
    */
   async get(url, config = {}) {
@@ -265,7 +265,7 @@ const api = {
    * POST request
    * @param {String} url - API endpoint
    * @param {Object} data - Request payload
-   * @param {Object} config - Additional config
+   * @param {Object} config - Request config
    * @returns {Promise<Object>} - Response data
    */
   async post(url, data = {}, config = {}) {
@@ -277,7 +277,7 @@ const api = {
    * PUT request
    * @param {String} url - API endpoint
    * @param {Object} data - Request payload
-   * @param {Object} config - Additional config
+   * @param {Object} config - Request config
    * @returns {Promise<Object>} - Response data
    */
   async put(url, data = {}, config = {}) {
@@ -289,7 +289,7 @@ const api = {
    * PATCH request
    * @param {String} url - API endpoint
    * @param {Object} data - Request payload
-   * @param {Object} config - Additional config
+   * @param {Object} config - Request config
    * @returns {Promise<Object>} - Response data
    */
   async patch(url, data = {}, config = {}) {
@@ -300,7 +300,7 @@ const api = {
   /**
    * DELETE request
    * @param {String} url - API endpoint
-   * @param {Object} config - Additional config
+   * @param {Object} config - Request config
    * @returns {Promise<Object>} - Response data
    */
   async delete(url, config = {}) {
@@ -311,12 +311,11 @@ const api = {
   /**
    * GET request with caching
    * @param {String} url - API endpoint
-   * @param {Object} config - Additional config
-   * @param {Number} cacheTTL - Cache time-to-live in seconds
+   * @param {Object} config - Request config
+   * @param {Number} cacheTTL - Cache time-to-live (seconds)
    * @returns {Promise<Object>} - Response data
    */
   async getCached(url, config = {}, cacheTTL = 300) {
-    // Create cache key from URL and params
     const cacheKey = `api_cache_${url}_${JSON.stringify(config.params || {})}`;
     
     // Check cache first
@@ -325,7 +324,7 @@ const api = {
       return cachedResponse;
     }
     
-    // Make request
+    // Make actual request
     const response = await apiClient.get(url, config);
     
     // Cache response
@@ -335,11 +334,11 @@ const api = {
   },
   
   /**
-   * Upload file(s)
+   * File upload
    * @param {String} url - API endpoint
    * @param {FormData} formData - Form data with files
    * @param {Function} onProgress - Progress callback
-   * @param {Object} config - Additional config
+   * @param {Object} config - Request config
    * @returns {Promise<Object>} - Response data
    */
   async upload(url, formData, onProgress = null, config = {}) {
@@ -493,6 +492,41 @@ window.addEventListener('offline', () => {
   console.log('You are offline. Changes will be saved and synced when you reconnect.');
 });
 
+// Analytics API module
+const analyticsAPI = {
+  getDashboardStats: async (period = 'week') => {
+    return await api.get('/api/analytics/dashboard', { params: { period } });
+  },
+
+  getTopProducts: async (period = 'week', limit = 10) => {
+    return await api.get('/api/analytics/top-products', { 
+      params: { period, limit } 
+    });
+  },
+
+  getSalesReport: async (startDate, endDate, groupBy = 'day') => {
+    return await api.get('/api/analytics/sales-report', { 
+      params: { startDate, endDate, groupBy } 
+    });
+  },
+
+  getInventoryStatus: async (params = {}) => {
+    return await api.get('/api/analytics/inventory-status', { params });
+  },
+
+  getStaffPerformance: async (startDate, endDate, staffId = null) => {
+    return await api.get('/api/analytics/staff-performance', { 
+      params: { startDate, endDate, staffId } 
+    });
+  },
+
+  getCustomerInsights: async (period = 'month') => {
+    return await api.get('/api/analytics/customer-insights', { 
+      params: { period } 
+    });
+  }
+};
+
 // Enhanced API with mock fallback
 const enhancedApi = {
   ...api,
@@ -539,5 +573,5 @@ const enhancedApi = {
   }
 };
 
-export { enhancedApi as api, apiClient };
+export { analyticsAPI, enhancedApi as api, apiClient };
 export default enhancedApi;

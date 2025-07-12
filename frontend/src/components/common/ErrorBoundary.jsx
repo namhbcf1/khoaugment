@@ -1,4 +1,4 @@
-// ErrorBoundary.jsx - Error Boundary component import React from 'react';
+import React from 'react';
 import { Result, Button, Card, Typography, Alert } from 'antd';
 import { 
   BugOutlined, 

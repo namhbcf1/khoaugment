@@ -1,0 +1,44 @@
+{
+  "recommendations": [
+    // === ESSENTIAL ===
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    
+    // === CLOUDFLARE ===
+    "cloudflare.vscode-wrangler",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-sqlite",
+    "tamasfe.even-better-toml",
+    
+    // === REACT & WEB ===
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.npm-intellisense",
+    "ms-vscode.vscode-json",
+    "bradlc.vscode-tailwindcss",
+    
+    // === TESTING ===
+    "ms-playwright.playwright",
+    "orta.vscode-jest",
+    
+    // === UTILITIES ===
+    "ms-vscode.vscode-css-peek",
+    "zignd.html-css-class-completion",
+    "streetsidesoftware.code-spell-checker",
+    "gruntfuggly.todo-tree",
+    "aaron-bond.better-comments",
+    
+    // === API DEVELOPMENT ===
+    "rangav.vscode-thunder-client",
+    "humao.rest-client",
+    
+    // === GIT ===
+    "eamodio.gitlens",
+    "mhutchie.git-graph"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript",
+    "hookyqr.beautify"
+  ]
+}

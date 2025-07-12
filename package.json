@@ -1,42 +1,44 @@
 {
-  "name": "truong-phat-computer-pos-tests",
+  "name": "khoaugment-pos",
   "version": "1.0.0",
-  "description": "Comprehensive E2E tests for Truong Phat Computer POS System",
-  "main": "index.js",
+  "type": "module",
+  "description": "KhoAugment POS System - Cloudflare Optimized",
   "scripts": {
     "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:ui": "playwright test --ui",
-    "test:report": "playwright show-report",
-    "test:comprehensive": "playwright test tests/e2e-comprehensive.spec.js",
-    "test:api": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Backend API\"",
-    "test:frontend": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Frontend UI\"",
-    "test:security": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Security\"",
-    "test:performance": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Performance\"",
-    "test:accessibility": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Accessibility\"",
-    "test:integration": "playwright test tests/e2e-comprehensive.spec.js --grep=\"Integration\"",
-    "test:chrome": "playwright test --project=chromium",
-    "test:firefox": "playwright test --project=firefox",
-    "test:safari": "playwright test --project=webkit",
-    "test:mobile": "playwright test --project=\"Mobile Chrome\"",
-    "install:browsers": "playwright install",
-    "install:deps": "playwright install-deps"
+    "test:gpu": "node scripts/gpu-test-runner.js",
+    "test:report": "node tests/generate-comprehensive-report.js",
+    "view:report": "node scripts/report-viewer.js",
+    "start": "cd frontend && npm start",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "build": "concurrently \"cd backend && npm run build\" \"cd frontend && npm run build\"",
+    "deploy": "sh scripts/deploy-all.sh"
   },
-  "keywords": [
-    "playwright",
-    "e2e",
-    "testing",
-    "pos",
-    "truong-phat-computer",
-    "automation"
-  ],
-  "author": "Truong Phat Computer Team",
-  "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.54.1",
+    "concurrently": "^8.2.1",
+    "marked": "^9.0.3",
+    "open": "^9.1.0"
   },
   "engines": {
     "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/khoaugment-pos"
+  },
+  "keywords": [
+    "pos",
+    "cloudflare",
+    "d1",
+    "r2",
+    "hono",
+    "react",
+    "vite"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "node-fetch": "^3.3.0"
   }
 }

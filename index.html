@@ -1,1303 +1,320 @@
 <!DOCTYPE html>
 <html lang="vi">
-  
   <head>
     <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa" />
-  <meta name="keywords" content="Trường Phát Computer, Hòa Bình, máy tính, laptop, linh kiện, sửa chữa, bảo hành, POS, point of sale" />
-  <meta name="author" content="Trường Phát Computer" />
-  <meta name="robots" content="index, follow" />
-  
-  <!-- Security Headers -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-    
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      name="description"
+      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+    />
+    <meta
+      name="keywords"
+      content="Trường Phát Computer, Hòa Bình, máy tính, laptop, linh kiện, sửa chữa, bảo hành, POS, point of sale"
+    />
+    <meta name="author" content="Trường Phát Computer" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta
+      http-equiv="Referrer-Policy"
+      content="strict-origin-when-cross-origin"
+    />
+
     <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#1677ff" />
-  <meta name="background-color" content="#ffffff" />
-  <meta name="display" content="standalone" />
-  <meta name="orientation" content="portrait" />
-  
-  <!-- iOS PWA Support -->
+    <meta name="theme-color" content="#1677ff" />
+    <meta name="background-color" content="#ffffff" />
+    <meta name="display" content="standalone" />
+    <meta name="orientation" content="portrait" />
+
+    <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Trường Phát Computer" />
-  <meta name="apple-touch-fullscreen" content="yes" />
-  
-  <!-- Windows PWA Support -->
-  <meta name="msapplication-TileColor" content="#1677ff" />
-  <meta name="msapplication-TileImage" content="/icons/mstile-144x144.png" />
-  <meta name="msapplication-config" content="/browserconfig.xml" />
-  
-  <!-- Open Graph / Social Media -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Trường Phát Computer Hòa Bình" />
-  <meta property="og:description" content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa" />
-  <meta property="og:image" content="/images/og-image.png" />
-  <meta property="og:url" content="https://truongphat.pages.dev" />
-  <meta property="og:site_name" content="Trường Phát Computer" />
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Trường Phát Computer Hòa Bình" />
-  <meta name="twitter:description" content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa" />
-  <meta name="twitter:image" content="/images/twitter-card.png" />
-  
-  <!-- Favicons -->
-  <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-  <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677ff" />
-  
-  <!-- Manifest -->
-  <link rel="manifest" href="/manifest.json" />
-  
-  <!-- Preconnect to improve performance -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-  
-  <!-- DNS Prefetch -->
-  <link rel="dns-prefetch" href="//truongphat-api.workers.dev" />
-  
-  <!-- Critical CSS - Inline for performance -->
-  <style>
-    /* Critical loading styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    html {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      line-height: 1.15;
-      -webkit-text-size-adjust: 100%;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    body {
-      margin: 0;
-      font-size: 14px;
-      font-variant: tabular-nums;
-      line-height: 1.5715;
-      background-color: #f0f2f5;
-      color: rgba(0, 0, 0, 0.85);
-      font-feature-settings: 'tnum';
-    }
-    
-    #root {
-      min-height: 100vh;
-      position: relative;
-    }
-    
-    /* Loading screen styles */
-    .app-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-    
-    .loading-logo {
-      width: 120px;
-      height: 120px;
-      margin-bottom: 30px;
-      animation: pulse 2s infinite;
-    }
-    
-    .loading-text {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      letter-spacing: 0.5px;
-    }
-    
-    .loading-subtitle {
-      font-size: 16px;
-      opacity: 0.8;
-      margin-bottom: 30px;
-    }
-    
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    .loading-progress {
-      width: 200px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-top: 20px;
-    }
-    
-    .loading-progress-bar {
-      height: 100%;
-      background: white;
-      border-radius: 2px;
-      animation: progress 3s ease-in-out infinite;
-    }
-    
-    .loading-tips {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 14px;
-      opacity: 0.7;
-      max-width: 300px;
-      line-height: 1.4;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.8; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    @keyframes progress {
-      0% { width: 0%; }
-      50% { width: 70%; }
-      100% { width: 100%; }
-    }
-    
-    /* Hide loading when app is ready */
-    .app-ready .app-loading {
-      display: none;
-    }
-  </style>
-  
-  <title>Trường Phát Computer Hòa Bình</title>
-    <script type="module" crossorigin src="/assets/index-B-FKF4ob.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-remix-run-router-UjR1oCxX.js">
-    <link rel="modulepreload" crossorigin href="/assets/polyfills-B4r5O4me.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-util-Cfhh6bGy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-emotion-hash-DFFAhID7.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-emotion-unitless-BWzHn38B.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-stylis-C44NkLFc.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-ant-design-cssinjs-C7YRSOqU.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-ant-design-cssinjs-utils-Z_ZGHKpv.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-classnames-Bjqz8XQ3.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-resize-observer-polyfill-C7U_o75s.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-resize-observer-DnkXipSO.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-ant-design-fast-color-BHo3zH90.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-ant-design-colors-BZ2r7Wqn.js">
-    <link rel="modulepreload" crossorigin href="/assets/antd-icons-DMCzxaTm.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-motion-CgrNkiVN.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-collapse-BuUnFyUq.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-color-picker-D7vz9aAI.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-overflow-Dz8RHsDo.js">
-    <link rel="modulepreload" crossorigin href="/assets/datetime-CZsEG1Fw.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-portal-B-ypBxqm.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-trigger-B5dN-W7a.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-picker-CgWv_2bo.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-dropdown-CZ0JW4x5.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-menu-YCSbwFbq.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-tabs-BwJDg3wn.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-virtual-list-1kJCu580.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-select-C-imgKkB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-segmented-DxRxYTwA.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-mini-decimal-4AYFSTmh.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-input-CfgQgibu.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-input-number-V0sWhVt2.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-slider-CdAUgrbY.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-drawer-CfIZZ8r4.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-async-validator-B0ws6RHn.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-field-form-zLN4ynZ6.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-dialog-CVbglhWq.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-image-FcAViups.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-notification-DBgLjbT1.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-tooltip-UDagiryc.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-qrcode-B0fCpeCY.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-rate-BYpgyvg8.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-steps-DyuNxNH9.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-switch-672QdYAA.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-component-context-Bh07HgIq.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-table-BPXMAkvW.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-tree-BEpjp_Ur.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-checkbox-C1_4jhQP.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-compute-scroll-into-view-Cfyw3hb3.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-scroll-into-view-if-needed-BuydUqPn.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-pagination-BepwSdzG.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-throttle-debounce-w9OM8Bxz.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-textarea-5awn-jGw.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-toggle-selection-v3K3UlSB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-copy-to-clipboard-1ydfzSJH.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-upload-DMmmAkHe.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-rc-progress-CgK8Nc6A.js">
-    <link rel="modulepreload" crossorigin href="/assets/antd-core-DVlmEpkB.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-prop-types-DQeQIVKZ.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-fast-equals-51KNnk-7.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-redux-DjMjAQeN.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-dnd-invariant-3ejajjRq.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-dnd-asap-CbVDrjlw.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-dnd-core-B9A4u1lA.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-dnd-shallowequal-DKwLR6sW.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-fast-deep-equal-n3nGrwQy.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-scheduler-Dmo4AZZp.js">
-    <link rel="modulepreload" crossorigin href="/assets/react-vendor-D_ybsntB.js">
-    <link rel="modulepreload" crossorigin href="/assets/http-ztdpVPaQ.js">
-    <link rel="modulepreload" crossorigin href="/assets/i18n-Bumj-RJR.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-i18next-browser-languagedetector-F0gxWJsw.js">
-    <link rel="modulepreload" crossorigin href="/assets/common-components-Cl8eBnCL.js">
-    <link rel="modulepreload" crossorigin href="/assets/utils-CXADxxMH.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-ant-design-charts-util-D2l6Hs-R.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-event-emitter-B_sETjLv.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-tslib-BRpNZtt8.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-util-BIOdtugi.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-internmap-B8oPgqVZ.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-clsx-BeLtu-UY.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-decimal.js-light-DxGkYd4s.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-tiny-invariant-BM5KeS_Z.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-victory-vendor-DB58CTWg.js">
-    <link rel="modulepreload" crossorigin href="/assets/charts-BOmscTYX.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-eventemitter3-QYUf1tj-.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-gl-matrix-DC4KmxQg.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-math-eKXG1hIb.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-lite-DrII67Nr.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-camera-api-D5xCKgeg.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-web-animations-api-CyIt6i3N.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-canvas-path-generator-CVNLD-z9.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-canvas-picker-BOqhFghs.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-image-loader-Cv9gb-Q_.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-canvas-renderer-CY8wHYb_.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-dom-interaction-BFQu-fjp.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-html-renderer-CKtkyHRF.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-canvas-CFhHHQFj.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g-plugin-dragndrop-C-fhZn1r.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-expr-DNWszLhl.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-fecha-eoCYq76Q.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-color-name-BQ5IbGbl.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-is-arrayish-CLsR9Wfx.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-simple-swizzle-CbuEe9Q8.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-color-string-DlpZsNR2.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-scale-WmY3yw3x.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-component-B7Ic6yCK.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-vendor-5QXjnyZt.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-coord-C7ivB7vC.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-flru-frKw_lgq.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-pdfast-DvPkUa4Y.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g2-sYywoIZv.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-antv-g2-extension-plot-ByDryGZ7.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-ant-design-plots-DP6i501V.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-crypto-js-DSoR22t1.js">
-    <link rel="modulepreload" crossorigin href="/assets/admin-pages-CcCw5keJ.js">
-    <link rel="modulepreload" crossorigin href="/assets/ai-features-DMPRBddn.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-qrcode.react-D2-ly9fM.js">
-    <link rel="modulepreload" crossorigin href="/assets/pos-pages-BN0m0ASa.js">
-    <link rel="stylesheet" crossorigin href="/assets/antd-core-BdOndhxL.css">
-    <link rel="stylesheet" crossorigin href="/assets/common-components-B6xyOeQr.css">
-    <link rel="stylesheet" crossorigin href="/assets/pos-pages-CEbSu0Pp.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-tdDVN-n_.css">
+    <meta name="apple-touch-fullscreen" content="yes" />
+
+    <!-- Windows PWA Support -->
+    <meta name="msapplication-TileColor" content="#1677ff" />
+    <meta name="msapplication-TileImage" content="/icons/mstile-144x144.png" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Trường Phát Computer Hòa Bình" />
+    <meta
+      property="og:description"
+      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+    />
+    <meta property="og:image" content="/images/og-image.png" />
+    <meta property="og:url" content="https://truongphat.pages.dev" />
+    <meta property="og:site_name" content="Trường Phát Computer" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Trường Phát Computer Hòa Bình" />
+    <meta
+      name="twitter:description"
+      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+    />
+    <meta name="twitter:image" content="/images/twitter-card.png" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/icons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/icons/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icons/apple-touch-icon.png"
+    />
+    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677ff" />
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Preconnect to improve performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//truongphat-api.workers.dev" />
+
+    <!-- Critical CSS - Inline for performance -->
+    <style>
+      /* Critical styles */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+          Helvetica, Arial, sans-serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        font-size: 14px;
+        font-variant: tabular-nums;
+        line-height: 1.5715;
+        background-color: #f0f2f5;
+        color: rgba(0, 0, 0, 0.85);
+        font-feature-settings: "tnum";
+      }
+
+      #root {
+        min-height: 100vh;
+        position: relative;
+      }
+    </style>
+
+    <title>Trường Phát Computer Hòa Bình</title>
+    <script type="module" crossorigin src="/assets/index-P411h14p.js"></script>
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/polyfills-DzElPBtu.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-util-BQ5YYl_y.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-emotion-hash-DFFAhID7.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-emotion-unitless-BWzHn38B.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-stylis-C44NkLFc.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-ant-design-cssinjs-DowSjhmU.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-ant-design-cssinjs-utils-hKGd0cJo.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-classnames-8LxpuE8S.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-resize-observer-polyfill-0cpxpmW6.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-resize-observer-DgYDMDSy.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-motion-BNCSWz5t.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-ant-design-fast-color-CV7jAUlw.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-component-color-picker-C8Yo1DJJ.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-ant-design-colors-D-XytxB8.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/antd-icons-C3gLjlMT.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-overflow-CgE4NHwK.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-component-portal-BYuahzU1.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-component-trigger-B_yu5Hiu.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-menu-DHqwWE1i.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-component-async-validator-Ck3Pn9mm.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-field-form-Bd4-CUDb.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-dropdown-Bd9G3wDa.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-tabs-LxQxjojA.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-pagination-DsgQ1ccz.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-picker-NzB9Q57u.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-tooltip-0B6lUNyq.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-input-CjX1h7tl.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-rc-textarea-Dq0WkMfy.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-toggle-selection-v3K3UlSB.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-copy-to-clipboard-BWohPtFv.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/antd-core-Bg381Ak0.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-scheduler-Dmo4AZZp.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/vendor-remix-run-router--fleoij_.js"
+    />
+    <link
+      rel="modulepreload"
+      crossorigin
+      href="/assets/react-vendor-Bo8GsyX0.js"
+    />
+    <link rel="stylesheet" crossorigin href="/assets/antd-core-BdOndhxL.css" />
+    <link rel="stylesheet" crossorigin href="/assets/index-uQaddVK8.css" />
   </head>
   <body>
-    <div id="root">
-      <!-- Emergency fallback - functional website -->
-      <div id="emergency-app" style="
-        min-height: 100vh;
-        background: linear-gradient(135deg, #1890ff 0%, #0958d9 100%);
-        color: white;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      ">
-        <!-- Header -->
-        <header style="
-          background: rgba(255,255,255,0.1);
-          backdrop-filter: blur(10px);
-          padding: 15px 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid rgba(255,255,255,0.2);
-        ">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="font-size: 32px;">💻</div>
-            <div>
-              <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Trường Phát Computer</h1>
-              <p style="margin: 0; font-size: 14px; opacity: 0.8;">Hệ thống quản lý bán hàng Hòa Bình</p>
-            </div>
-          </div>
-          <nav style="display: flex; gap: 15px;">
-            <a href="#home" onclick="showPage('home')" style="
-              padding: 8px 16px;
-              background: rgba(255,255,255,0.2);
-              color: white;
-              text-decoration: none;
-              border-radius: 6px;
-              font-size: 14px;
-              transition: all 0.3s ease;
-            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-              🏠 Trang chủ
-            </a>
-            <a href="#login" onclick="showPage('login')" style="
-              padding: 8px 16px;
-              background: white;
-              color: #1890ff;
-              text-decoration: none;
-              border-radius: 6px;
-              font-size: 14px;
-              font-weight: 600;
-              transition: all 0.3s ease;
-            " onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-              � Đăng nhập
-            </a>
-          </nav>
-        </header>
-
-        <!-- Main Content -->
-        <main id="main-content" style="padding: 40px 20px;">
-          <!-- Home Page -->
-          <div id="page-home" class="page-content">
-            <div style="text-align: center; max-width: 1200px; margin: 0 auto;">
-              <div style="margin-bottom: 50px;">
-                <h2 style="font-size: 48px; margin: 0 0 20px 0; font-weight: 600;">
-                  Chào mừng đến với KhoChuan POS
-                </h2>
-                <p style="font-size: 20px; opacity: 0.9; margin: 0 0 40px 0;">
-                  Hệ thống quản lý bán hàng thông minh cho Trường Phát Computer
-                </p>
-
-                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 60px;">
-                  <button onclick="showPage('login')" style="
-                    padding: 15px 30px;
-                    background: white;
-                    color: #1890ff;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    font-size: 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                  " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                    🔐 Đăng nhập hệ thống
-                  </button>
-                  <button onclick="showPage('demo')" style="
-                    padding: 15px 30px;
-                    background: rgba(255,255,255,0.2);
-                    color: white;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-radius: 8px;
-                    font-weight: 600;
-                    font-size: 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                  " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    🎯 Xem Demo
-                  </button>
-                </div>
-              </div>
-
-              <!-- Features Grid -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 60px;">
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  text-align: left;
-                  transition: all 0.3s ease;
-                " onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">📱</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">POS Thông minh</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Giao diện hiện đại, thanh toán nhanh chóng, hỗ trợ đa phương thức thanh toán và quản lý giao dịch real-time.
-                  </p>
-                </div>
-
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  text-align: left;
-                  transition: all 0.3s ease;
-                " onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">📊</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">Quản lý kho</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Theo dõi tồn kho real-time, cảnh báo hết hàng, dự báo nhu cầu bằng AI và quản lý đa chi nhánh.
-                  </p>
-                </div>
-
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  text-align: left;
-                  transition: all 0.3s ease;
-                " onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">👥</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">CRM & Analytics</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Quản lý khách hàng, phân tích hành vi mua sắm, báo cáo chi tiết và chương trình loyalty.
-                  </p>
-                </div>
-
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  text-align: left;
-                  transition: all 0.3s ease;
-                " onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">🤖</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">AI Features</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Gợi ý sản phẩm thông minh, tối ưu giá cả, dự báo doanh thu và phân tích xu hướng thị trường.
-                  </p>
-                </div>
-              </div>
-
-              <!-- Stats -->
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
-                <div style="text-align: center; padding: 20px;">
-                  <div style="font-size: 36px; font-weight: 600; margin-bottom: 10px;">99.9%</div>
-                  <div style="opacity: 0.8;">Uptime</div>
-                </div>
-                <div style="text-align: center; padding: 20px;">
-                  <div style="font-size: 36px; font-weight: 600; margin-bottom: 10px;">24/7</div>
-                  <div style="opacity: 0.8;">Hỗ trợ</div>
-                </div>
-                <div style="text-align: center; padding: 20px;">
-                  <div style="font-size: 36px; font-weight: 600; margin-bottom: 10px;">1000+</div>
-                  <div style="opacity: 0.8;">Sản phẩm</div>
-                </div>
-                <div style="text-align: center; padding: 20px;">
-                  <div style="font-size: 36px; font-weight: 600; margin-bottom: 10px;">⚡</div>
-                  <div style="opacity: 0.8;">Tốc độ cao</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Login Page -->
-          <div id="page-login" class="page-content" style="display: none;">
-            <div style="max-width: 400px; margin: 0 auto; text-align: center;">
-              <div style="
-                background: rgba(255,255,255,0.1);
-                padding: 40px;
-                border-radius: 20px;
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,255,255,0.2);
-              ">
-                <div style="font-size: 64px; margin-bottom: 30px;">🔐</div>
-                <h2 style="margin: 0 0 30px 0; font-size: 32px; font-weight: 600;">Đăng nhập</h2>
-
-                <form id="login-form" style="text-align: left;">
-                  <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Tên đăng nhập</label>
-                    <input type="text" id="username" required style="
-                      width: 100%;
-                      padding: 12px 16px;
-                      border: 2px solid rgba(255,255,255,0.3);
-                      border-radius: 8px;
-                      background: rgba(255,255,255,0.1);
-                      color: white;
-                      font-size: 16px;
-                      box-sizing: border-box;
-                    " placeholder="Nhập tên đăng nhập">
-                  </div>
-
-                  <div style="margin-bottom: 30px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Mật khẩu</label>
-                    <input type="password" id="password" required style="
-                      width: 100%;
-                      padding: 12px 16px;
-                      border: 2px solid rgba(255,255,255,0.3);
-                      border-radius: 8px;
-                      background: rgba(255,255,255,0.1);
-                      color: white;
-                      font-size: 16px;
-                      box-sizing: border-box;
-                    " placeholder="Nhập mật khẩu">
-                  </div>
-
-                  <button type="submit" style="
-                    width: 100%;
-                    padding: 15px;
-                    background: white;
-                    color: #1890ff;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    font-size: 18px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    margin-bottom: 20px;
-                  " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    🚀 Đăng nhập
-                  </button>
-                </form>
-
-                <div style="text-align: center; margin-top: 20px;">
-                  <p style="margin: 0 0 15px 0; opacity: 0.8; font-size: 14px;">Tài khoản demo:</p>
-                  <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="quickLogin('admin')" style="
-                      padding: 8px 16px;
-                      background: rgba(255,255,255,0.2);
-                      color: white;
-                      border: 1px solid rgba(255,255,255,0.3);
-                      border-radius: 6px;
-                      cursor: pointer;
-                      font-size: 12px;
-                    ">👑 Admin</button>
-                    <button onclick="quickLogin('cashier')" style="
-                      padding: 8px 16px;
-                      background: rgba(255,255,255,0.2);
-                      color: white;
-                      border: 1px solid rgba(255,255,255,0.3);
-                      border-radius: 6px;
-                      cursor: pointer;
-                      font-size: 12px;
-                    ">💰 Cashier</button>
-                    <button onclick="quickLogin('staff')" style="
-                      padding: 8px 16px;
-                      background: rgba(255,255,255,0.2);
-                      color: white;
-                      border: 1px solid rgba(255,255,255,0.3);
-                      border-radius: 6px;
-                      cursor: pointer;
-                      font-size: 12px;
-                    ">👨‍💼 Staff</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Demo Page -->
-          <div id="page-demo" class="page-content" style="display: none;">
-            <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
-              <h2 style="font-size: 36px; margin: 0 0 30px 0; font-weight: 600;">🎯 Demo Hệ thống</h2>
-
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                " onclick="showDashboard('admin')" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">👑</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">Admin Dashboard</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Quản lý toàn bộ hệ thống, báo cáo, phân tích và cấu hình.
-                  </p>
-                </div>
-
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                " onclick="showDashboard('pos')" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">🛒</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">POS Terminal</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Giao diện bán hàng, thanh toán và quản lý giao dịch.
-                  </p>
-                </div>
-
-                <div style="
-                  background: rgba(255,255,255,0.1);
-                  padding: 30px;
-                  border-radius: 16px;
-                  backdrop-filter: blur(10px);
-                  border: 1px solid rgba(255,255,255,0.2);
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                " onclick="showDashboard('inventory')" onmouseover="this.style.transform='translateY(-5px)'; this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-                  <div style="font-size: 48px; margin-bottom: 20px;">📦</div>
-                  <h3 style="margin: 0 0 15px 0; font-size: 24px; font-weight: 600;">Quản lý kho</h3>
-                  <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                    Theo dõi tồn kho, nhập xuất và dự báo nhu cầu.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dashboard Pages -->
-          <div id="page-dashboard" class="page-content" style="display: none;">
-            <div style="max-width: 1200px; margin: 0 auto;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2 id="dashboard-title" style="margin: 0; font-size: 32px; font-weight: 600;">📊 Dashboard</h2>
-                <button onclick="showPage('home')" style="
-                  padding: 10px 20px;
-                  background: rgba(255,255,255,0.2);
-                  color: white;
-                  border: 1px solid rgba(255,255,255,0.3);
-                  border-radius: 6px;
-                  cursor: pointer;
-                ">← Quay lại</button>
-              </div>
-
-              <div id="dashboard-content">
-                <!-- Content will be loaded dynamically -->
-              </div>
-            </div>
-          </div>
-        </main>
-
-        <!-- Footer -->
-        <footer style="
-          background: rgba(255,255,255,0.1);
-          backdrop-filter: blur(10px);
-          padding: 30px 20px;
-          text-align: center;
-          border-top: 1px solid rgba(255,255,255,0.2);
-          margin-top: 60px;
-        ">
-          <div style="max-width: 1200px; margin: 0 auto;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px;">
-              <div>
-                <h4 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Liên hệ</h4>
-                <p style="margin: 0; opacity: 0.8; line-height: 1.6;">
-                  📍 Hòa Bình, Việt Nam<br>
-                  📞 +84 xxx xxx xxx<br>
-                  ✉️ info@truongphatcomputer.com
-                </p>
-              </div>
-              <div>
-                <h4 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Hỗ trợ</h4>
-                <p style="margin: 0; opacity: 0.8; line-height: 1.6;">
-                  🕒 24/7 Support<br>
-                  📚 Tài liệu hướng dẫn<br>
-                  🎓 Đào tạo sử dụng
-                </p>
-              </div>
-              <div>
-                <h4 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Công nghệ</h4>
-                <p style="margin: 0; opacity: 0.8; line-height: 1.6;">
-                  ⚡ React 18 + Vite<br>
-                  🌐 Cloudflare Edge<br>
-                  🤖 AI-Powered Analytics
-                </p>
-              </div>
-            </div>
-
-            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; opacity: 0.8;">
-              <p style="margin: 0;">© 2024 Trường Phát Computer. All rights reserved. | KhoChuan POS System v1.0</p>
-            </div>
-          </div>
-        </footer>
-      </div>
-    </div>
+    <div id="root"></div>
 
     <script>
-      // Emergency fallback website functionality
-      console.log('🚀 KhoChuan POS Emergency Mode Activated');
-
-      // Page navigation
-      function showPage(pageId) {
-        console.log('📄 Navigating to page:', pageId);
-
-        // Hide all pages
-        const pages = document.querySelectorAll('.page-content');
-        pages.forEach(page => page.style.display = 'none');
-
-        // Show selected page
-        const targetPage = document.getElementById('page-' + pageId);
-        if (targetPage) {
-          targetPage.style.display = 'block';
-
-          // Update URL without reload
-          if (history.pushState) {
-            const newUrl = pageId === 'home' ? '/' : '/' + pageId;
-            history.pushState({page: pageId}, '', newUrl);
-          }
-        }
-
-        // Update navigation active state
-        updateNavigation(pageId);
+      // Polyfills for production environment
+      if (typeof global === "undefined") {
+        var global = globalThis;
       }
-
-      // Update navigation active state
-      function updateNavigation(activePageId) {
-        const navLinks = document.querySelectorAll('nav a');
-        navLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href === '#' + activePageId) {
-            link.style.background = 'white';
-            link.style.color = '#1890ff';
-          } else {
-            link.style.background = 'rgba(255,255,255,0.2)';
-            link.style.color = 'white';
-          }
-        });
+      if (typeof process === "undefined") {
+        var process = { env: { NODE_ENV: "production" } };
       }
-
-      // Quick login functionality
-      function quickLogin(role) {
-        console.log('🔐 Quick login as:', role);
-
-        const credentials = {
-          admin: { username: 'admin', password: 'admin123' },
-          cashier: { username: 'cashier', password: 'cashier123' },
-          staff: { username: 'staff', password: 'staff123' }
-        };
-
-        if (credentials[role]) {
-          document.getElementById('username').value = credentials[role].username;
-          document.getElementById('password').value = credentials[role].password;
-
-          // Auto submit after short delay
-          setTimeout(() => {
-            document.getElementById('login-form').dispatchEvent(new Event('submit'));
-          }, 500);
-        }
-      }
-
-      // Login form handler
-      document.addEventListener('DOMContentLoaded', function() {
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) {
-          loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            console.log('🔑 Login attempt:', username);
-
-            // Simple validation
-            if (username && password) {
-              // Determine role based on username
-              let role = 'staff';
-              if (username.includes('admin')) role = 'admin';
-              else if (username.includes('cashier')) role = 'cashier';
-
-              // Show success message
-              showNotification('✅ Đăng nhập thành công!', 'success');
-
-              // Redirect to appropriate dashboard
-              setTimeout(() => {
-                showDashboard(role);
-              }, 1000);
-            } else {
-              showNotification('❌ Vui lòng nhập đầy đủ thông tin!', 'error');
-            }
-          });
-        }
-      });
-
-      // Show dashboard based on role
-      function showDashboard(role) {
-        console.log('📊 Loading dashboard for role:', role);
-
-        const dashboardTitle = document.getElementById('dashboard-title');
-        const dashboardContent = document.getElementById('dashboard-content');
-
-        // Update title and content based on role
-        const dashboards = {
-          admin: {
-            title: '👑 Admin Dashboard',
-            content: `
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #52c41a;">📈 Doanh thu hôm nay</h3>
-                  <div style="font-size: 32px; font-weight: 600;">₫15,750,000</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #1890ff;">🛒 Đơn hàng</h3>
-                  <div style="font-size: 32px; font-weight: 600;">247</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #faad14;">👥 Khách hàng</h3>
-                  <div style="font-size: 32px; font-weight: 600;">1,234</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #722ed1;">📦 Sản phẩm</h3>
-                  <div style="font-size: 32px; font-weight: 600;">856</div>
-                </div>
-              </div>
-
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                <button onclick="showFeature('products')" style="padding: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; cursor: pointer; text-align: left;">
-                  <div style="font-size: 24px; margin-bottom: 10px;">🏷️</div>
-                  <h4 style="margin: 0 0 5px 0;">Quản lý sản phẩm</h4>
-                  <p style="margin: 0; opacity: 0.8; font-size: 14px;">Thêm, sửa, xóa sản phẩm</p>
-                </button>
-
-                <button onclick="showFeature('inventory')" style="padding: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; cursor: pointer; text-align: left;">
-                  <div style="font-size: 24px; margin-bottom: 10px;">📦</div>
-                  <h4 style="margin: 0 0 5px 0;">Quản lý kho</h4>
-                  <p style="margin: 0; opacity: 0.8; font-size: 14px;">Nhập xuất, tồn kho</p>
-                </button>
-
-                <button onclick="showFeature('reports')" style="padding: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; cursor: pointer; text-align: left;">
-                  <div style="font-size: 24px; margin-bottom: 10px;">📊</div>
-                  <h4 style="margin: 0 0 5px 0;">Báo cáo</h4>
-                  <p style="margin: 0; opacity: 0.8; font-size: 14px;">Thống kê, phân tích</p>
-                </button>
-
-                <button onclick="showFeature('staff')" style="padding: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; cursor: pointer; text-align: left;">
-                  <div style="font-size: 24px; margin-bottom: 10px;">👥</div>
-                  <h4 style="margin: 0 0 5px 0;">Quản lý nhân viên</h4>
-                  <p style="margin: 0; opacity: 0.8; font-size: 14px;">Phân quyền, hiệu suất</p>
-                </button>
-              </div>
-            `
-          },
-          pos: {
-            title: '🛒 POS Terminal',
-            content: `
-              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; height: 600px;">
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px;">
-                  <h3 style="margin: 0 0 20px 0;">🛍️ Sản phẩm</h3>
-                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-height: 500px; overflow-y: auto;">
-                    ${generateProductGrid()}
-                  </div>
-                </div>
-
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px;">
-                  <h3 style="margin: 0 0 20px 0;">🛒 Giỏ hàng</h3>
-                  <div id="cart-items" style="margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
-                    <p style="opacity: 0.7; text-align: center; margin: 50px 0;">Chưa có sản phẩm nào</p>
-                  </div>
-
-                  <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                      <span>Tổng cộng:</span>
-                      <span id="cart-total" style="font-weight: 600; font-size: 18px;">₫0</span>
-                    </div>
-
-                    <button onclick="processPayment()" style="
-                      width: 100%;
-                      padding: 15px;
-                      background: #52c41a;
-                      color: white;
-                      border: none;
-                      border-radius: 8px;
-                      font-weight: 600;
-                      font-size: 16px;
-                      cursor: pointer;
-                      margin-top: 10px;
-                    ">💳 Thanh toán</button>
-                  </div>
-                </div>
-              </div>
-            `
-          },
-          inventory: {
-            title: '📦 Quản lý kho',
-            content: `
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #1890ff;">📦 Tổng sản phẩm</h3>
-                  <div style="font-size: 32px; font-weight: 600;">856</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #52c41a;">✅ Còn hàng</h3>
-                  <div style="font-size: 32px; font-weight: 600;">742</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #faad14;">⚠️ Sắp hết</h3>
-                  <div style="font-size: 32px; font-weight: 600;">89</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
-                  <h3 style="margin: 0 0 10px 0; color: #ff4d4f;">❌ Hết hàng</h3>
-                  <div style="font-size: 32px; font-weight: 600;">25</div>
-                </div>
-              </div>
-
-              <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px;">
-                <h3 style="margin: 0 0 20px 0;">📋 Danh sách sản phẩm</h3>
-                <div style="overflow-x: auto;">
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                        <th style="padding: 10px; text-align: left;">Sản phẩm</th>
-                        <th style="padding: 10px; text-align: center;">Tồn kho</th>
-                        <th style="padding: 10px; text-align: center;">Trạng thái</th>
-                        <th style="padding: 10px; text-align: right;">Giá</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${generateInventoryTable()}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            `
-          }
-        };
-
-        if (dashboards[role]) {
-          dashboardTitle.innerHTML = dashboards[role].title;
-          dashboardContent.innerHTML = dashboards[role].content;
-          showPage('dashboard');
-        }
-      }
-
-      // Generate product grid for POS
-      function generateProductGrid() {
-        const products = [
-          { name: 'Laptop Dell', price: 15000000, image: '💻' },
-          { name: 'Mouse Logitech', price: 500000, image: '🖱️' },
-          { name: 'Keyboard', price: 800000, image: '⌨️' },
-          { name: 'Monitor', price: 3500000, image: '🖥️' },
-          { name: 'Webcam', price: 1200000, image: '📹' },
-          { name: 'Headset', price: 900000, image: '🎧' }
-        ];
-
-        return products.map(product => `
-          <div onclick="addToCart('${product.name}', ${product.price})" style="
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.2);
-          " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-            <div style="font-size: 32px; margin-bottom: 10px;">${product.image}</div>
-            <div style="font-size: 14px; margin-bottom: 5px;">${product.name}</div>
-            <div style="font-weight: 600; color: #52c41a;">₫${product.price.toLocaleString()}</div>
-          </div>
-        `).join('');
-      }
-
-      // Generate inventory table
-      function generateInventoryTable() {
-        const inventory = [
-          { name: 'Laptop Dell Inspiron', stock: 25, status: 'Còn hàng', price: 15000000 },
-          { name: 'Mouse Logitech MX', stock: 5, status: 'Sắp hết', price: 500000 },
-          { name: 'Keyboard Gaming', stock: 0, status: 'Hết hàng', price: 800000 },
-          { name: 'Monitor 24 inch', stock: 15, status: 'Còn hàng', price: 3500000 },
-          { name: 'Webcam HD', stock: 8, status: 'Sắp hết', price: 1200000 }
-        ];
-
-        return inventory.map(item => `
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <td style="padding: 10px;">${item.name}</td>
-            <td style="padding: 10px; text-align: center;">${item.stock}</td>
-            <td style="padding: 10px; text-align: center;">
-              <span style="
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 12px;
-                background: ${item.status === 'Còn hàng' ? '#52c41a' : item.status === 'Sắp hết' ? '#faad14' : '#ff4d4f'};
-                color: white;
-              ">${item.status}</span>
-            </td>
-            <td style="padding: 10px; text-align: right;">₫${item.price.toLocaleString()}</td>
-          </tr>
-        `).join('');
-      }
-
-      // Cart functionality
-      let cart = [];
-      let cartTotal = 0;
-
-      function addToCart(productName, price) {
-        console.log('🛒 Adding to cart:', productName, price);
-
-        // Check if product already in cart
-        const existingItem = cart.find(item => item.name === productName);
-        if (existingItem) {
-          existingItem.quantity += 1;
-        } else {
-          cart.push({ name: productName, price: price, quantity: 1 });
-        }
-
-        updateCartDisplay();
-        showNotification(`✅ Đã thêm ${productName} vào giỏ hàng!`, 'success');
-      }
-
-      function updateCartDisplay() {
-        const cartItemsDiv = document.getElementById('cart-items');
-        const cartTotalDiv = document.getElementById('cart-total');
-
-        if (cart.length === 0) {
-          cartItemsDiv.innerHTML = '<p style="opacity: 0.7; text-align: center; margin: 50px 0;">Chưa có sản phẩm nào</p>';
-          cartTotal = 0;
-        } else {
-          cartItemsDiv.innerHTML = cart.map(item => `
-            <div style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding: 10px;
-              background: rgba(255,255,255,0.1);
-              border-radius: 6px;
-              margin-bottom: 10px;
-            ">
-              <div>
-                <div style="font-weight: 500;">${item.name}</div>
-                <div style="font-size: 12px; opacity: 0.8;">₫${item.price.toLocaleString()} x ${item.quantity}</div>
-              </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <button onclick="changeQuantity('${item.name}', -1)" style="
-                  width: 24px; height: 24px; border: none; background: rgba(255,255,255,0.2);
-                  color: white; border-radius: 4px; cursor: pointer;
-                ">-</button>
-                <span>${item.quantity}</span>
-                <button onclick="changeQuantity('${item.name}', 1)" style="
-                  width: 24px; height: 24px; border: none; background: rgba(255,255,255,0.2);
-                  color: white; border-radius: 4px; cursor: pointer;
-                ">+</button>
-                <button onclick="removeFromCart('${item.name}')" style="
-                  width: 24px; height: 24px; border: none; background: #ff4d4f;
-                  color: white; border-radius: 4px; cursor: pointer;
-                ">×</button>
-              </div>
-            </div>
-          `).join('');
-
-          cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-        }
-
-        if (cartTotalDiv) {
-          cartTotalDiv.textContent = `₫${cartTotal.toLocaleString()}`;
-        }
-      }
-
-      function changeQuantity(productName, change) {
-        const item = cart.find(item => item.name === productName);
-        if (item) {
-          item.quantity += change;
-          if (item.quantity <= 0) {
-            removeFromCart(productName);
-          } else {
-            updateCartDisplay();
-          }
-        }
-      }
-
-      function removeFromCart(productName) {
-        cart = cart.filter(item => item.name !== productName);
-        updateCartDisplay();
-        showNotification(`🗑️ Đã xóa ${productName} khỏi giỏ hàng!`, 'info');
-      }
-
-      function processPayment() {
-        if (cart.length === 0) {
-          showNotification('❌ Giỏ hàng trống!', 'error');
-          return;
-        }
-
-        showNotification(`💳 Đang xử lý thanh toán ₫${cartTotal.toLocaleString()}...`, 'info');
-
-        setTimeout(() => {
-          showNotification('✅ Thanh toán thành công!', 'success');
-          cart = [];
-          updateCartDisplay();
-        }, 2000);
-      }
-
-      // Feature demonstrations
-      function showFeature(featureName) {
-        console.log('🎯 Showing feature:', featureName);
-
-        const features = {
-          products: {
-            title: '🏷️ Quản lý sản phẩm',
-            content: 'Demo chức năng quản lý sản phẩm: thêm, sửa, xóa, tìm kiếm và phân loại sản phẩm.'
-          },
-          inventory: {
-            title: '📦 Quản lý kho',
-            content: 'Demo chức năng quản lý kho: nhập xuất hàng, theo dõi tồn kho, cảnh báo hết hàng.'
-          },
-          reports: {
-            title: '📊 Báo cáo',
-            content: 'Demo chức năng báo cáo: thống kê doanh thu, phân tích xu hướng, báo cáo hiệu suất.'
-          },
-          staff: {
-            title: '👥 Quản lý nhân viên',
-            content: 'Demo chức năng quản lý nhân viên: phân quyền, theo dõi hiệu suất, quản lý ca làm việc.'
-          }
-        };
-
-        if (features[featureName]) {
-          showNotification(`${features[featureName].title}: ${features[featureName].content}`, 'info');
-        }
-      }
-
-      // Notification system
-      function showNotification(message, type = 'info') {
-        console.log('📢 Notification:', message, type);
-
-        // Remove existing notifications
-        const existingNotifications = document.querySelectorAll('.notification');
-        existingNotifications.forEach(n => n.remove());
-
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          padding: 15px 20px;
-          border-radius: 8px;
-          color: white;
-          font-weight: 500;
-          z-index: 10000;
-          max-width: 400px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-          backdrop-filter: blur(10px);
-          animation: slideIn 0.3s ease;
-          background: ${type === 'success' ? '#52c41a' : type === 'error' ? '#ff4d4f' : type === 'warning' ? '#faad14' : '#1890ff'};
-        `;
-
-        notification.textContent = message;
-        document.body.appendChild(notification);
-
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-          notification.style.animation = 'slideOut 0.3s ease';
-          setTimeout(() => notification.remove(), 300);
-        }, 3000);
-      }
-
-      // Handle browser back/forward
-      window.addEventListener('popstate', function(e) {
-        const page = e.state?.page || 'home';
-        showPage(page);
-      });
-
-      // Initialize page based on URL
-      function initializePage() {
-        const path = window.location.pathname;
-        let initialPage = 'home';
-
-        if (path === '/login') initialPage = 'login';
-        else if (path === '/demo') initialPage = 'demo';
-        else if (path.startsWith('/admin')) initialPage = 'dashboard';
-
-        showPage(initialPage);
-
-        // If admin path, show admin dashboard
-        if (path.startsWith('/admin')) {
-          setTimeout(() => showDashboard('admin'), 100);
-        }
-      }
-
-      // Add CSS animations
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-          from { transform: translateX(0); opacity: 1; }
-          to { transform: translateX(100%); opacity: 0; }
-        }
-
-        .page-content {
-          animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-          header {
-            flex-direction: column !important;
-            gap: 15px !important;
-          }
-
-          nav {
-            flex-direction: column !important;
-            width: 100% !important;
-          }
-
-          main {
-            padding: 20px 10px !important;
-          }
-
-          .dashboard-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-
-        /* Input focus styles */
-        input:focus {
-          outline: none !important;
-          border-color: white !important;
-          box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
-        }
-
-        /* Button hover effects */
-        button:hover {
-          transform: translateY(-1px) !important;
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: rgba(255,255,255,0.1);
-          border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.3);
-          border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.5);
-        }
-      `;
-      document.head.appendChild(style);
-
-      // Initialize when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializePage);
-      } else {
-        initializePage();
-      }
-
-      // Welcome message
-      console.log('🎉 KhoChuan POS Emergency Mode Ready!');
-      console.log('📱 All features are working in fallback mode');
-      console.log('🔧 This is a fully functional emergency version');
-
-      // Show welcome notification
-      setTimeout(() => {
-        showNotification('🎉 Chào mừng đến với KhoChuan POS! Hệ thống đã sẵn sàng.', 'success');
-      }, 1000);
     </script>
-
-    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

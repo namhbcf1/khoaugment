@@ -1,66 +1,59 @@
 # Dependencies
 node_modules/
-/.pnp
+.pnp
 .pnp.js
 
-# Testing
-/coverage
-
-# Production
+# Production builds
 /build
-/frontend/build
-/frontend/dist
-/backend/dist
+/dist
+frontend/dist/
+/.next/
+/out/
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-frontend/.env
-backend/.env
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-logs/
-*.log
-
-# Editor directories and files
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.DS_Store
+.env.*.local
 
 # Cloudflare
 .wrangler/
+wrangler.toml.bak
 .dev.vars
 
-# Temporary files
-.tmp/
-.temp/
-.cache/
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.log
 
-# Optional npm cache directory
-.npm
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Optional eslint cache
-.eslintcache
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output
 
-# Local .terraform directories
-**/.terraform/*
+# IDEs and editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
 
-# .tfstate files
-*.tfstate
-*.tfstate.*
-
-# Operating System Files
+# OS
 .DS_Store
 .DS_Store?
 ._*
@@ -69,15 +62,42 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Test Results and Debug Files
+# Temporary files
+*.tmp
+*.temp
+.temp/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# PWA
+sw.js*
+workbox-*.js
+
+# Test results
 test-results/
 playwright-report/
-debug-auth.html
-debug-auth.js
-screenshots/
-videos/
-traces/
+blob-report/
 
-# Package lock files (keep only one)
-package-lock.json
-yarn.lock
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+dist-ssr
+*.local
+
+# Custom
+.cursor/
+assets/
