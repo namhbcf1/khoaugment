@@ -1,0 +1,27 @@
+# Cloudflare Pages configuration
+build:
+  command: npm run build:cloudflare
+  environment:
+    NODE_VERSION: 18
+    NPM_VERSION: 9
+
+# Routes for SPA
+routes:
+  - pattern: /assets/*
+    headers:
+      Content-Type: application/javascript
+  - pattern: /assets/*.js
+    headers:
+      Content-Type: application/javascript
+  - pattern: /assets/*.css
+    headers:
+      Content-Type: text/css
+  - pattern: /*.js
+    headers:
+      Content-Type: application/javascript
+  - pattern: /*.css
+    headers:
+      Content-Type: text/css
+  - pattern: /*
+    static: false
+    script: index.html

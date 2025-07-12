@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/assets/*",
+    "/icons/*",
+    "/*.json",
+    "/*.png",
+    "/*.svg",
+    "/*.jpg",
+    "/*.webp"
+  ],
+  "routes": [
+    {
+      "src": "^/assets/.+\\.(js|mjs)$",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "^/assets/.+\\.css$",
+      "headers": {
+        "Content-Type": "text/css"
+      }
+    },
+    {
+      "src": "^/assets/.+\\.json$",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "src": "^/.+\\.js$",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "^/.+\\.css$",
+      "headers": {
+        "Content-Type": "text/css"
+      }
+    },
+    {
+      "src": "^/.+\\.json$",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": ".*",
+      "dest": "/index.html"
+    }
+  ]
+}
