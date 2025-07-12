@@ -1,46 +1,76 @@
-import { App as AntApp, ConfigProvider } from "antd";
-import React, { Suspense, useEffect } from "react";
+import { Spin } from "antd";
+import React, { Suspense } from "react";
 import { Helmet } from "react-helmet-async";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import ProtectedRoute from "./auth/ProtectedRoute";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import { useAuthStore } from "./stores/authStore";
 
 // Lazy load pages for better performance
+const HomePage = React.lazy(() => import("./pages/HomePage"));
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
-const AdminLayout = React.lazy(() => import("./components/layout/AdminLayout"));
-const CashierLayout = React.lazy(
-  () => import("./components/layout/CashierLayout")
-);
-const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 // Admin pages
-const AdminDashboard = React.lazy(() => import("./pages/admin/Dashboard"));
-const ProductsPage = React.lazy(() => import("./pages/admin/ProductsPage"));
-const CategoriesPage = React.lazy(() => import("./pages/admin/CategoriesPage"));
-const OrdersPage = React.lazy(() => import("./pages/admin/OrdersPage"));
-const CustomersPage = React.lazy(() => import("./pages/admin/CustomersPage"));
-const SettingsPage = React.lazy(() => import("./pages/admin/SettingsPage"));
-const UsersPage = React.lazy(() => import("./pages/admin/UsersPage"));
-const ReportsPage = React.lazy(() => import("./pages/admin/ReportsPage"));
+const AdminDashboard = React.lazy(
+  () => import("./pages/admin/Dashboard/Dashboard")
+);
+const ProductsPage = React.lazy(
+  () => import("./pages/admin/Products/ProductsPage")
+);
+const OrdersPage = React.lazy(() => import("./pages/admin/Orders/OrdersList"));
+const InventoryPage = React.lazy(
+  () => import("./pages/admin/Inventory/InventoryPage")
+);
+const CustomersPage = React.lazy(
+  () => import("./pages/admin/Customers/CustomersPage")
+);
+const ReportsPage = React.lazy(
+  () => import("./pages/admin/Reports/ReportsPage")
+);
+const SettingsPage = React.lazy(
+  () => import("./pages/admin/Settings/SettingsPage")
+);
 
 // Cashier pages
-const POSPage = React.lazy(() => import("./pages/cashier/POSPage"));
-const OrderHistoryPage = React.lazy(
-  () => import("./pages/cashier/OrderHistoryPage")
+const POSTerminalPage = React.lazy(() => import("./pages/cashier/POS/POSPage"));
+const CashierOrdersPage = React.lazy(
+  () => import("./pages/cashier/Orders/OrdersList")
 );
-const CustomerLookupPage = React.lazy(
-  () => import("./pages/cashier/CustomerLookupPage")
+const CashierCustomersPage = React.lazy(
+  () => import("./pages/cashier/Customers/CustomersList")
 );
+
+// Common pages
+const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
+
+// Create QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App: React.FC = () => {
-  const { user, checkAuth } = useAuthStore();
+  const { user, loading } = useAuthStore();
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
-    <ConfigProvider>
-      <AntApp>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
         <Helmet>
           <title>KhoAugment POS - Hệ thống bán hàng chuyên nghiệp</title>
           <meta
@@ -51,83 +81,121 @@ const App: React.FC = () => {
             name="viewport"
             content="width=device-width, initial-scale=1.0"
           />
+          <meta name="theme-color" content="#1890ff" />
         </Helmet>
 
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <Spin size="large" />
+            </div>
+          }
+        >
           <Routes>
             {/* Public routes */}
-            <Route
-              path="/login"
-              element={
-                user ? (
-                  <Navigate
-                    to={user.role === "cashier" ? "/cashier" : "/admin"}
-                  />
-                ) : (
-                  <LoginPage />
-                )
-              }
-            />
+            <Route path="/login" element={<LoginPage />} />
 
-            {/* Admin routes */}
+            {/* Admin Routes */}
             <Route
               path="/admin"
               element={
-                user && user.role === "admin" ? (
-                  <AdminLayout />
-                ) : (
-                  <Navigate to="/login" />
-                )
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
               }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="products" element={<ProductsPage />} />
-              <Route path="categories" element={<CategoriesPage />} />
-              <Route path="orders" element={<OrdersPage />} />
-              <Route path="customers" element={<CustomersPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-            </Route>
-
-            {/* Cashier routes */}
+            />
             <Route
-              path="/cashier"
+              path="/admin/dashboard"
               element={
-                user && (user.role === "admin" || user.role === "cashier") ? (
-                  <CashierLayout />
-                ) : (
-                  <Navigate to="/login" />
-                )
+                <ProtectedRoute requiredRole="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
               }
-            >
-              <Route index element={<POSPage />} />
-              <Route path="orders" element={<OrderHistoryPage />} />
-              <Route path="customers" element={<CustomerLookupPage />} />
-            </Route>
-
-            {/* Redirect from root based on user role */}
+            />
             <Route
-              path="/"
+              path="/admin/products"
               element={
-                user ? (
-                  user.role === "cashier" ? (
-                    <Navigate to="/cashier" />
-                  ) : (
-                    <Navigate to="/admin" />
-                  )
-                ) : (
-                  <Navigate to="/login" />
-                )
+                <ProtectedRoute requiredRole="admin">
+                  <ProductsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/inventory"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <InventoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <OrdersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/customers"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <CustomersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reports"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <SettingsPage />
+                </ProtectedRoute>
               }
             />
 
-            {/* 404 route */}
+            {/* Cashier Routes */}
+            <Route
+              path="/pos"
+              element={
+                <ProtectedRoute requiredRole={["admin", "cashier"]}>
+                  <POSTerminalPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pos/orders"
+              element={
+                <ProtectedRoute requiredRole={["admin", "cashier"]}>
+                  <CashierOrdersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pos/customers"
+              element={
+                <ProtectedRoute requiredRole={["admin", "cashier"]}>
+                  <CashierCustomersPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Main Route */}
+            <Route path="/" element={<HomePage />} />
+
+            {/* 404 Route */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
-      </AntApp>
-    </ConfigProvider>
+      </ErrorBoundary>
+    </QueryClientProvider>
   );
 };
 

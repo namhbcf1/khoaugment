@@ -119,7 +119,7 @@ const loadApplication = async () => {
   try {
     // First try to load via direct import
     console.log("Loading main application module...");
-    const mainModule = await loadModule("./src/main.tsx");
+    const mainModule = await loadModule("./src/main.jsx");
     mainModuleLoaded = true;
     console.log("Application loaded successfully");
   } catch (error) {
