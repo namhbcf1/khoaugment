@@ -3,9 +3,14 @@ import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  // Add base URL setting for deployment
+  // Base URL is important for asset paths
   base: "/",
-  plugins: [react()],
+  plugins: [
+    react({
+      // Ensure React works in production mode
+      jsxRuntime: "automatic",
+    }),
+  ],
   define: {
     "process.env": {},
     "process.env.NODE_ENV": JSON.stringify(
@@ -31,14 +36,29 @@ export default defineConfig({
     sourcemap: false,
     outDir: "dist",
     assetsDir: "assets",
-    // Add support for .mjs, .js, and other module types
+    // Important settings for Cloudflare Pages
     assetsInlineLimit: 4096,
     cssCodeSplit: true,
     modulePreload: {
       polyfill: true,
     },
+    // Ensure proper MIME types
     rollupOptions: {
       output: {
+        // Enforce .js extension and proper file naming for Cloudflare
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: (assetInfo) => {
+          const extType = assetInfo.name.split(".").at(1);
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return `assets/images/[name]-[hash][extname]`;
+          }
+          if (/woff|woff2|ttf|otf|eot/i.test(extType)) {
+            return `assets/fonts/[name]-[hash][extname]`;
+          }
+          return `assets/[name]-[hash][extname]`;
+        },
+        // Chunking strategy
         manualChunks: (id) => {
           // React ecosystem
           if (
@@ -185,12 +205,10 @@ export default defineConfig({
             return "common-components";
           }
         },
-        chunkFileNames: "assets/[name]-[hash].js",
-        entryFileNames: "assets/[name]-[hash].js",
-        assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
-    chunkSizeWarningLimit: 500, // Lower threshold to catch issues earlier
+    chunkSizeWarningLimit: 500,
+    // Important: Ensure proper compression and optimize code
     terserOptions: {
       compress: {
         drop_console: true,
