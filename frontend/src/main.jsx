@@ -1,95 +1,102 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
 
-// Import global styles
-import 'antd/dist/reset.css'
-import './styles/global.css'
+// Error boundary component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
 
+  componentDidCatch(error, errorInfo) {
+    console.error("React Error Boundary caught an error:", error, errorInfo);
+  }
 
-
-
-// Enhanced error reporting for production
-window.addEventListener('error', (event) => {
-  console.error('Global error:', event.error)
-  console.error('Error details:', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    stack: event.error?.stack
-  })
-})
-
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason)
-  console.error('Promise rejection details:', {
-    reason: event.reason,
-    promise: event.promise
-  })
-})
-
-// KhoChuan POS App initialization
-console.log('🚀 KhoChuan POS - Starting...')
-
-// Test if React is available
-console.log('React available:', typeof React)
-console.log('ReactDOM available:', typeof ReactDOM)
-console.log('App available:', typeof App)
-
-// React 18 Root Creation
-const container = document.getElementById('root')
-console.log('Container found:', container)
-
-if (!container) {
-  console.error('Root container not found!')
-  document.body.innerHTML = '<div style="padding: 20px; color: red;">Error: Root container not found!</div>'
-} else {
-  try {
-    console.log('Creating React root...')
-    const root = ReactDOM.createRoot(container)
-    console.log('React root created successfully')
-
-    console.log('🚀 Starting KhoChuan POS App...')
-
-    // Render the main App component
-    root.render(React.createElement(App));
-    console.log('✅ KhoChuan POS App rendered successfully')
-
-  } catch (error) {
-    console.error('❌ Error creating KhoChuan POS App:', error)
-
-    // Fallback error display
-    const rootElement = document.getElementById('root')
-    if (rootElement) {
-      rootElement.innerHTML = `
-        <div style="
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          background: #f0f2f5;
-          color: #333;
-          text-align: center;
-          padding: 20px;
-        ">
-          <h1>⚠️ Lỗi khởi tạo KhoChuan POS</h1>
-          <p>Có lỗi xảy ra khi khởi tạo ứng dụng</p>
-          <button onclick="window.location.reload()" style="
-            padding: 12px 24px;
-            background: #1677ff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 20px;
-          ">
-            🔄 Refresh Trang
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          style={{
+            padding: "20px",
+            textAlign: "center",
+            fontFamily: "Arial, sans-serif",
+          }}
+        >
+          <h1>❌ Something went wrong!</h1>
+          <p>
+            The application encountered an error and could not load properly.
+          </p>
+          <details style={{ marginTop: "20px", textAlign: "left" }}>
+            <summary>Error Details (for developers)</summary>
+            <pre
+              style={{
+                background: "#f5f5f5",
+                padding: "10px",
+                borderRadius: "4px",
+                overflow: "auto",
+              }}
+            >
+              {this.state.error?.stack ||
+                this.state.error?.message ||
+                "Unknown error"}
+            </pre>
+          </details>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              backgroundColor: "#1890ff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            🔄 Reload Page
           </button>
         </div>
-      `
+      );
     }
+
+    return this.props.children;
   }
 }
+
+// Global error handler for unhandled promises
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("Unhandled promise rejection:", event.reason);
+  event.preventDefault();
+});
+
+// Global error handler
+window.addEventListener("error", (event) => {
+  console.error("Global error:", event.error);
+});
+
+// Define version globally if not already defined
+if (typeof window.__APP_VERSION__ === "undefined") {
+  window.__APP_VERSION__ = "1.0.0";
+}
+
+// Ensure environment variables are available
+console.log(
+  "🚀 App starting with version:",
+  window.__APP_VERSION__ || "unknown"
+);
+console.log("🌍 Environment:", process.env.NODE_ENV || "development");
+
+// Mount React app with error boundary
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+);

@@ -2,147 +2,159 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>Kho Augment - POS System</title>
+    <meta name="title" content="Kho Augment - Comprehensive POS System" />
     <meta
       name="description"
-      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
+      content="Advanced Point of Sale system with inventory management, analytics, and multi-platform support."
     />
     <meta
       name="keywords"
-      content="Trường Phát Computer, Hòa Bình, máy tính, laptop, linh kiện, sửa chữa, bảo hành, POS, point of sale"
+      content="POS, Point of Sale, Inventory, Vietnam, Management, Business"
     />
-    <meta name="author" content="Trường Phát Computer" />
-    <meta name="robots" content="index, follow" />
+
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/masked-icon.svg" color="#1890ff" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#1890ff" />
+    <meta name="msapplication-TileColor" content="#1890ff" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://khoaugment.pages.dev/" />
+    <meta property="og:title" content="Kho Augment - POS System" />
+    <meta
+      property="og:description"
+      content="Advanced Point of Sale system with inventory management and analytics."
+    />
+    <meta property="og:image" content="/icons/pwa-512x512.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://khoaugment.pages.dev/" />
+    <meta property="twitter:title" content="Kho Augment - POS System" />
+    <meta
+      property="twitter:description"
+      content="Advanced Point of Sale system with inventory management and analytics."
+    />
+    <meta property="twitter:image" content="/icons/pwa-512x512.png" />
 
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-    <meta
-      http-equiv="Referrer-Policy"
-      content="strict-origin-when-cross-origin"
-    />
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1677ff" />
-    <meta name="background-color" content="#ffffff" />
-    <meta name="display" content="standalone" />
-    <meta name="orientation" content="portrait" />
+    <!-- Preconnect to external domains (if any) -->
+    <!-- <link rel="preconnect" href="https://your-api-domain.com"> -->
 
-    <!-- iOS PWA Support -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Trường Phát Computer" />
-    <meta name="apple-touch-fullscreen" content="yes" />
-
-    <!-- Windows PWA Support -->
-    <meta name="msapplication-TileColor" content="#1677ff" />
-    <meta name="msapplication-TileImage" content="/icons/mstile-144x144.png" />
-    <meta name="msapplication-config" content="/browserconfig.xml" />
-
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Trường Phát Computer Hòa Bình" />
-    <meta
-      property="og:description"
-      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
-    />
-    <meta property="og:image" content="/images/og-image.png" />
-    <meta property="og:url" content="https://truongphat.pages.dev" />
-    <meta property="og:site_name" content="Trường Phát Computer" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Trường Phát Computer Hòa Bình" />
-    <meta
-      name="twitter:description"
-      content="Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình - Chuyên cung cấp máy tính, laptop, linh kiện và dịch vụ sửa chữa"
-    />
-    <meta name="twitter:image" content="/images/twitter-card.png" />
-
-    <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/icons/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/icons/favicon-16x16.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/icons/apple-touch-icon.png"
-    />
-    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677ff" />
-
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-
-    <!-- Preconnect to improve performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-
-    <!-- DNS Prefetch -->
-    <link rel="dns-prefetch" href="//truongphat-api.workers.dev" />
-
-    <!-- Critical CSS - Inline for performance -->
+    <!-- Loading styles -->
     <style>
-      /* Critical styles */
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      html {
+      /* Loading screen styles */
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
         font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-          "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica,
-          Arial, sans-serif;
-        line-height: 1.15;
-        -webkit-text-size-adjust: 100%;
-        -webkit-tap-highlight-color: transparent;
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
 
-      body {
-        margin: 0;
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1890ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        margin-top: 16px;
+        color: #666;
         font-size: 14px;
-        font-variant: tabular-nums;
-        line-height: 1.5715;
-        background-color: #f0f2f5;
-        color: rgba(0, 0, 0, 0.85);
-        font-feature-settings: "tnum";
       }
 
-      #root {
-        min-height: 100vh;
-        position: relative;
+      /* Hide loading screen when app loads */
+      .app-loaded #loading-screen {
+        display: none;
+      }
+
+      /* Error fallback styles */
+      .error-fallback {
+        text-align: center;
+        padding: 40px 20px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
     </style>
-
-    <title>Trường Phát Computer Hòa Bình</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading screen while app loads -->
+      <div id="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text">Đang tải ứng dụng...</div>
+      </div>
+    </div>
 
+    <!-- Fallback content for JavaScript disabled -->
+    <noscript>
+      <div class="error-fallback">
+        <h1>❌ JavaScript Required</h1>
+        <p>This application requires JavaScript to run.</p>
+        <p>Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+
+    <!-- Remove loading screen when React app mounts -->
     <script>
-      // Polyfills for production environment
-      if (typeof global === "undefined") {
-        var global = globalThis;
-      }
-      if (typeof process === "undefined") {
-        var process = { env: { NODE_ENV: "production" } };
-      }
+      // Remove loading screen when DOM is ready
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+          const loadingScreen = document.getElementById("loading-screen");
+          if (loadingScreen) {
+            loadingScreen.style.opacity = "0";
+            loadingScreen.style.transition = "opacity 0.3s ease";
+            setTimeout(() => {
+              document.body.classList.add("app-loaded");
+            }, 300);
+          }
+        }, 1000); // Show loading for at least 1 second
+      });
+
+      // Global error handling
+      window.addEventListener("error", function (e) {
+        console.error("Global JavaScript Error:", e.error);
+      });
+
+      window.addEventListener("unhandledrejection", function (e) {
+        console.error("Unhandled Promise Rejection:", e.reason);
+      });
     </script>
 
     <script type="module" src="/src/main.jsx"></script>
